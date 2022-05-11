@@ -37,18 +37,18 @@ class SleepingPlaceForm(FlaskForm):
         validators=[validators.InputRequired(), validators.NumberRange(min=0)]
     )
     date_from_march = DateField(
-        'Ab wann kannst du für den Marsch im Mai Schlafplätze anbieten (..)',
+        'Ab wann kannst du für den Marsch im Mai Schlafplätze anbieten (wir suchen ab 20.05.)',
         validators=[validators.Optional()],
     )
     date_to_march = DateField(
-        'Bis wann kannst du für den Marsch im Mai Schlafplätze anbieten (..)',
+        'Bis wann kannst du für den Marsch im Mai Schlafplätze anbieten (der Marsch endet am 23.05.)',
         validators=[validators.Optional()],
     )
     date_from_june = DateField(
-        'Ab wann kannst du für die Aktionen im Juni Schlafplätze anbieten (..)',
+        'Ab wann kannst du für die Aktionen im Juni Schlafplätze anbieten (benötigt wird ab 18.06.)',
         validators=[validators.Optional()],
     )
     date_to_june = DateField(
-        'Bis wann kannst du für den Marsch im Juni Schlafplätze anbieten (..)',
+        'Bis wann kannst du für den Marsch im Juni Schlafplätze anbieten (Dauer: mehrere Wochen)',
         validators=[validators.Optional()],
     )
