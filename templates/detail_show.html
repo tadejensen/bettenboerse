@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h2>{% block title %}Unterkunft{% endblock %}</h2>
+{% endblock %}
+
+{% block content %}
+
+Link zur Wohnung:
+<div class="alert alert-success">
+{{ base_url + url_for('show_sleeping_place', uuid=sleeping_place.uuid) }}
+</div>
+
+QR-Code zur Wohnung:
+<br>
+<img src="{{ qrcode(base_url + url_for('show_sleeping_place', uuid=sleeping_place.uuid), box_size=5 ) }}">
+<br>
+&nbsp;
+
+<table class="table">
+  <tbody>
+    <tr>
+      <td>Name</td>
+      <td>{{ sleeping_place.name }}</td>
+    </tr>
+    <tr>
+      <td>Pronomen</td>
+      <td>{{ sleeping_place.pronoun }}</td>
+    </tr>
+    <tr>
+      <td>Telefon-Nr</td>
+      <td>{{ sleeping_place.telephone }}</td>
+    </tr>
+    <tr>
+      <td>Addresse</td>
+      <td>{{ sleeping_place.address }} <a href="https://www.google.com/maps/search/{{ sleeping_place.address }}" >(Google Maps)</a></td>
+    </tr>
+    <tr>
+      <td>Schlafplätze ohne ISO</td>
+      <td>{{ sleeping_place.sleeping_places_basic }}</td>
+    </tr>
+    <tr>
+      <td>Schlafplätze mit ISO</td>
+      <td>{{ sleeping_place.sleeping_places_luxury }}</td>
+    </tr>
+    <tr>
+      <td>Von (Marsch)</td>
+      <td>{{ sleeping_place.date_from_march or "nicht angegeben"}}</td>
+    </tr>
+    <tr>
+      <td>Bis (Marsch)</td>
+      <td>{{ sleeping_place.date_to_march or "nicht angegeben"}}</td>
+    </tr>
+    <tr>
+      <td>Von (Juni)</td>
+      <td>{{ sleeping_place.date_from_june or "nicht angegeben" }}</td>
+    </tr>
+    <tr>
+      <td>Von (Juni)</td>
+      <td>{{ sleeping_place.date_to_june or "nicht angegeben" }}</td>
+    </tr>
+
+  </tbody>
+</table>
+
+
+Zugang zur Wohnung
+<textarea class="form-control" readonly rows=3>
+{{ sleeping_place.keys }}
+</textarea>
+Hausregeln
+<textarea class="form-control" readonly rows=8>
+{{ sleeping_place.rules }}
+</textarea>
+&nbsp;
+
+{% endblock %}
+
+

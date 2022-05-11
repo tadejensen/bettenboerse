@@ -1,0 +1,8 @@
+import os
+BASE_URL = "https://bettenbörse.letztegeneration.de"
+FLASK_SECRET_KEY = os.urandom(64)
+DB_LOCATION = "sqlite:///unterkünfte.db"
+USER = "lg"
+# from werkzeug.security import generate_password_hash
+# generate_password_hash("pass")
+PASSWORD_HASH = 'pbkdf2:sha256:260000$sg3EYr3BgaNmiLNk$ed0195889b815194d1a144eea367ae4e049b96e6c3c112e8aa8b691a0548c37a'

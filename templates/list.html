@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h2>{% block title %}Übersicht Schlafplätze{% endblock %}</h2>
+{% endblock %}
+
+{% block content %}
+
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">Name</th>
+      <th scope="col">Adresse</th>
+      <th scope="col">Schlafplätze ohne ISO-Matte</th>
+      <th scope="col">Schlafplätze mit ISO-Matte</th>
+      <th scope="col">Details</th>
+    </tr>
+  </thead>
+  <tbody>
+{% for sp in sleeping_places %}
+    <tr>
+      <td>{{ sp.name }}</td>
+      <td>{{ sp.address }}</td>
+      <td>{{ sp.sleeping_places_luxury }}</td>
+      <td>{{ sp.sleeping_places_basic }}</td>
+      <td>
+            <p><a href="{{ url_for('show_sleeping_place', uuid=sp.uuid) }}">Detail-Ansicht</a></p>
+     </td>
+    </tr>
+{% endfor %}
+  </tbody>
+</table>
+
+
+
+{% endblock %}

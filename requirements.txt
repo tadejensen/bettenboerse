@@ -1,0 +1,8 @@
+pdbpp
+flask
+flask_sqlalchemy
+wtforms
+flask_wtf
+flask-qrcode
+flask_httpauth
+gunicorn
