@@ -84,6 +84,9 @@ def index():
 @app.route('/unterkunft/<uuid>/show')
 def show_sleeping_place(uuid):
     sleeping_place = SleepingPlace.query.filter_by(uuid=uuid).first()
+    if not sleeping_place:
+        flash("Diese Unterkunft existiert nicht.", "danger")
+        return redirect('/')
 
     return render_template(
         'detail_show.html',
