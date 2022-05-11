@@ -17,11 +17,12 @@
 
 &nbsp;
 <nav>
+<div class="text-center">
+    <img src="/static/header-logo.png" style="background-color: black;", class="img-fluid">
   <h1>Letze Generation - Bettenbörse</h1>
-  <ul>
-      <li><a href="{{ url_for('index') }}">Schlafplatz anbieten</a>
-      <li><a href="{{ url_for('show_all_sleeping_places') }}">Unterkünfte</a>
-  </ul>
+</div>
+  <a href="{{ url_for('index') }}">Schlafplatz anbieten</a> | 
+  <a href="{{ url_for('show_all_sleeping_places') }}">Unterkünfte</a>
 </nav>
 <hr>
 <section class="content">
