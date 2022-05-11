@@ -15,12 +15,10 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = settings.FLASK_SECRET_KEY
 app.config['SQLALCHEMY_DATABASE_URI'] = settings.DB_LOCATION
 
-db = SQLAlchemy()
-db.init_app(app)
-db.create_all(app=app)
-
 QRcode(app)
 auth = HTTPBasicAuth()
+
+db = SQLAlchemy()
 
 
 class SleepingPlace(db.Model):
@@ -39,6 +37,11 @@ class SleepingPlace(db.Model):
     date_to_march = db.Column(db.DateTime())
     date_from_june = db.Column(db.DateTime())
     date_to_june = db.Column(db.DateTime())
+
+
+# this needs to be placed here!
+db.init_app(app)
+db.create_all(app=app)
 
 
 @auth.verify_password
