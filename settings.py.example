@@ -1,5 +1,5 @@
 import os
-BASE_URL = "https://bettenbörse.letztegeneration.de"
+BASE_URL = "https://bettenboerse.letztegeneration.de"
 FLASK_SECRET_KEY = os.urandom(64)
 DB_LOCATION = "sqlite:///unterkünfte.db"
 USER = "lg"
