@@ -45,19 +45,35 @@ QR-Code zur Wohnung:
     </tr>
     <tr>
       <td>Von (Marsch)</td>
-      <td>{{ sleeping_place.date_from_march.strftime("%d.%m.%Y (%a)") or "nicht angegeben"}}</td>
+      {% if sleeping_place.date_from_march %}
+        <td>{{ sleeping_place.date_from_march.strftime("%d.%m.%Y (%a)") }}</td>
+      {% else %}
+        <td>nicht angegeben</td>
+      {% endif %}
     </tr>
     <tr>
       <td>Bis (Marsch)</td>
-      <td>{{ sleeping_place.date_to_march.strftime("%d.%m.%Y (%a)") or "nicht angegeben"}}</td>
+      {% if sleeping_place.date_to_march %}
+        <td>{{ sleeping_place.date_to_march.strftime("%d.%m.%Y (%a)") }}</td>
+      {% else %}
+        <td>nicht angegeben</td>
+      {% endif %}
     </tr>
     <tr>
       <td>Von (Juni)</td>
-      <td>{{ sleeping_place.date_from_june.strftime("%d.%m.%Y (%a)") or "nicht angegeben" }}</td>
+      {% if sleeping_place.date_from_june %}
+        <td>{{ sleeping_place.date_from_june.strftime("%d.%m.%Y (%a)") }}</td>
+      {% else %}
+        <td>nicht angegeben</td>
+      {% endif %}
     </tr>
     <tr>
       <td>Bis (Juni)</td>
-      <td>{{ sleeping_place.date_to_june.strftime("%d.%m.%Y (%a)") or "nicht angegeben" }}</td>
+      {% if sleeping_place.date_to_june %}
+        <td>{{ sleeping_place.date_to_june.strftime("%d.%m.%Y (%a)") }}</td>
+      {% else %}
+        <td>nicht angegeben</td>
+      {% endif %}
     </tr>
 
   </tbody>
