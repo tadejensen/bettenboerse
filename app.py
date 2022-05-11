@@ -66,9 +66,9 @@ def index():
             sleeping_places_basic=form.data['sleeping_places_basic'],
             sleeping_places_luxury=form.data['sleeping_places_luxury'],
             date_from_march=form.data['date_from_march'],
-            date_to_march=form.data['date_from_march'],
+            date_to_march=form.data['date_to_march'],
             date_from_june=form.data['date_from_june'],
-            date_to_june=form.data['date_from_june'])
+            date_to_june=form.data['date_to_june'])
 
         db.session.add(new_sp)
         db.session.commit()
