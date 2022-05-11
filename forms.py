@@ -13,7 +13,7 @@ class SleepingPlaceForm(FlaskForm):
         validators=[validators.InputRequired()]
     )
     telephone = StringField(
-        'Telefon-Nr',
+        'Telefonnummer',
         validators=[validators.InputRequired()]
     )
     address = StringField(
@@ -21,11 +21,11 @@ class SleepingPlaceForm(FlaskForm):
         validators=[validators.InputRequired()]
     )
     keys = TextAreaField(
-        'Wie kommt Mensch in die Wohnung? Gibt es ein Versteck für den Schlüssel? Ist immer jemand da zum klingeln? Wo klingeln Menschen besten klingeln?',
+        'Wie kommt Mensch in die Wohnung? Gibt es ein Versteck für den Schlüssel? Ist immer jemand da zum klingeln? Wo kann Mensch klingeln?',
         validators=[validators.InputRequired()]
     )
     rules = TextAreaField(
-        'Hausregeln - was ist zu beachten (diese Info wird den Menschen weitergegeben, die dort übhernachten)',
+        'Hausregeln - was ist zu beachten (diese Info wird den Menschen weitergegeben, die dort übernachten)',
         validators=[validators.InputRequired()]
     )
     sleeping_places_basic = IntegerField(
@@ -37,7 +37,7 @@ class SleepingPlaceForm(FlaskForm):
         validators=[validators.InputRequired(), validators.NumberRange(min=0)]
     )
     date_from_march = DateField(
-        'Ab wann kannst du für den Marsch im Mai Schlafplätze anbieten (wir suchen ab 20.05.)',
+        'Ab wann kannst du für den Marsch im Mai Schlafplätze anbieten (wir suchen Schlafplätze ab 20.05. in Berlin)',
         validators=[validators.Optional()],
     )
     date_to_march = DateField(
@@ -45,10 +45,10 @@ class SleepingPlaceForm(FlaskForm):
         validators=[validators.Optional()],
     )
     date_from_june = DateField(
-        'Ab wann kannst du für die Aktionen im Juni Schlafplätze anbieten (benötigt wird ab 18.06.)',
+        'Ab wann kannst du für die Aktionen im Juni Schlafplätze anbieten (wir suchen Schlafplätze ab 18.06. in Berlin)',
         validators=[validators.Optional()],
     )
     date_to_june = DateField(
-        'Bis wann kannst du für den Marsch im Juni Schlafplätze anbieten (Dauer: mehrere Wochen)',
+        'Bis wann kannst du für die Aktionen im Juni Schlafplätze anbieten (Dauer: mehrere Wochen)',
         validators=[validators.Optional()],
     )
