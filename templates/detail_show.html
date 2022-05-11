@@ -45,19 +45,19 @@ QR-Code zur Wohnung:
     </tr>
     <tr>
       <td>Von (Marsch)</td>
-      <td>{{ sleeping_place.date_from_march or "nicht angegeben"}}</td>
+      <td>{{ sleeping_place.date_from_march.strftime("%d.%m.%Y (%a)") or "nicht angegeben"}}</td>
     </tr>
     <tr>
       <td>Bis (Marsch)</td>
-      <td>{{ sleeping_place.date_to_march or "nicht angegeben"}}</td>
+      <td>{{ sleeping_place.date_to_march.strftime("%d.%m.%Y (%a)") or "nicht angegeben"}}</td>
     </tr>
     <tr>
       <td>Von (Juni)</td>
-      <td>{{ sleeping_place.date_from_june or "nicht angegeben" }}</td>
+      <td>{{ sleeping_place.date_from_june.strftime("%d.%m.%Y (%a)") or "nicht angegeben" }}</td>
     </tr>
     <tr>
       <td>Bis (Juni)</td>
-      <td>{{ sleeping_place.date_to_june or "nicht angegeben" }}</td>
+      <td>{{ sleeping_place.date_to_june.strftime("%d.%m.%Y (%a)") or "nicht angegeben" }}</td>
     </tr>
 
   </tbody>
