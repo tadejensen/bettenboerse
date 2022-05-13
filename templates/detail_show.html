@@ -44,17 +44,17 @@ QR-Code zur Wohnung:
       <td>{{ sleeping_place.sleeping_places_luxury }}</td>
     </tr>
     <tr>
-      <td>Von (Marsch)</td>
-      {% if sleeping_place.date_from_march %}
-        <td>{{ sleeping_place.date_from_march.strftime("%d.%m.%Y (%a)") }}</td>
+      <td>Von (Aktionswochenende im Mai)</td>
+      {% if sleeping_place.date_from_may %}
+        <td>{{ sleeping_place.date_from_may.strftime("%d.%m.%Y (%a)") }}</td>
       {% else %}
         <td>nicht angegeben</td>
       {% endif %}
     </tr>
     <tr>
-      <td>Bis (Marsch)</td>
-      {% if sleeping_place.date_to_march %}
-        <td>{{ sleeping_place.date_to_march.strftime("%d.%m.%Y (%a)") }}</td>
+      <td>Bis (Aktionswochenende im Mai)</td>
+      {% if sleeping_place.date_to_may %}
+        <td>{{ sleeping_place.date_to_may.strftime("%d.%m.%Y (%a)") }}</td>
       {% else %}
         <td>nicht angegeben</td>
       {% endif %}

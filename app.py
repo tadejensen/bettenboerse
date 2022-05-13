@@ -33,8 +33,8 @@ class SleepingPlace(db.Model):
     rules = db.Column(db.String())
     sleeping_places_basic = db.Column(db.Integer())
     sleeping_places_luxury = db.Column(db.Integer())
-    date_from_march = db.Column(db.DateTime())
-    date_to_march = db.Column(db.DateTime())
+    date_from_may = db.Column(db.DateTime())
+    date_to_may = db.Column(db.DateTime())
     date_from_june = db.Column(db.DateTime())
     date_to_june = db.Column(db.DateTime())
 
@@ -65,8 +65,8 @@ def index():
             rules=form.data['rules'],
             sleeping_places_basic=form.data['sleeping_places_basic'],
             sleeping_places_luxury=form.data['sleeping_places_luxury'],
-            date_from_march=form.data['date_from_march'],
-            date_to_march=form.data['date_to_march'],
+            date_from_may=form.data['date_from_may'],
+            date_to_may=form.data['date_to_may'],
             date_from_june=form.data['date_from_june'],
             date_to_june=form.data['date_to_june'])
 

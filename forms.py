@@ -36,12 +36,12 @@ class SleepingPlaceForm(FlaskForm):
         'Wie viele Schlafplätze kannst du anbieten, wenn Menschen keine ISO-Matte/Schlafsack mitbringen',
         validators=[validators.InputRequired(), validators.NumberRange(min=0)]
     )
-    date_from_march = DateField(
-        'Ab wann kannst du für den Marsch im Mai Schlafplätze anbieten (wir suchen Schlafplätze ab 20.05. in Berlin)',
+    date_from_may = DateField(
+        'Ab wann kannst du für das Aktionswochenende im Mai Schlafplätze anbieten (wir suchen Schlafplätze ab 20.05. in Berlin)',
         validators=[validators.Optional()],
     )
-    date_to_march = DateField(
-        'Bis wann kannst du für den Marsch im Mai Schlafplätze anbieten (der Marsch endet am 23.05.)',
+    date_to_may = DateField(
+        'Bis wann kannst du für das Aktionswochenende im Mai Schlafplätze anbieten (geht bis etwa 24.05.)',
         validators=[validators.Optional()],
     )
     date_from_june = DateField(
