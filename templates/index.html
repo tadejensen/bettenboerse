@@ -1,16 +1,20 @@
 {% extends 'base.html' %}
 
 {% block header %}
-  <h2>{% block title %}Ich möchte einen Schlafplatz anbieten{% endblock %}</h2>
+  <h3>{% block title %}Schlafplatz anbieten{% endblock %}</h3>
+  Ab dem 18. Juni finden Straßenblockaden der Letzten Generation in Berlin statt. Mehrere hundert Menschen gehen auf die Straßen und Fordern: Stoppt den fossilen Wahnsinn! - keine Öl-Bohrungen in der Nordsee! - keine Finanzierung neuer fossiler Infrastruktur!
+
 {% endblock %}
 
 
 {% block content %}
 
+
 {% if form.errors %}
     {{ form.errors }}
 {% endif %}
 
+</br>
 <form action="" method="POST">
     {{ form.hidden_tag() }}
     <div class="form-group">
