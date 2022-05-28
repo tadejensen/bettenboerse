@@ -161,5 +161,11 @@ def show_all_sleeping_places():
     )
 
 
+@app.route('/login')
+@auth.login_required
+def login():
+    return redirect(url_for('show_all_sleeping_places'))
+
+
 if __name__ == '__main__':
     app.run(debug=True)
