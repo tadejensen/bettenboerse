@@ -1,6 +1,8 @@
-from wtforms import IntegerField, StringField, TextAreaField, DateField
+from wtforms import IntegerField, StringField, TextAreaField, DateField, SelectField
 from wtforms import validators
 from flask_wtf import FlaskForm
+
+from models import ReservationState
 
 
 class SleepingPlaceForm(FlaskForm):
@@ -52,3 +54,10 @@ class SleepingPlaceForm(FlaskForm):
         'Bis wann kannst du für die Aktionen im Juni Schlafplätze anbieten (Dauer: mehrere Wochen)',
         validators=[validators.Optional()],
     )
+
+
+class ReservationForm(FlaskForm):
+    #sleeping_place = StringField('sleeping place')
+    #date = DateField('hey ho')
+    reservation = TextAreaField("Wer schläft hier nachts?")
+    state = SelectField('Belegung für diese Nacht', choices=[(s.name, s.value[1]) for s in ReservationState])
