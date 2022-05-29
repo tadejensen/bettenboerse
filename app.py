@@ -88,8 +88,6 @@ def index():
                                sleeping_places_luxury=form.data['sleeping_places_luxury'],
                                date_from_may=form.data['date_from_may'],
                                date_to_may=form.data['date_to_may'],
-                               
-                               
                                date_from_june=form.data['date_from_june'],
                                date_to_june=form.data['date_to_june'])
 
@@ -112,12 +110,12 @@ def show_sleeping_place(uuid):
         return redirect(url_for('index'))
 
     reservations = {}
-    start = settings.start_date
+    start = sleeping_place.date_from_june
     delta = timedelta(days=1)
 
-    while start <= settings.end_date:
+    while start < sleeping_place.date_to_june:
+        reservations[start.date()] = {}
         start += delta
-        reservations[start] = {}
 
     res = Reservation.query.filter_by(sleeping_place=uuid).all()
     for r in res:
@@ -170,13 +168,6 @@ def edit_reservation(uuid, date):
                                state=reservation.state.name)
     else:
         form = ReservationForm(date=date)
-
-    """
-    sleeping_place = db.Column(db.String(100), db.ForeignKey('sleeping_places.uuid'), primary_key=True)
-    date = db.Column(db.Date(), primary_key=True)
-    reservation = db.Column(db.String())
-    state = db.Column(db.Enum(ReservationState))
-    """
 
     return render_template(
         'reservation_edit.html',
