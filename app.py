@@ -264,9 +264,10 @@ def show_map():
     empty_sps = []
     complete_sps = []
     for sp in sps:
-        if not sp.latitude or sp.latitude == "":
-            empty_sps.append(sp)
+        if sp.latitude and len(sp.latitude) > 0:
             complete_sps.append(sp)
+        else:
+            empty_sps.append(sp)
     return render_template('map.html',
                            empty_sps=empty_sps,
                            sps=complete_sps)
