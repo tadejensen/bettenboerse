@@ -23,7 +23,8 @@
 </div>
   <a href="{{ url_for('index') }}">Schlafplatz anbieten</a> | 
 {% if session['logged_in'] %}
-  <a href="{{ url_for('list_sleeping_places') }}">Unterkünfte anzeigen</a>
+  <a href="{{ url_for('list_sleeping_places') }}">Unterkünfte anzeigen</a> |
+  <a href="{{ url_for('show_map') }}">Karte anzeigen</a>
 {% else %}
   <a href="{{ url_for('login') }}">Login</a>
 {% endif %}

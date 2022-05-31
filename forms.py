@@ -6,9 +6,29 @@ from models import ReservationState
 
 
 def validate_date(form, field):
-    if form.data['date_to_june']:
+    if form.data['date_to_june'] and form.data['date_from_june']:
         if not form.data['date_to_june'] > form.data['date_from_june']:
             raise ValidationError('Das End-Datum liegt vor dem End-Datum.')
+
+
+def validate_long_lat(form, field):
+    # TODO: dry
+    if form.data['latitude']:
+        if not form.data['longitude']:
+            raise ValidationError('Längen- und Breitengrad müssen angegeben werden')
+        try:
+            float(form.data['longitude'])
+            float(form.data['longitude'])
+        except ValueError:
+            raise ValidationError('Falsches Format für Längen/Breitengrad-Angabe')
+    if form.data['longitude']:
+        try:
+            float(form.data['longitude'])
+            float(form.data['longitude'])
+        except ValueError:
+            raise ValidationError('Falsches Format für Längen/Breitengrad-Angabe')
+        if not form.data['latitude']:
+            raise ValidationError('Längen- und Breitengrad müssen angegeben werden')
 
 
 class SleepingPlaceForm(FlaskForm):
@@ -37,11 +57,11 @@ class SleepingPlaceForm(FlaskForm):
         validators=[validators.InputRequired()]
     )
     sleeping_places_basic = IntegerField(
-        'Wie viele Schlafplätze kannst du anbieten, wenn Menschen ISO-Matte/Schlafsack mitbringen',
+        'Wie viele Schlafplätze kannst du anbieten, wenn Menschen Isomatte/Schlafsack mitbringen',
         validators=[validators.InputRequired(), validators.NumberRange(min=0)]
     )
     sleeping_places_luxury = IntegerField(
-        'Wie viele Schlafplätze kannst du anbieten, wenn Menschen keine ISO-Matte/Schlafsack mitbringen',
+        'Wie viele Schlafplätze kannst du anbieten, wenn Menschen keine Isomatte/Schlafsack mitbringen',
         validators=[validators.InputRequired(), validators.NumberRange(min=0)]
     )
     date_from_may = DateField(
@@ -58,7 +78,15 @@ class SleepingPlaceForm(FlaskForm):
     )
     date_to_june = DateField(
         'Bis wann kannst du für die Aktionen im Juni Schlafplätze anbieten (Dauer: mehrere Wochen)',
-        validators=[validators.Optional(), validate_date],
+        validators=[validators.Optional(), validate_date]
+    )
+    latitude = StringField(
+        'Breitengrad (latitude)',
+        validators=[validators.Optional(), validate_long_lat]
+    )
+    longitude = StringField(
+        'Längengrad (longitude)',
+        validators=[validators.Optional(), validate_long_lat]
     )
 
 

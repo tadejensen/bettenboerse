@@ -11,10 +11,10 @@
     <tr>
       <th scope="col">Name</th>
       <th scope="col">Adresse</th>
-      <th scope="col">Schlafplätze ohne ISO-Matte</th>
-      <th scope="col">Schlafplätze mit ISO-Matte</th>
+      <th scope="col">Schlafplätze ohne Isomatte</th>
+      <th scope="col">Schlafplätze mit Isomatte</th>
+      <th scope="col">Editieren</th>
       <th scope="col">Details</th>
-      <th scope="col">Ändern</th>
     </tr>
   </thead>
   <tbody>
@@ -25,16 +25,14 @@
       <td>{{ sp.sleeping_places_luxury }}</td>
       <td>{{ sp.sleeping_places_basic }}</td>
       <td>
-            <p><a href="{{ url_for('show_sleeping_place', uuid=sp.uuid) }}">Details</a></p>
+            <p><a href="{{ url_for('edit_sleeping_place', uuid=sp.uuid) }}">editieren</a></p>
      </td>
       <td>
-            <p><a href="{{ url_for('edit_sleeping_place', uuid=sp.uuid) }}">Editieren</a></p>
+            <p><a href="{{ url_for('show_sleeping_place', uuid=sp.uuid) }}">Details</a></p>
      </td>
     </tr>
 {% endfor %}
   </tbody>
 </table>
-
-
 
 {% endblock %}

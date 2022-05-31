@@ -31,14 +31,18 @@
     </tr>
     <tr>
       <td>Addresse</td>
+      {% if sleeping_place.longitude %}
+      <td>{{ sleeping_place.address }} <a href="https://www.google.com/maps/search/{{ sleeping_place.latitude }},{{ sleeping_place.longitude }}" >(Google Maps)</a></td>
+      {% else %}
       <td>{{ sleeping_place.address }} <a href="https://www.google.com/maps/search/{{ sleeping_place.address }}" >(Google Maps)</a></td>
+      {% endif %}
     </tr>
     <tr>
-      <td>Schlafplätze ohne ISO-Matte</td>
+      <td>Schlafplätze ohne Isomatte</td>
       <td>{{ sleeping_place.sleeping_places_basic }}</td>
     </tr>
     <tr>
-      <td>Schlafplätze mit ISO-Matte</td>
+      <td>Schlafplätze mit Isomatte</td>
       <td>{{ sleeping_place.sleeping_places_luxury }}</td>
     </tr>
     <tr>
@@ -91,7 +95,7 @@ Hausregeln
 {% if session['logged_in'] %}
 
 <hr>
-<div id="reservierungen"> <h4>Wer schläft hier?</h4> </div>
+<div id="reservierungen"> <h4>Belegung - Wer schläft hier?</h4> </div>
 <table class="table">
   <thead>
     <tr>

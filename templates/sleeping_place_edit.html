@@ -8,7 +8,11 @@
 {% block content %}
 
 {% if form.errors %}
-    {{ form.errors }}
+<strong>Fehler bei der  Eingabe:</strong></br>
+{% for field, error in form.errors.items() %}
+{{ error }} ({{ field }})</br>
+{% endfor %}
+</br>
 {% endif %}
 
 <form action="" method="POST">
@@ -32,6 +36,17 @@
         {{ form.address.label }}
         {{ form.address(class_="form-control") }}
     </div>
+    
+    <div class="form-group">
+        {{ form.longitude.label }}
+        {{ form.longitude(class_="form-control") }}
+    </div>
+    
+    <div class="form-group">
+        {{ form.latitude.label }}
+        {{ form.latitude(class_="form-control") }}
+    </div>
+    <strong>Hinweis: </strong>pro Unterkunft müssen wir einmalig Längen- und Breitengrad hinterlegen. Dann wird die Wohnung in der Karte angezeigt.</br></br>
     
     <div class="form-group">
         {{ form.keys.label }}

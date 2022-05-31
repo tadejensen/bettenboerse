@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h3>{% block title %}Karte{% endblock %}</h3>
+{% endblock %}
+
+
+{% block content %}
+
+      <link rel="stylesheet" href = "http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css"/>
+      <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+   
+      <div id="map" style= "width:100%; height:580px"></div>
+      <script>
+         // Creating map options
+         //center: [17.385044, 78.486671],
+         var mapOptions = {
+            zoom: 11,
+            center: [52.53, 13.37],
+         }
+         // Creating a map object
+         var map = new L.map('map', mapOptions);
+         
+         // Creating a Layer object
+         var layer = new L.TileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
+         
+         // Adding layer to the map
+         map.addLayer(layer);
+         
+         /*
+         var markerOptions = {
+                       title: "MyLocation\nhii<img src=/x/>",
+            clickable: true,
+            draggable: false,
+         }
+         */
+
+          {% for sp in sps %}
+          description = "Gastgeber*in: {{ sp.name }}</br>" +
+                        "Links: <a href=\"{{ url_for('show_sleeping_place', uuid=sp.uuid)}}\">Unterkunft</a> " + 
+                        "<a href=\"{{ url_for('show_sleeping_place', uuid=sp.uuid, _anchor='reservierungen')}}\">Belegung</a></br>" +
+                        "Adresse: {{ sp.address }}</br>" +
+                        "Schlafplätze ohne ISO-Matte: {{ sp.sleeping_places_luxury }}</br>" +
+                        "Schlafplätze mit ISO-Matte: {{ sp.sleeping_places_basic }}</br>";
+          // todo: from_june weg (muss überalle gegeeben sein)
+          {% if sp.date_from_june and sp.date_to_june %}
+                        description += "Zeitraum: {{ sp.date_from_june.strftime("%d.%m. (%a)") }} - {{ sp.date_to_june.strftime("%d.%m. (%a)") }}</br>";
+          {% endif %}
+            var marker = L.marker([{{ sp.longitude }}, {{ sp.latitude }}]);
+            marker.bindPopup(description).openPopup();
+            marker.addTo(map);
+          
+              
+          {% endfor %}
+
+         
+      </script>
+
+      </br></br>
+      {% for sp in empty_sps %}
+      Hinweis: Unterkunft <a href="{{ url_for('show_sleeping_place', uuid=sp.uuid) }}"> {{ sp.uuid }} ( {{ sp.name }})</a> hat noch keine Längen/Breiten-Grade eingetragen.</br>
+      {% endfor %}
+      </br></br>
+
+{% endblock %}

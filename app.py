@@ -39,20 +39,19 @@ class SleepingPlace(db.Model):
     rules = db.Column(db.String())
     sleeping_places_basic = db.Column(db.Integer())
     sleeping_places_luxury = db.Column(db.Integer())
-    #date_from_may = db.Column(db.DateTime())
-    #date_to_may = db.Column(db.DateTime())
-    #date_from_june = db.Column(db.DateTime())
-    #date_to_june = db.Column(db.DateTime())
     date_from_may = db.Column(db.Date())
     date_to_may = db.Column(db.Date())
     date_from_june = db.Column(db.Date())
     date_to_june = db.Column(db.Date())
+    latitude = db.Column(db.String())
+    longitude = db.Column(db.String())
 
 
 class Reservation(db.Model):
     __tablename__ = 'reservations'
 
-    sleeping_place = db.Column(db.String(100), db.ForeignKey('sleeping_places.uuid'), primary_key=True)
+    sleeping_place = db.Column(db.String(100), db.ForeignKey(
+        'sleeping_places.uuid'), primary_key=True)
     date = db.Column(db.Date(), primary_key=True)
     reservation = db.Column(db.String())
     state = db.Column(db.Enum(ReservationState))
@@ -114,7 +113,6 @@ def show_sleeping_place(uuid):
     start = sleeping_place.date_from_june
     delta = timedelta(days=1)
 
-
     to = sleeping_place.date_to_june if sleeping_place.date_to_june else settings.end_date
 
     if sleeping_place.date_from_june:
@@ -151,7 +149,8 @@ def edit_reservation(uuid, date):
     except ValueError:
         return "Datum im falschen Format. TT.MM.YYYY", 400
 
-    reservation = Reservation.query.filter_by(sleeping_place=uuid, date=date).first()
+    reservation = Reservation.query.filter_by(
+        sleeping_place=uuid, date=date).first()
     form = ReservationForm()
     if form.validate_on_submit():
         if reservation:
@@ -202,6 +201,8 @@ def edit_sleeping_place(uuid):
         sp.rules = form.data['rules']
         sp.sleeping_places_basic = int(form.data['sleeping_places_basic'],)
         sp.sleeping_places_luxury = int(form.data['sleeping_places_luxury'])
+        sp.latitude = form.data['latitude']
+        sp.longitude = form.data['longitude']
 
         #date_from_may = datetime.combine(form.data['date_from_may'], datetime.min.time()) if form.data['date_from_may'] else None
         #sp.date_from_may = date_from_may
@@ -217,18 +218,21 @@ def edit_sleeping_place(uuid):
         flash("Die Änderungen wurden gespeichert", "success")
         return redirect(url_for('show_sleeping_place', uuid=uuid))
 
-    form = SleepingPlaceForm(name=sp.name,
-                             pronoun=sp.pronoun,
-                             telephone=sp.telephone,
-                             address=sp.address,
-                             keys=sp.keys,
-                             rules=sp.rules,
-                             sleeping_places_basic=sp.sleeping_places_basic,
-                             sleeping_places_luxury=sp.sleeping_places_luxury,
-                             date_from_may=sp.date_from_may,
-                             date_to_may=sp.date_to_may,
-                             date_from_june=sp.date_from_june,
-                             date_to_june=sp.date_to_june)
+    if not form.errors:
+        form = SleepingPlaceForm(name=sp.name,
+                                 pronoun=sp.pronoun,
+                                 telephone=sp.telephone,
+                                 address=sp.address,
+                                 keys=sp.keys,
+                                 rules=sp.rules,
+                                 sleeping_places_basic=sp.sleeping_places_basic,
+                                 sleeping_places_luxury=sp.sleeping_places_luxury,
+                                 date_from_may=sp.date_from_may,
+                                 date_to_may=sp.date_to_may,
+                                 date_from_june=sp.date_from_june,
+                                 date_to_june=sp.date_to_june,
+                                 latitude=sp.latitude,
+                                 longitude=sp.longitude)
 
     return render_template(
         'sleeping_place_edit.html',
@@ -253,5 +257,28 @@ def login():
     return redirect(url_for('list_sleeping_places'))
 
 
+@app.route('/karte')
+@auth.login_required
+def show_map():
+    sps = SleepingPlace.query.all()
+    empty_sps = []
+    for sp in sps:
+        if not sp.latitude or sp.latitude == "":
+            empty_sps.append(sp)
+            sps.remove(sp)
+    return render_template('map.html',
+                           empty_sps=empty_sps,
+                           sps=sps)
+
+
+# @app.route('/test')
+# def test():
+#    sps = SleepingPlace.query.filter_by(date_from_june=None).all()
+#    for sp in sps:
+#        print(sp.name, sp.telephone, "\n", f"https://bettenboerse.letztegeneration.de/unterkunft/{sp.uuid}/")
+#    return ""
+
+
 if __name__ == '__main__':
     app.run(debug=True)
+    #app.run(host="0.0.0.0", port=22000, debug=True)
