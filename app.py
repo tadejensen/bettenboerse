@@ -39,14 +39,14 @@ class SleepingPlace(db.Model):
     rules = db.Column(db.String())
     sleeping_places_basic = db.Column(db.Integer())
     sleeping_places_luxury = db.Column(db.Integer())
-    date_from_may = db.Column(db.DateTime())
-    date_to_may = db.Column(db.DateTime())
-    date_from_june = db.Column(db.DateTime())
-    date_to_june = db.Column(db.DateTime())
-    #date_from_may = db.Column(db.Date())
-    #date_to_may = db.Column(db.Date())
-    #date_from_june = db.Column(db.Date())
-    #date_to_june = db.Column(db.Date())
+    #date_from_may = db.Column(db.DateTime())
+    #date_to_may = db.Column(db.DateTime())
+    #date_from_june = db.Column(db.DateTime())
+    #date_to_june = db.Column(db.DateTime())
+    date_from_may = db.Column(db.Date())
+    date_to_may = db.Column(db.Date())
+    date_from_june = db.Column(db.Date())
+    date_to_june = db.Column(db.Date())
 
 
 class Reservation(db.Model):
@@ -76,6 +76,7 @@ def index():
     form = SleepingPlaceForm()
 
     if form.validate_on_submit():
+
         # try:     form = UserDetails(request.POST, obj=user)
         new_sp = SleepingPlace(uuid=str(uuid.uuid4()),
                                name=form.data['name'],
@@ -113,9 +114,14 @@ def show_sleeping_place(uuid):
     start = sleeping_place.date_from_june
     delta = timedelta(days=1)
 
-    while start < sleeping_place.date_to_june:
-        reservations[start.date()] = {}
-        start += delta
+
+    to = sleeping_place.date_to_june if sleeping_place.date_to_june else settings.end_date
+
+    if sleeping_place.date_from_june:
+        while start < to:
+            #reservations[start.date()] = {}
+            reservations[start] = {}
+            start += delta
 
     res = Reservation.query.filter_by(sleeping_place=uuid).all()
     for r in res:
@@ -197,14 +203,14 @@ def edit_sleeping_place(uuid):
         sp.sleeping_places_basic = int(form.data['sleeping_places_basic'],)
         sp.sleeping_places_luxury = int(form.data['sleeping_places_luxury'])
 
-        date_from_may = datetime.combine(form.data['date_from_may'], datetime.min.time()) if form.data['date_from_may'] else None
-        sp.date_from_may = date_from_may
-        date_to_may = datetime.combine(form.data['date_to_may'], datetime.min.time()) if form.data['date_to_may'] else None
-        sp.date_to_may = date_to_may
+        #date_from_may = datetime.combine(form.data['date_from_may'], datetime.min.time()) if form.data['date_from_may'] else None
+        #sp.date_from_may = date_from_may
+        #date_to_may = datetime.combine(form.data['date_to_may'], datetime.min.time()) if form.data['date_to_may'] else None
+        #sp.date_to_may = date_to_may
 
-        date_from_june = datetime.combine(form.data['date_from_june'], datetime.min.time()) if form.data['date_from_june'] else None
+        date_from_june = form.data['date_from_june'] if form.data['date_from_june'] else None
         sp.date_from_june = date_from_june
-        date_to_june = datetime.combine(form.data['date_to_june'], datetime.min.time()) if form.data['date_to_june'] else None
+        date_to_june = form.data['date_to_june'] if form.data['date_to_june'] else None
         sp.date_to_june = date_to_june
 
         db.session.commit()

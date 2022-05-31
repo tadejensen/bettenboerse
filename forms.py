@@ -1,8 +1,14 @@
 from wtforms import IntegerField, StringField, TextAreaField, DateField, SelectField
-from wtforms import validators
+from wtforms import validators, ValidationError
 from flask_wtf import FlaskForm
 
 from models import ReservationState
+
+
+def validate_date(form, field):
+    if form.data['date_to_june']:
+        if not form.data['date_to_june'] > form.data['date_from_june']:
+            raise ValidationError('Das End-Datum liegt vor dem End-Datum.')
 
 
 class SleepingPlaceForm(FlaskForm):
@@ -48,16 +54,14 @@ class SleepingPlaceForm(FlaskForm):
     )
     date_from_june = DateField(
         'Ab wann kannst du für die Aktionen im Juni Schlafplätze anbieten (wir suchen Schlafplätze ab 18.06. in Berlin)',
-        validators=[validators.Optional()],
+        validators=[validators.InputRequired()],
     )
     date_to_june = DateField(
         'Bis wann kannst du für die Aktionen im Juni Schlafplätze anbieten (Dauer: mehrere Wochen)',
-        validators=[validators.Optional()],
+        validators=[validators.Optional(), validate_date],
     )
 
 
 class ReservationForm(FlaskForm):
-    #sleeping_place = StringField('sleeping place')
-    #date = DateField('hey ho')
     reservation = TextAreaField("Wer schläft hier nachts?")
     state = SelectField('Belegung für diese Nacht', choices=[(s.name, s.value[1]) for s in ReservationState])
