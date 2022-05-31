@@ -39,8 +39,6 @@ class SleepingPlace(db.Model):
     rules = db.Column(db.String())
     sleeping_places_basic = db.Column(db.Integer())
     sleeping_places_luxury = db.Column(db.Integer())
-    date_from_may = db.Column(db.Date())
-    date_to_may = db.Column(db.Date())
     date_from_june = db.Column(db.Date())
     date_to_june = db.Column(db.Date())
     latitude = db.Column(db.String())
@@ -86,8 +84,6 @@ def index():
                                rules=form.data['rules'],
                                sleeping_places_basic=form.data['sleeping_places_basic'],
                                sleeping_places_luxury=form.data['sleeping_places_luxury'],
-                               date_from_may=form.data['date_from_may'],
-                               date_to_may=form.data['date_to_may'],
                                date_from_june=form.data['date_from_june'],
                                date_to_june=form.data['date_to_june'])
 
@@ -204,11 +200,6 @@ def edit_sleeping_place(uuid):
         sp.latitude = form.data['latitude']
         sp.longitude = form.data['longitude']
 
-        #date_from_may = datetime.combine(form.data['date_from_may'], datetime.min.time()) if form.data['date_from_may'] else None
-        #sp.date_from_may = date_from_may
-        #date_to_may = datetime.combine(form.data['date_to_may'], datetime.min.time()) if form.data['date_to_may'] else None
-        #sp.date_to_may = date_to_may
-
         date_from_june = form.data['date_from_june'] if form.data['date_from_june'] else None
         sp.date_from_june = date_from_june
         date_to_june = form.data['date_to_june'] if form.data['date_to_june'] else None
@@ -227,8 +218,6 @@ def edit_sleeping_place(uuid):
                                  rules=sp.rules,
                                  sleeping_places_basic=sp.sleeping_places_basic,
                                  sleeping_places_luxury=sp.sleeping_places_luxury,
-                                 date_from_may=sp.date_from_may,
-                                 date_to_may=sp.date_to_may,
                                  date_from_june=sp.date_from_june,
                                  date_to_june=sp.date_to_june,
                                  latitude=sp.latitude,
