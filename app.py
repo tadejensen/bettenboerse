@@ -262,13 +262,14 @@ def login():
 def show_map():
     sps = SleepingPlace.query.all()
     empty_sps = []
+    complete_sps = []
     for sp in sps:
         if not sp.latitude or sp.latitude == "":
             empty_sps.append(sp)
-            sps.remove(sp)
+            complete_sps.append(sp)
     return render_template('map.html',
                            empty_sps=empty_sps,
-                           sps=sps)
+                           sps=complete_sps)
 
 
 # @app.route('/test')
