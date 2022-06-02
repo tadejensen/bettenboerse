@@ -77,9 +77,7 @@ Hausregeln
 </textarea>
 LG interner Kommentar
 <textarea class="form-control" readonly rows=3>
-{% if sleeping_place.lg_comment %}
-  {{ sleeping_place.lg_comment }}
-{% endif %}
+{% if sleeping_place.lg_comment %}{{ sleeping_place.lg_comment }}{% endif %}
 </textarea>
 &nbsp;
 
