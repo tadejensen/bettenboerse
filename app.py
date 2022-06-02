@@ -43,6 +43,7 @@ class SleepingPlace(db.Model):
     date_to_june = db.Column(db.Date())
     latitude = db.Column(db.String())
     longitude = db.Column(db.String())
+    lg_comment = db.Column(db.String())
 
 
 class Reservation(db.Model):
@@ -53,6 +54,7 @@ class Reservation(db.Model):
     date = db.Column(db.Date(), primary_key=True)
     reservation = db.Column(db.String())
     state = db.Column(db.Enum(ReservationState))
+    free_beds = db.Column(db.Integer())
 
 
 # this needs to be placed here!
@@ -152,11 +154,13 @@ def edit_reservation(uuid, date):
         if reservation:
             reservation.reservation = form.data['reservation']
             reservation.state = form.data['state']
+            reservation.free_beds = form.data['free_beds']
         else:
             res = Reservation(sleeping_place=uuid,
                               date=date,
                               reservation=form.data['reservation'],
-                              state=form.data['state'])
+                              state=form.data['state'],
+                              free_beds=form.data['free_beds'])
             db.session.add(res)
         db.session.commit()
         flash("Reservierung gespeichert", "success")
@@ -164,9 +168,13 @@ def edit_reservation(uuid, date):
                                 uuid=uuid,
                                 _anchor=f"reservierung-{date.strftime('%d%m')}"))
 
-    if reservation:
+    # TODO: find a smarter logic here
+    if form.errors:
+        pass
+    elif reservation:
         form = ReservationForm(reservation=reservation.reservation,
-                               state=reservation.state.name)
+                               state=reservation.state.name,
+                               free_beds=reservation.free_beds)
     else:
         form = ReservationForm(date=date)
 
@@ -199,6 +207,7 @@ def edit_sleeping_place(uuid):
         sp.sleeping_places_luxury = int(form.data['sleeping_places_luxury'])
         sp.latitude = form.data['latitude']
         sp.longitude = form.data['longitude']
+        sp.lg_comment = form.data['lg_comment']
 
         date_from_june = form.data['date_from_june'] if form.data['date_from_june'] else None
         sp.date_from_june = date_from_june
@@ -221,7 +230,8 @@ def edit_sleeping_place(uuid):
                                  date_from_june=sp.date_from_june,
                                  date_to_june=sp.date_to_june,
                                  latitude=sp.latitude,
-                                 longitude=sp.longitude)
+                                 longitude=sp.longitude,
+                                 lg_comment=sp.lg_comment)
 
     return render_template(
         'sleeping_place_edit.html',
@@ -262,12 +272,47 @@ def show_map():
                            sps=complete_sps)
 
 
-# @app.route('/test')
-# def test():
-#    sps = SleepingPlace.query.filter_by(date_from_june=None).all()
-#    for sp in sps:
-#        print(sp.name, sp.telephone, "\n", f"https://bettenboerse.letztegeneration.de/unterkunft/{sp.uuid}/")
-#    return ""
+@app.route('/test')
+def test():
+    #sps = SleepingPlace.query.filter_by(date_from_june=None).all()
+    sps = SleepingPlace.query.filter_by().all()
+    for sp in sps:
+        if sp.date_from_june:
+            if sp.date_to_june:
+                print(f"{sp.sleeping_places_luxury + sp.sleeping_places_basic:>4} Betten {sp.date_from_june} {sp.date_to_june} {(sp.date_to_june - sp.date_from_june).days} Tage")
+            else:
+                print(f"{sp.sleeping_places_luxury + sp.sleeping_places_basic:>4} {sp.date_from_june} {sp.date_to_june} - kein End-Datum angegeben")
+        else:
+            print(f"MAI: {sp.sleeping_places_luxury + sp.sleeping_places_basic:>4} {sp.date_from_may} {sp.date_to_may} - kein End-Datum angegeben")
+    delta = timedelta(days=1)
+
+    start = settings.start_date
+    end = settings.end_date
+    beds = {}
+
+    while start < end:
+        free_beds = 0
+        places = []
+        for sp in sps:
+            if not sp.date_from_june:
+                #print(f"{sp} has no from date ({start})")
+                continue
+            if not sp.date_to_june:
+                sp.date_to_june = end
+            if start >= sp.date_from_june and start <= sp.date_to_june:
+                free_beds += sp.sleeping_places_luxury
+                free_beds += sp.sleeping_places_basic
+                places.append(sp.name)
+        #beds[start] = {'free_beds': free_beds, 'sp': places}
+        beds[start] = free_beds
+        start += delta
+    for day, beds in beds.items():
+        print(f"{day}: {beds}")
+    return ""
+
+
+   #for sp in sps:
+   #    print(sp.name, sp.telephone, "\n", f"https://bettenboerse.letztegeneration.de/unterkunft/{sp.uuid}/")
 
 
 if __name__ == '__main__':

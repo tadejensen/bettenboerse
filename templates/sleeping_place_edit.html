@@ -8,7 +8,7 @@
 {% block content %}
 
 {% if form.errors %}
-<strong>Fehler bei der  Eingabe:</strong></br>
+<strong>Fehler bei der Eingabe:</strong></br>
 {% for field, error in form.errors.items() %}
 {{ error }} ({{ field }})</br>
 {% endfor %}
@@ -76,6 +76,11 @@
     <div class="form-group">
         {{ form.date_to_june.label }}
         {{ form.date_to_june(class_="form-control") }}
+    </div>
+    
+    <div class="form-group">
+        {{ form.lg_comment.label }}
+        {{ form.lg_comment(class_="form-control") }}
     </div>
     
        <button class="btn btn-primary" type="submit">speichern</button>

@@ -46,25 +46,26 @@
       <td>{{ sleeping_place.sleeping_places_luxury }}</td>
     </tr>
     <tr>
-      <td>Von (Juni)</td>
+      <td>Zeitraum</td>
       {% if sleeping_place.date_from_june %}
-        <td>{{ sleeping_place.date_from_june.strftime("%d.%m.%Y (%a)") }}</td>
+        <td>{{ sleeping_place.date_from_june.strftime("%d.%m. (%a)") }}
       {% else %}
-        <td>nicht angegeben</td>
+        <td>nicht angegeben
       {% endif %}
-    </tr>
-    <tr>
-      <td>Bis (Juni)</td>
+      bis
       {% if sleeping_place.date_to_june %}
-        <td>{{ sleeping_place.date_to_june.strftime("%d.%m.%Y (%a)") }}</td>
+        {{ sleeping_place.date_to_june.strftime("%d.%m. (%a)") }}
       {% else %}
-        <td>nicht angegeben</td>
+        nicht angegeben</td>
       {% endif %}
+      {% if sleeping_place.date_from_june and sleeping_place.date_to_june %} 
+        - {{ (sleeping_place.date_to_june - sleeping_place.date_from_june).days }} Tage
+      {% endif %}
+      </td>
     </tr>
 
   </tbody>
 </table>
-
 
 Zugang zur Wohnung
 <textarea class="form-control" readonly rows=3>
@@ -73,6 +74,12 @@ Zugang zur Wohnung
 Hausregeln
 <textarea class="form-control" readonly rows=5>
 {{ sleeping_place.rules }}
+</textarea>
+LG interner Kommentar
+<textarea class="form-control" readonly rows=3>
+{% if sleeping_place.lg_comment %}
+  {{ sleeping_place.lg_comment }}
+{% endif %}
 </textarea>
 &nbsp;
 
@@ -86,7 +93,8 @@ Hausregeln
         <th>Tag</th>
         <th>Datum</th>
         <th>Status</th>
-        <th>Ändern</th>
+        <th>freie Betten</th>
+        <th>ändern</th>
         <th>Wer schläft da?</th>
     </tr>
 
@@ -104,6 +112,9 @@ Hausregeln
                 </svg>
             <div>
         </td>
+        <td>
+            {{ reservation.free_beds }}
+        </td>
     {% else %}
         <td>
             <div title="alle Plätze frei">
@@ -111,6 +122,9 @@ Hausregeln
                     <circle cx="8" cy="8" r="8"/> 
                 </svg>
             <div>
+        </td>
+        <td>
+            {{  sleeping_place.sleeping_places_basic + sleeping_place.sleeping_places_luxury}}
         </td>
     {% endif %}
     <td>

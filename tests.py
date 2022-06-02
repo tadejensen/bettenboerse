@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
+#from datetime import datetime
+from datetime import date
+import uuid
 import pytest
 from app import app, db, SleepingPlace
 import settings
 
 USER = "lg"
-# password: lg
+# password = USER = lg
 settings.PASSWORD_HASH = 'pbkdf2:sha256:260000$uC06clbdtW17H1kl$81c187bda181e93074f0b6083b8394aac3f2053f16464ec57b316bc49798971b'
 
 
@@ -133,3 +136,67 @@ def test_add_invalid_unterkunft_date(client):
 def test_map(client):
     resp = client.get('/karte', auth=(USER, USER))
     assert resp.status_code == 200
+
+
+def test_reservation(client):
+    # I need this to get context to get the db context!?
+    client.get('/', auth=(USER, USER))
+    id = str(uuid.uuid4())
+    new_sp = SleepingPlace(uuid=id,
+                           name="Pippi",
+                           pronoun="sie/her",
+                           telephone="0123123123",
+                           address="Aufm Acker 4",
+                           keys="Türe ist immer offen",
+                           rules="no rules",
+                           sleeping_places_basic=2,
+                           sleeping_places_luxury=0,
+                           date_from_june=date(year=2022, month=6, day=20),
+                           date_to_june=date(year=2022, month=6, day=22))
+    db.session.add(new_sp)
+    print(f"Added {new_sp} to db")
+    db.session.commit()
+
+    resp = client.get(f"/unterkunft/{id}/edit", auth=(USER, USER))
+    assert resp.status_code == 200
+    assert "Unterkunft editieren" in resp.text
+
+    resp = client.get(f"/unterkunft/{id}/reservation/21.06.202222222/edit", auth=(USER, USER))
+    assert resp.status_code == 400
+    assert "Datum im falschen Format." in resp.text
+
+    resp = client.get(f"/unterkunft/{id}/reservation/21.06.2022/edit", auth=(USER, USER))
+    assert resp.status_code == 200
+    assert "Reservierung ändern" in resp.text
+
+    data = {'reservation': 'der kmille',
+            'state': 'PARTIAL',
+            'free_beds': 6}
+    #resp = client.post(f"/unterkunft/{id}/reservation/21.06.2022/edit", auth=(USER, USER), data=data, follow_redirects=False)
+    #assert resp.status_code == 200
+    #assert "Diese Unterkunft hat nur 5 Betten (6 freie Betten angegeben)" in resp.text
+
+    #data['free_beds'] = 2
+    #data['state'] = 'FREE'
+    #resp = client.post(f"/unterkunft/{id}/reservation/21.06.2022/edit", auth=(USER, USER), data=data, follow_redirects=False)
+    #assert resp.status_code == 200
+    #assert "In dieser Unterkunft schläft jemand. Falscher Status angegeben" in resp.text
+
+    data['state'] = 'PARTIAL'
+    resp = client.post(f"/unterkunft/{id}/reservation/21.06.2022/edit", auth=(USER, USER), data=data, follow_redirects=False)
+    print(resp.text)
+    assert resp.status_code == 302
+
+    resp = client.get(f"/unterkunft/{id}/reservation/21.06.2022/edit", auth=(USER, USER))
+    assert resp.status_code == 200
+    assert "der kmille" in resp.text
+
+    resp = client.get(f"/unterkunft/{id}/", auth=(USER, USER))
+    assert resp.status_code == 200
+    assert "der kmille" in resp.text
+
+    sp = SleepingPlace.query.filter_by(uuid=id).first()
+    print(f"Deleting {sp}")
+    db.session.delete(sp)
+    print(f"Removed {new_sp} from db")
+    db.session.commit()

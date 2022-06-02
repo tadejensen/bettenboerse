@@ -12,7 +12,7 @@
 
 
 {% if form.errors %}
-<strong>Fehler bei der  Eingabe:</strong></br>
+<strong>Fehler bei der Eingabe:</strong></br>
 {% for field, error in form.errors.items() %}
 {{ error }} ({{ field }})</br>
 {% endfor %}

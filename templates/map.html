@@ -40,8 +40,8 @@
                         "Links: <a href=\"{{ url_for('show_sleeping_place', uuid=sp.uuid)}}\">Unterkunft</a> " + 
                         "<a href=\"{{ url_for('show_sleeping_place', uuid=sp.uuid, _anchor='reservierungen')}}\">Belegung</a></br>" +
                         "Adresse: {{ sp.address }}</br>" +
-                        "Schlafplätze ohne ISO-Matte: {{ sp.sleeping_places_luxury }}</br>" +
-                        "Schlafplätze mit ISO-Matte: {{ sp.sleeping_places_basic }}</br>";
+                        "Schlafplätze ohne Isomatte: {{ sp.sleeping_places_luxury }}</br>" +
+                        "Schlafplätze mit Isomatte: {{ sp.sleeping_places_basic }}</br>";
           // todo: from_june weg (muss überalle gegeeben sein)
           {% if sp.date_from_june and sp.date_to_june %}
                         description += "Zeitraum: {{ sp.date_from_june.strftime("%d.%m. (%a)") }} - {{ sp.date_to_june.strftime("%d.%m. (%a)") }}</br>";

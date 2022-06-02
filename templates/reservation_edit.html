@@ -8,7 +8,11 @@
 {% block content %}
 
 {% if form.errors %}
-    {{ form.errors }}
+<strong>Fehler bei der Eingabe:</strong></br>
+{% for field, error in form.errors.items() %}
+{{ error }} ({{ field }})</br>
+{% endfor %}
+</br>
 {% endif %}
 
 <form action="" method="POST">
@@ -17,6 +21,11 @@
     <div class="form-group">
         {{ form.reservation.label }}
         {{ form.reservation(class_="form-control", rows=4) }}
+    </div>
+    
+    <div class="form-group">
+        {{ form.free_beds.label }}
+        {{ form.free_beds(class_="form-control") }}
     </div>
     
     <div class="form-group">
@@ -41,11 +50,11 @@
       <td>{{ sleeping_place.address }} <a href="https://www.google.com/maps/search/{{ sleeping_place.address }}" >(Google Maps)</a></td>
     </tr>
     <tr>
-      <td>Schlafplätze ohne ISO</td>
+      <td>Schlafplätze ohne Isomatte</td>
       <td>{{ sleeping_place.sleeping_places_basic }}</td>
     </tr>
     <tr>
-      <td>Schlafplätze mit ISO</td>
+      <td>Schlafplätze mit Isomatte</td>
       <td>{{ sleeping_place.sleeping_places_luxury }}</td>
     </tr>
     <tr>
@@ -57,10 +66,15 @@
       {% endif %}
       bis
       {% if sleeping_place.date_to_june %}
-        {{ sleeping_place.date_to_june.strftime("%d.%m. (%a)") }}</td>
+        {{ sleeping_place.date_to_june.strftime("%d.%m. (%a)") }}
       {% else %}
         nicht angegeben</td>
       {% endif %}
+      {% if sleeping_place.date_from_june and sleeping_place.date_to_june %} 
+        - {{ (sleeping_place.date_to_june - sleeping_place.date_from_june).days }} Tage
+      {% endif %}
+      </td>
+    </tr>
 
   </tbody>
 </table>

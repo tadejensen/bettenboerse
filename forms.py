@@ -31,6 +31,23 @@ def validate_long_lat(form, field):
             raise ValidationError('Längen- und Breitengrad müssen angegeben werden')
 
 
+def validate_reservation(form, field):
+    total_beds = 5
+    free_beds = int(form.data['free_beds'])
+    state = form.data['state']
+    if free_beds > total_beds:
+        raise ValidationError(f'Diese Unterkunft hat nur {total_beds} Betten ({free_beds} freie Betten angegeben).')
+    if free_beds == 0 and state != "FULL":
+        raise ValidationError("Diese Unterkunft hat keine freien Betten mehr. Bitte Status auf 'alle Plätze belegt' setzen")
+    if free_beds != total_beds and state == "FREE":
+        raise ValidationError("In dieser Unterkunft schläft jemand. Falscher Status angegeben.")
+    # TODO: what if PARTIL angegeben, aber ist voll oder leer
+    # kann auf FULL stellen, obwohls nicht FULL ist
+        # => ist gerade hardcoded auf 5
+    # TODO: freien Betten anzeigen
+    # reihenfolge anzeigen (freie betten weiter oben
+
+
 class SleepingPlaceForm(FlaskForm):
     name = StringField(
         'Name',
@@ -80,8 +97,15 @@ class SleepingPlaceForm(FlaskForm):
         'Längengrad (longitude)',
         validators=[validators.Optional(), validate_long_lat]
     )
+    lg_comment = TextAreaField(
+        'Interner Kommentar',
+        validators=[validators.Optional()]
+    )
 
 
 class ReservationForm(FlaskForm):
     reservation = TextAreaField("Wer schläft hier nachts?")
     state = SelectField('Belegung für diese Nacht', choices=[(s.name, s.value[1]) for s in ReservationState])
+    # TODO:add/fix validator: validate_reservation
+    free_beds = IntegerField('Wie viele Menschen können hier heute Nacht noch schlafen?',
+                             validators=[validators.InputRequired(), validators.NumberRange(min=0)])

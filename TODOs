@@ -1,4 +1,5 @@
 - Unterkunft löschen
+- Feld pro Unterkunft: comments
 - Reservierung ändern
     - zurück Buttons: Unterkunft ändern, anzeigen
     - bei der GET Request schauen, ob das Datum passt
