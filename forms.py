@@ -1,4 +1,4 @@
-from wtforms import IntegerField, StringField, TextAreaField, DateField, SelectField
+from wtforms import IntegerField, StringField, TextAreaField, DateField, SelectField, SubmitField
 from wtforms import validators, ValidationError
 from flask_wtf import FlaskForm
 
@@ -109,3 +109,7 @@ class ReservationForm(FlaskForm):
     # TODO:add/fix validator: validate_reservation
     free_beds = IntegerField('Wie viele Menschen können hier heute Nacht noch schlafen?',
                              validators=[validators.InputRequired(), validators.NumberRange(min=0)])
+
+
+class DeleteSleepingPlace(FlaskForm):
+    submit = SubmitField('Unterkunft löschen', validators=[validators.InputRequired()])

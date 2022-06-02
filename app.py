@@ -5,7 +5,7 @@ from flask_httpauth import HTTPBasicAuth
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from werkzeug.security import check_password_hash
-from forms import SleepingPlaceForm, ReservationForm
+from forms import SleepingPlaceForm, ReservationForm, DeleteSleepingPlace
 from datetime import datetime, timedelta
 import uuid
 from flask_qrcode import QRcode
@@ -236,6 +236,28 @@ def edit_sleeping_place(uuid):
     return render_template(
         'sleeping_place_edit.html',
         form=form,
+    )
+
+
+@app.route('/unterkunft/<uuid>/delete', methods=['GET', 'POST'])
+@auth.login_required
+def delete_sleeping_place(uuid):
+    sp = SleepingPlace.query.filter_by(uuid=uuid).first()
+    if not sp:
+        flash("Diese Unterkunft existiert nicht.", "danger")
+        return redirect(url_for('index'))
+
+    form = DeleteSleepingPlace()
+    if form.validate_on_submit():
+        db.session.delete(sp)
+        db.session.commit()
+        flash("Die Unterkunft wurde gelöscht", "success")
+        return redirect(url_for('list_sleeping_places'))
+
+    return render_template(
+        'sleeping_place_delete.html',
+        form=form,
+        sp=sp,
     )
 
 

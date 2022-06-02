@@ -199,3 +199,38 @@ def test_reservation(client):
     db.session.delete(sp)
     print(f"Removed {new_sp} from db")
     db.session.commit()
+
+
+def test_delete_unterkunft(client):
+    data = {'name': 'yolo472',
+            'pronoun': 'pronomen',
+            'telephone': 'tele',
+            'address': 'address',
+            'keys': 'keys',
+            'rules': 'rules',
+            'sleeping_places_basic': 0,
+            'sleeping_places_luxury': 0,
+            'date_from_june': '2022-06-10',
+            'date_to_june': '2022-06-15',
+            }
+    # create new unterkunft
+    resp = client.post("/", data=data, follow_redirects=False)
+    assert resp.status_code == 302
+
+    # check if it is in the db
+    sp = SleepingPlace.query.filter_by(name="yolo472").first()
+    assert sp is not None
+
+    # show edit page
+    resp = client.get(f"/unterkunft/{sp.uuid}/delete", auth=(USER, USER))
+    assert resp.status_code == 200
+    assert "Unterkunft von yolo472 (address) löschen?" in resp.text
+
+    # delete unterkunft
+    data = {'submit': 'Unterkunft löschen'}
+    resp = client.post(f"/unterkunft/{sp.uuid}/delete", data=data, follow_redirects=False, auth=(USER, USER))
+    assert resp.status_code == 302
+
+    # check if it still exists
+    sp = SleepingPlace.query.filter_by(name="yolo472").first()
+    assert sp is None
