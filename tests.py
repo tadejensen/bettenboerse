@@ -184,7 +184,6 @@ def test_reservation(client):
 
     data['state'] = 'PARTIAL'
     resp = client.post(f"/unterkunft/{id}/reservation/21.06.2022/edit", auth=(USER, USER), data=data, follow_redirects=False)
-    print(resp.text)
     assert resp.status_code == 302
 
     resp = client.get(f"/unterkunft/{id}/reservation/21.06.2022/edit", auth=(USER, USER))
