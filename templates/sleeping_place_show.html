@@ -32,7 +32,7 @@
     <tr>
       <td>Addresse</td>
       {% if sleeping_place.longitude %}
-      <td>{{ sleeping_place.address }} <a href="https://www.google.com/maps/search/{{ sleeping_place.latitude }},{{ sleeping_place.longitude }}" >(Google Maps)</a></td>
+      <td>{{ sleeping_place.address }} <a href="https://www.google.com/maps/search/{{ sleeping_place.longitude }},{{ sleeping_place.latitude }}" >(Google Maps)</a></td>
       {% else %}
       <td>{{ sleeping_place.address }} <a href="https://www.google.com/maps/search/{{ sleeping_place.address }}" >(Google Maps)</a></td>
       {% endif %}
