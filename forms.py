@@ -22,6 +22,7 @@ def validate_long_lat(form, field):
         except ValueError:
             raise ValidationError('Falsches Format für Längen/Breitengrad-Angabe')
     if form.data['longitude']:
+        
         try:
             float(form.data['longitude'])
             float(form.data['longitude'])
@@ -50,39 +51,39 @@ def validate_reservation(form, field):
 
 class SleepingPlaceForm(FlaskForm):
     name = StringField(
-        'Name',
+        'Name*',
         validators=[validators.InputRequired()]
     )
     pronoun = StringField(
-        'Deine Pronomen',
+        'Deine Pronomen*',
         validators=[validators.InputRequired()]
     )
     telephone = StringField(
-        'Telefonnummer',
+        'Telefonnummer*',
         validators=[validators.InputRequired()]
     )
     address = StringField(
-        'Wo befindet sich die Wohnung/Schlafplätze (genaue Adresse)?',
+        'Wo befindet sich die Wohnung/Schlafplätze (genaue Adresse)?*',
         validators=[validators.InputRequired()]
     )
     keys = TextAreaField(
-        'Wie kommt Mensch in die Wohnung? Gibt es ein Versteck für den Schlüssel? Ist immer jemand da zum klingeln? Wo kann Mensch klingeln?',
+        'Wie kommt Mensch in die Wohnung? Gibt es ein Versteck für den Schlüssel? Ist immer jemand da zum klingeln? Wo kann Mensch klingeln?*',
         validators=[validators.InputRequired()]
     )
     rules = TextAreaField(
-        'Hausregeln - was ist zu beachten (diese Info wird den Menschen weitergegeben, die dort übernachten)',
+        'Hausregeln - was ist zu beachten (diese Info wird den Menschen weitergegeben, die dort übernachten)*',
         validators=[validators.InputRequired()]
     )
     sleeping_places_basic = IntegerField(
-        'Wie viele Schlafplätze kannst du anbieten, wenn Menschen Isomatte/Schlafsack mitbringen',
+        'Wie viele Schlafplätze kannst du anbieten, wenn Menschen Isomatte/Schlafsack mitbringen*',
         validators=[validators.InputRequired(), validators.NumberRange(min=0)]
     )
     sleeping_places_luxury = IntegerField(
-        'Wie viele Schlafplätze kannst du anbieten, wenn Menschen keine Isomatte/Schlafsack mitbringen',
+        'Wie viele Schlafplätze kannst du anbieten, wenn Menschen keine Isomatte/Schlafsack mitbringen*',
         validators=[validators.InputRequired(), validators.NumberRange(min=0)]
     )
     date_from_june = DateField(
-        'Ab wann kannst du für die Aktionen im Juni Schlafplätze anbieten (wir suchen Schlafplätze ab 18.06. in Berlin)',
+        'Ab wann kannst du für die Aktionen im Juni Schlafplätze anbieten (wir suchen Schlafplätze ab 18.06. in Berlin)*',
         validators=[validators.InputRequired()],
     )
     date_to_june = DateField(
