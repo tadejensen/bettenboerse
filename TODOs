@@ -7,7 +7,6 @@
     - unterteilen nach: alle vs start > today()
 - überall checken: 
     - was wenn ende leer ist?
-- pytest und flask_migrate sind nicht mit in den requirements.txt?
 - Unterkunft Details: Karte anzeigen
 
 NICE TO HAVE

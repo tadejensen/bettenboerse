@@ -9,9 +9,25 @@
 
       <link rel="stylesheet" href = "http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css"/>
       <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
-   
+
+
       <div id="map" style= "width:100%; height:580px"></div>
       <script>
+          var greenIcon = new L.Icon({
+                  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+                  iconSize: [25, 41],
+          });
+          
+          var redIcon = new L.Icon({
+                  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+                  iconSize: [25, 41],
+          });
+          
+          var blackIcon = new L.Icon({
+                  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-black.png',
+                  iconSize: [25, 41],
+          });
+
          // Creating map options
          //center: [17.385044, 78.486671],
          var mapOptions = {
@@ -46,7 +62,9 @@
           {% if sp.date_from_june and sp.date_to_june %}
                         description += "Zeitraum: {{ sp.date_from_june.strftime("%d.%m. (%a)") }} - {{ sp.date_to_june.strftime("%d.%m. (%a)") }}</br>";
           {% endif %}
-            var marker = L.marker([{{ sp.longitude }}, {{ sp.latitude }}]);
+
+            //var marker = L.marker([{{ sp.longitude }}, {{ sp.latitude }}]);
+            var marker = L.marker([{{ sp.longitude }}, {{ sp.latitude }}], {icon: blackIcon});
             marker.bindPopup(description).openPopup();
             marker.addTo(map);
           
@@ -58,7 +76,7 @@
 
       </br></br>
       {% for sp in empty_sps %}
-      Hinweis: Unterkunft <a href="{{ url_for('show_sleeping_place', uuid=sp.uuid) }}"> {{ sp.uuid }} ( {{ sp.name }})</a> hat noch keine Längen/Breiten-Grade eingetragen.</br>
+      Hinweis: Unterkunft <a href="{{ url_for('show_sleeping_place', uuid=sp.uuid) }}">{{ sp.uuid }} ({{ sp.name }})</a> hat noch keine Längen/Breiten-Grade eingetragen.</br>
       {% endfor %}
       </br></br>
 
