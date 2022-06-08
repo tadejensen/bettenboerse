@@ -1,7 +1,16 @@
 {% extends 'base.html' %}
 
+
 {% block header %}
-  <h3>{% block title %}Karte{% endblock %}</h3>
+    <h3>
+    {% block title %}
+        {% if date %}
+            Karte - Unterkünfte vom {{ date }}
+        {% else %}
+            Karte - alle Unterkünfte 
+        {% endif %}
+    {% endblock %}
+    </h3>
 {% endblock %}
 
 
@@ -9,7 +18,24 @@
 
       <link rel="stylesheet" href = "http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css"/>
       <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+      
 
+      <form method="GET">
+         <button class="btn btn-primary" type="submit">alle Unterkünfte anzeigen</button>
+      </form>
+      </br>
+      <form method="GET">
+          <div class="form-group">
+        {% if date %}
+            <input value="{{ date }}" class="form-control" name="date" required type="date" value="">
+        {% else %}
+            <input class="form-control" name="date" required type="date" value="">
+        {% endif %}
+          </div>
+             <button class="btn btn-primary" type="submit">Unterkünfte für einen speziellen Tag anzeigen</button>
+      </form>
+      </br>
+      
 
       <div id="map" style= "width:100%; height:580px"></div>
       <script>
@@ -64,7 +90,7 @@
           {% endif %}
 
             //var marker = L.marker([{{ sp.longitude }}, {{ sp.latitude }}]);
-            var marker = L.marker([{{ sp.longitude }}, {{ sp.latitude }}], {icon: blackIcon});
+            var marker = L.marker([{{ sp.longitude }}, {{ sp.latitude }}], {icon: greenIcon});
             marker.bindPopup(description).openPopup();
             marker.addTo(map);
           

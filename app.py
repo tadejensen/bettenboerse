@@ -387,7 +387,15 @@ def test():
 @app.route('/karte')
 @auth.login_required
 def show_map():
-    sps = SleepingPlace.query.all()
+    date = request.args.get("date")
+    if date:
+        try:
+            date = datetime.strptime(date, "%Y-%m-%d").date()
+        except ValueError:
+            return "Datum im falschen Format. TT.MM.YYYY", 400
+        sps = SleepingPlace.query.filter(SleepingPlace.date_from_june <= date).filter(SleepingPlace.date_to_june > date).all()
+    else:
+        sps = SleepingPlace.query.all()
     empty_sps = []
     complete_sps = []
     for sp in sps:
@@ -397,7 +405,8 @@ def show_map():
             empty_sps.append(sp)
     return render_template('map.html',
                            empty_sps=empty_sps,
-                           sps=complete_sps)
+                           sps=complete_sps,
+                           date=date)
 
 
 @app.route('/übersicht')
