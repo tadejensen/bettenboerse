@@ -114,3 +114,12 @@ class ReservationForm(FlaskForm):
 
 class DeleteSleepingPlace(FlaskForm):
     submit = SubmitField('Unterkunft löschen', validators=[validators.InputRequired()])
+
+
+class MenschForm(FlaskForm):
+    name = StringField('Name', validators=[validators.InputRequired()])
+    telephone = StringField('Telefonnummer', validators=[validators.InputRequired()])
+
+
+class RemoveMensch(FlaskForm):
+    submit = SubmitField('löschen', validators=[validators.InputRequired()])

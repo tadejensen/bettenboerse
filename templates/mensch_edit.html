@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h3>{% block title %}Angaben zu Mensch editieren{% endblock %}</h3>
+{% endblock %}
+
+
+{% block content %}
+
+{% if form.errors %}
+<strong>Fehler bei der Eingabe:</strong></br>
+{% for field, error in form.errors.items() %}
+{{ error }} ({{ field }})</br>
+{% endfor %}
+</br>
+{% endif %}
+
+<form action="" method="POST">
+    {{ form.hidden_tag() }}
+    <div class="form-group">
+        {{ form.name.label }}
+        {{ form.name(class_="form-control") }}
+    </div>
+      
+    <div class="form-group">
+        {{ form.telephone.label }}
+        {{ form.telephone(class_="form-control") }}
+    </div>
+    
+   <button class="btn btn-primary" type="submit">speichern</button>
+</form>
+
+{% endblock %}
+

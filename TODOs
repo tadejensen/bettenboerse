@@ -8,6 +8,7 @@
 - überall checken: 
     - was wenn ende leer ist?
 - Unterkunft Details: Karte anzeigen
+- Tests: sind da ungenutzte Reserveations drin?
 
 NICE TO HAVE
 - Validation: validate_long_lat dry...

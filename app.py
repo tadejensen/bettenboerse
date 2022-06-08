@@ -5,7 +5,7 @@ from flask_httpauth import HTTPBasicAuth
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from werkzeug.security import check_password_hash
-from forms import SleepingPlaceForm, ReservationForm, DeleteSleepingPlace
+from forms import SleepingPlaceForm, ReservationForm, DeleteSleepingPlace, MenschForm, RemoveMensch
 from datetime import datetime, timedelta
 import uuid
 from flask_qrcode import QRcode
@@ -55,6 +55,13 @@ class Reservation(db.Model):
     reservation = db.Column(db.String())
     state = db.Column(db.Enum(ReservationState))
     free_beds = db.Column(db.Integer())
+
+
+class Mensch(db.Model):
+    __tablename__ = 'menschen'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String())
+    telephone = db.Column(db.String())
 
 
 # this needs to be placed here!
@@ -267,8 +274,87 @@ def list_sleeping_places():
     sleeping_places = SleepingPlace.query
 
     return render_template(
-        'list.html',
+        'sleeping_place_list.html',
         sleeping_places=sleeping_places,
+    )
+
+
+@app.route('/menschen')
+@auth.login_required
+def list_menschen():
+    menschen = Mensch.query
+
+    return render_template(
+        'menschen_list.html',
+        menschen=menschen,
+    )
+
+
+@app.route('/mensch/<id>/edit', methods=['GET', 'POST'])
+@auth.login_required
+def edit_mensch(id):
+    mensch = Mensch.query.filter_by(id=id).first()
+    if not mensch:
+        flash("Dieser Mensch existiert nicht.", "danger")
+        return redirect(url_for('list_menschen'))
+
+    form = MenschForm()
+    if form.validate_on_submit():
+        mensch.name = form.data['name']
+        mensch.telephone = form.data['telephone']
+        db.session.commit()
+        flash("Die Änderungen wurden gespeichert", "success")
+        return redirect(url_for('list_menschen'))
+
+    if not form.errors:
+        form = MenschForm(name=mensch.name,
+                          telephone=mensch.telephone)
+
+    return render_template(
+        'mensch_edit.html',
+        form=form
+    )
+
+
+@app.route('/mensch/create', methods=['GET', 'POST'])
+@auth.login_required
+def create_mensch():
+    form = MenschForm()
+    if form.validate_on_submit():
+        mensch = Mensch()
+        mensch.name = form.data['name']
+        mensch.telephone = form.data['telephone']
+        db.session.add(mensch)
+        db.session.commit()
+        flash("Der Mensch wurde gespeichert", "success")
+        return redirect(url_for('list_menschen'))
+
+    form = MenschForm()
+    return render_template(
+        'mensch_create.html',
+        form=form
+    )
+
+
+@app.route('/mensch/<id>/delete', methods=['GET', 'POST'])
+@auth.login_required
+def delete_mensch(id):
+    mensch = Mensch.query.filter_by(id=id).first()
+    if not mensch:
+        flash("Diese Mensch existiert nicht.", "danger")
+        return redirect(url_for('list_menschen'))
+
+    form = RemoveMensch()
+    if form.validate_on_submit():
+        db.session.delete(mensch)
+        db.session.commit()
+        flash("Der Mensch wurde aus dem System entfernt", "success")
+        return redirect(url_for('list_menschen'))
+
+    return render_template(
+        'mensch_delete.html',
+        form=form,
+        mensch=mensch
     )
 
 
@@ -299,13 +385,10 @@ def test():
     #sps = SleepingPlace.query.filter_by(date_from_june=None).all()
     sps = SleepingPlace.query.filter_by().all()
     for sp in sps:
-        if sp.date_from_june:
-            if sp.date_to_june:
-                print(f"{sp.sleeping_places_luxury + sp.sleeping_places_basic:>4} Betten {sp.date_from_june} {sp.date_to_june} {(sp.date_to_june - sp.date_from_june).days} Tage")
-            else:
-                print(f"{sp.sleeping_places_luxury + sp.sleeping_places_basic:>4} {sp.date_from_june} {sp.date_to_june} - kein End-Datum angegeben")
+        if sp.date_to_june:
+            print(f"{sp.name:<50} {sp.sleeping_places_luxury + sp.sleeping_places_basic:>4} Betten {sp.date_from_june} {sp.date_to_june} {(sp.date_to_june - sp.date_from_june).days} Tage")
         else:
-            print(f"MAI: {sp.sleeping_places_luxury + sp.sleeping_places_basic:>4} {sp.date_from_may} {sp.date_to_may} - kein End-Datum angegeben")
+            print(f"{sp.name:<50} {sp.sleeping_places_luxury + sp.sleeping_places_basic:>4} {sp.date_from_june} {sp.date_to_june} - kein End-Datum angegeben")
     delta = timedelta(days=1)
 
     start = settings.start_date

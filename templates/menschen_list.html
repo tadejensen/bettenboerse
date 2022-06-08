@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h3>{% block title %}Übersicht Menschen{% endblock %}</h3>
+{% endblock %}
+
+{% block content %}
+<a href="{{ url_for('create_mensch') }}">Menschen anlegen</a>
+</br></br>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">Name</th>
+      <th scope="col">Telefon</th>
+      <th scope="col">Editieren</th>
+      <th scope="col">Löschen</th>
+    </tr>
+  </thead>
+  <tbody>
+{% for mensch in menschen %}
+    <tr>
+      <td>{{ mensch.name }}</td>
+      <td>{{ mensch.telephone }}</td>
+      <td>
+            <p><a href="{{ url_for('edit_mensch', id=mensch.id) }}">editieren</a></p>
+     </td>
+      <td>
+            <p><a href="{{ url_for('delete_mensch', id=mensch.id) }}">löschen</a></p>
+     </td>
+    </tr>
+{% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}
