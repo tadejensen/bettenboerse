@@ -138,6 +138,11 @@ def test_map(client):
     assert resp.status_code == 200
 
 
+def test_map_with_date(client):
+    resp = client.get('/karte?date=2022-06-17', auth=(USER, USER))
+    assert resp.status_code == 200
+
+
 @pytest.mark.skip(reason="this does not work right now")
 def test_reservation(client):
     # I need this to get context to get the db context!?
