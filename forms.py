@@ -106,10 +106,10 @@ class SleepingPlaceForm(FlaskForm):
 
 class ReservationForm(FlaskForm):
     reservation = TextAreaField("Wer schläft hier nachts?")
-    state = SelectField('Belegung für diese Nacht', choices=[(s.name, s.value[1]) for s in ReservationState])
+    #state = SelectField('Belegung für diese Nacht', choices=[(s.name, s.value[1]) for s in ReservationState])
     # TODO:add/fix validator: validate_reservation
-    free_beds = IntegerField('Wie viele Menschen können hier heute Nacht noch schlafen?',
-                             validators=[validators.InputRequired(), validators.NumberRange(min=0)])
+    #free_beds = IntegerField('Wie viele Menschen können hier heute Nacht noch schlafen?',
+    #                         validators=[validators.InputRequired(), validators.NumberRange(min=0)])
 
 
 class DeleteSleepingPlace(FlaskForm):
@@ -121,5 +121,5 @@ class MenschForm(FlaskForm):
     telephone = StringField('Telefonnummer', validators=[validators.InputRequired()])
 
 
-class RemoveMensch(FlaskForm):
+class DeleteMensch(FlaskForm):
     submit = SubmitField('löschen', validators=[validators.InputRequired()])

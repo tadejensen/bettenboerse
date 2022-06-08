@@ -15,6 +15,7 @@
       <th scope="col">Schlafplätze - Isomatte benötigt</th>
       <th scope="col">Editieren</th>
       <th scope="col">Details</th>
+      <th scope="col">Reservierung</th>
       <th scope="col">Löschen</th>
     </tr>
   </thead>
@@ -26,10 +27,13 @@
       <td>{{ sp.sleeping_places_luxury }}</td>
       <td>{{ sp.sleeping_places_basic }}</td>
       <td>
-            <p><a href="{{ url_for('edit_sleeping_place', uuid=sp.uuid) }}">editieren</a></p>
+            <p><a href="{{ url_for('edit_sleeping_place', uuid=sp.uuid) }}">Editieren</a></p>
      </td>
       <td>
             <p><a href="{{ url_for('show_sleeping_place', uuid=sp.uuid) }}">Details</a></p>
+     </td>
+      <td>
+            <p><a href="{{ url_for('show_sleeping_place', uuid=sp.uuid, _anchor='reservierungen') }}">Reservierungen</a></p>
      </td>
       <td>
             <p><a href="{{ url_for('delete_sleeping_place', uuid=sp.uuid) }}">Löschen</a></p>

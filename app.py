@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from flask import Flask, render_template, redirect, flash, url_for, session
+from flask import Flask, render_template, redirect, flash, url_for, session, request
 from flask_httpauth import HTTPBasicAuth
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import UniqueConstraint
+
 from flask_migrate import Migrate
 from werkzeug.security import check_password_hash
-from forms import SleepingPlaceForm, ReservationForm, DeleteSleepingPlace, MenschForm, RemoveMensch
+from forms import SleepingPlaceForm, ReservationForm, DeleteSleepingPlace, MenschForm, DeleteMensch
 from datetime import datetime, timedelta
 import uuid
 from flask_qrcode import QRcode
@@ -46,22 +48,28 @@ class SleepingPlace(db.Model):
     lg_comment = db.Column(db.String())
 
 
-class Reservation(db.Model):
-    __tablename__ = 'reservations'
-
-    sleeping_place = db.Column(db.String(100), db.ForeignKey(
-        'sleeping_places.uuid'), primary_key=True)
-    date = db.Column(db.Date(), primary_key=True)
-    reservation = db.Column(db.String())
-    state = db.Column(db.Enum(ReservationState))
-    free_beds = db.Column(db.Integer())
-
-
 class Mensch(db.Model):
     __tablename__ = 'menschen'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String())
     telephone = db.Column(db.String())
+
+
+class Reservation(db.Model):
+    __tablename__ = 'reservations'
+
+    id = db.Column(db.Integer, primary_key=True)
+    sleeping_place = db.Column(db.String(100), db.ForeignKey(
+        'sleeping_places.uuid'))
+    date = db.Column(db.Date())
+    #__table_args__ = (UniqueConstraint('sleeping_place', 'date', name='uniq_reservation_per_day'),)
+    #state = db.Column(db.Enum(ReservationState))
+
+
+class ReservationMensch(db.Model):
+    __tablename__ = 'reservations_mensch'
+    mensch = db.Column(db.Integer, db.ForeignKey('menschen.id'), primary_key=True)
+    reservation = db.Column(db.Integer, db.ForeignKey('reservations.id'))
 
 
 # this needs to be placed here!
@@ -122,7 +130,6 @@ def show_sleeping_place(uuid):
 
     if sleeping_place.date_from_june:
         while start < to:
-            #reservations[start.date()] = {}
             reservations[start] = {}
             start += delta
 
@@ -131,7 +138,13 @@ def show_sleeping_place(uuid):
         if r.date not in reservations:
             print("ERROR: Schlafplatz außerhalb der Zeit in Berlin angegeben")
             continue
-        reservations[r.date] = r
+        staying_people = ReservationMensch.query.filter_by(reservation=r.id).all()
+        print(staying_people)
+        staying_people_ids = [m.mensch for m in staying_people]
+        names = Mensch.query.filter(Mensch.id.in_(staying_people_ids)).all()
+        names = ", ".join([x.name for x in names])
+
+        reservations[r.date] = {'used_beds': len(staying_people), 'names': names}
 
     return render_template(
         'sleeping_place_show.html',
@@ -154,44 +167,46 @@ def edit_reservation(uuid, date):
     except ValueError:
         return "Datum im falschen Format. TT.MM.YYYY", 400
 
-    reservation = Reservation.query.filter_by(
-        sleeping_place=uuid, date=date).first()
-    form = ReservationForm()
-    if form.validate_on_submit():
+    menschen = Mensch.query.all()
+    reservation = Reservation.query.filter(Reservation.sleeping_place == uuid). \
+                      filter(Reservation.date == date).first()
+
+    already_reserved = []
+    if request.method == "GET":
         if reservation:
-            reservation.reservation = form.data['reservation']
-            reservation.state = form.data['state']
-            reservation.free_beds = form.data['free_beds']
-        else:
-            res = Reservation(sleeping_place=uuid,
-                              date=date,
-                              reservation=form.data['reservation'],
-                              state=form.data['state'],
-                              free_beds=form.data['free_beds'])
-            db.session.add(res)
+            already_reserved = ReservationMensch.query.filter_by(reservation=reservation.id).all()
+            already_reserved = [p.mensch for p in already_reserved]
+        return render_template(
+            'reservation_edit.html',
+            uuid=uuid,
+            date=date,
+            menschen=menschen,
+            sleeping_place=sp,
+            already_reserved=already_reserved,
+        )
+
+    if request.method == "POST":
+        ids_menschen_all = [m.id for m in menschen]
+        ids_menschen_submitted = request.form.to_dict(flat=False).get('mensch', [])
+
+        for id in ids_menschen_submitted:
+            if int(id) not in ids_menschen_all:
+                return f"Kein Mensch mit der id {id} gefunden", 400
+        if not reservation:
+            reservation = Reservation(sleeping_place=uuid, date=date)
+            db.session.add(reservation)
+        print("Deleting all reservations with reservation_id", reservation.id)
+        ReservationMensch.query.filter_by(reservation=reservation.id).delete()
+
+        for mensch_id in ids_menschen_submitted:
+            print("Doing Mensch", mensch_id)
+            reservationMensch = ReservationMensch(reservation=reservation.id, mensch=mensch_id)
+            db.session.add(reservationMensch)
         db.session.commit()
-        flash("Reservierung gespeichert", "success")
+
         return redirect(url_for('show_sleeping_place',
                                 uuid=uuid,
                                 _anchor=f"reservierung-{date.strftime('%d%m')}"))
-
-    # TODO: find a smarter logic here
-    if form.errors:
-        pass
-    elif reservation:
-        form = ReservationForm(reservation=reservation.reservation,
-                               state=reservation.state.name,
-                               free_beds=reservation.free_beds)
-    else:
-        form = ReservationForm(date=date)
-
-    return render_template(
-        'reservation_edit.html',
-        form=form,
-        uuid=uuid,
-        date=date,
-        sleeping_place=sp,
-    )
 
 
 @app.route('/unterkunft/<uuid>/edit', methods=['GET', 'POST'])
@@ -344,7 +359,7 @@ def delete_mensch(id):
         flash("Diese Mensch existiert nicht.", "danger")
         return redirect(url_for('list_menschen'))
 
-    form = RemoveMensch()
+    form = DeleteMensch()
     if form.validate_on_submit():
         db.session.delete(mensch)
         db.session.commit()
@@ -364,6 +379,11 @@ def login():
     return redirect(url_for('list_sleeping_places'))
 
 
+@app.route('/test', methods=['GET', 'POST'])
+def test():
+    return render_template('test.html')
+
+
 @app.route('/karte')
 @auth.login_required
 def show_map():
@@ -380,15 +400,16 @@ def show_map():
                            sps=complete_sps)
 
 
-@app.route('/test')
-def test():
+@app.route('/übersicht')
+def overview():
     #sps = SleepingPlace.query.filter_by(date_from_june=None).all()
     sps = SleepingPlace.query.filter_by().all()
+    sps_list = []
     for sp in sps:
         if sp.date_to_june:
-            print(f"{sp.name:<50} {sp.sleeping_places_luxury + sp.sleeping_places_basic:>4} Betten {sp.date_from_june} {sp.date_to_june} {(sp.date_to_june - sp.date_from_june).days} Tage")
+            sps_list.append(f"{sp.name:<50} {sp.sleeping_places_luxury + sp.sleeping_places_basic:>4} Betten   {sp.date_from_june} -> {sp.date_to_june}   {(sp.date_to_june - sp.date_from_june).days} Tage")
         else:
-            print(f"{sp.name:<50} {sp.sleeping_places_luxury + sp.sleeping_places_basic:>4} {sp.date_from_june} {sp.date_to_june} - kein End-Datum angegeben")
+            sps_list.append(f"{sp.name:<50} {sp.sleeping_places_luxury + sp.sleeping_places_basic:>4} Betten   {sp.date_from_june} -> {sp.date_to_june} - kein End-Datum angegeben")
     delta = timedelta(days=1)
 
     start = settings.start_date
@@ -396,28 +417,34 @@ def test():
     beds = {}
 
     while start < end:
-        free_beds = 0
+        beds_total = 0
+        used_beds = 0
         places = []
         for sp in sps:
             if not sp.date_from_june:
                 #print(f"{sp} has no from date ({start})")
                 continue
             if not sp.date_to_june:
-                sp.date_to_june = end
-            if start >= sp.date_from_june and start <= sp.date_to_june:
-                free_beds += sp.sleeping_places_luxury
-                free_beds += sp.sleeping_places_basic
+                sp_end = end
+            else:
+                sp_end = sp.date_to_june
+            if start >= sp.date_from_june and start <= sp_end:
+                beds_total += sp.sleeping_places_luxury
+                beds_total += sp.sleeping_places_basic
                 places.append(sp.name)
-        #beds[start] = {'free_beds': free_beds, 'sp': places}
-        beds[start] = free_beds
+
+            reservation = Reservation.query.filter(Reservation.sleeping_place == sp.uuid). \
+                              filter(Reservation.date == start).first()
+            if reservation:
+                used_beds += ReservationMensch.query.filter_by(reservation=reservation.id).count()
+
+        beds[start] = {'beds_total': beds_total, 'used_beds': used_beds}
         start += delta
-    for day, beds in beds.items():
-        print(f"{day}: {beds}")
-    return ""
+    for day, bed in beds.items():
+        print(f"{day}: {bed}")
+    print(beds)
+    return render_template("übersicht.html", beds=beds, sleeping_places=sps_list)
 
-
-   #for sp in sps:
-   #    print(sp.name, sp.telephone, "\n", f"https://bettenboerse.letztegeneration.de/unterkunft/{sp.uuid}/")
 
 
 if __name__ == '__main__':

@@ -90,9 +90,9 @@ LG interner Kommentar
     <tr>
         <th>Tag</th>
         <th>Datum</th>
-        <th>Status</th>
-        <th>freie Betten</th>
-        <th>ändern</th>
+        <th>belegte Betten</th>
+        <th>Betten insgesamt</th>
+        <th>Reservierung ändern</th>
         <th>Wer schläft da?</th>
     </tr>
 
@@ -104,22 +104,14 @@ LG interner Kommentar
         <td>{{ date.strftime("%d.%m.") }}</td>
     {% if reservation %}
         <td>
-            <div title="{{ reservation.state.value[1] }}">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="{{ reservation.state.value[0] }}" class="bi bi-circle-fill" viewBox="0 0 16 16">  
-                    <circle cx="8" cy="8" r="8"/> 
-                </svg>
-            <div>
+            {{ reservation.used_beds }}
         </td>
         <td>
-            {{ reservation.free_beds }}
+            {{  sleeping_place.sleeping_places_basic + sleeping_place.sleeping_places_luxury}}
         </td>
     {% else %}
         <td>
-            <div title="alle Plätze frei">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="green" class="bi bi-circle-fill" viewBox="0 0 16 16">  
-                    <circle cx="8" cy="8" r="8"/> 
-                </svg>
-            <div>
+            0
         </td>
         <td>
             {{  sleeping_place.sleeping_places_basic + sleeping_place.sleeping_places_luxury}}
@@ -129,9 +121,9 @@ LG interner Kommentar
         <a href="{{ url_for('edit_reservation', uuid=sleeping_place.uuid, date=date.strftime("%d.%m.%Y")) }}">ändern</a>
     </td>
     {% if reservation %}
-        <td>{{ reservation.reservation}}</td>
+        <td>{{ reservation.names }}</td>
     {% else %}
-        <td/</td>
+        <td//td>
     {% endif %}
     </tr>
 {% endfor %}

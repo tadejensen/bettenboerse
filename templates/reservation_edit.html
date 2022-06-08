@@ -7,33 +7,27 @@
 
 {% block content %}
 
-{% if form.errors %}
-<strong>Fehler bei der Eingabe:</strong></br>
-{% for field, error in form.errors.items() %}
-{{ error }} ({{ field }})</br>
-{% endfor %}
-</br>
-{% endif %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.8.1/css/bootstrap-select.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.8.1/js/bootstrap-select.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+
 
 <form action="" method="POST">
-    {{ form.hidden_tag() }}
-    
+
     <div class="form-group">
-        {{ form.reservation.label }}
-        {{ form.reservation(class_="form-control", rows=4) }}
-    </div>
-    
-    <div class="form-group">
-        {{ form.free_beds.label }}
-        {{ form.free_beds(class_="form-control") }}
-    </div>
-    
-    <div class="form-group">
-        {{ form.state.label }}
-        {{ form.state(class_="form-control") }}
-    </div>
-      
-    
+        <label for="mensch">Wer schläft hier nachts?</label>
+        <select name="mensch" class="selectpicker form-control" multiple data-live-search="true">
+        {% for mensch in menschen %}
+            {% if mensch.id in already_reserved %}
+                <option selected value="{{ mensch.id }}">{{ mensch.name }}</option>
+            {% else %}
+                <option value="{{ mensch.id }}">{{ mensch.name }}</option>
+            {% endif %}
+        {% endfor %}
+        </select>
+        </div>
    <button class="btn btn-primary" type="submit">speichern</button>
 </form>
 

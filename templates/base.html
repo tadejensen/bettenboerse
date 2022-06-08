@@ -28,6 +28,7 @@
 {% if session['logged_in'] %}
   <a href="{{ url_for('list_sleeping_places') }}">Unterkünfte anzeigen</a> |
   <a href="{{ url_for('list_menschen') }}">Menschen anzeigen</a> | 
+  <a href="{{ url_for('overview') }}">Betten-Übersicht</a> | 
   <a href="{{ url_for('show_map') }}">Karte anzeigen</a>
 {% else %}
   <a href="{{ url_for('login') }}">Login</a>
