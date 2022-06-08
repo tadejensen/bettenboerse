@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h3>{% block title %}Übersichten{% endblock %}</h3>
+{% endblock %}
+
+
+{% block content %}
+
+
+Wann stehen welche Betten zur Verfügung?
+<pre>
+{% for sp in sleeping_places %}
+{{ sp }}{% endfor %}
+</pre>
+
+Wann sind wie viele Betten belegt?
+<pre>
+{% for day,data in beds.items() %}
+{{ day }}: {{ data['used_beds'] }}/{{ data['beds_total'] }}{% endfor %}
+</pre>
+
+
+{% endblock %}

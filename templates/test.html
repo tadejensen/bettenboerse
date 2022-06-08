@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h3>{% block title %}Test{% endblock %}</h3>
+{% endblock %}
+
+
+{% block content %}
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.8.1/css/bootstrap-select.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.8.1/js/bootstrap-select.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+
+<form method="POST" action="">
+
+    <select name="choose" class="selectpicker" multiple data-live-search="true">
+      <option>Mustard</option>
+      <option>Ketchup</option>
+      <option>Relish</option>
+</select>
+
+
+  <input type="text" id="fname" name="fname" value="John"><br>
+
+
+<input type="submit" value="submit">
+</form>
+
+{% endblock %}
