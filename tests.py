@@ -269,3 +269,8 @@ def test_menschen(client):
 
     mensch = Mensch.query.filter_by(name="mensch234234").first()
     assert not mensch
+
+
+def test_overview(client):
+    resp = client.get('/übersicht')
+    assert resp.status_code == 200
