@@ -89,8 +89,8 @@
                         "Links: <a href=\"{{ url_for('show_shelter', uuid=shelter.uuid)}}\">Unterkunft</a> " + 
                         "<a href=\"{{ url_for('show_shelter', uuid=shelter.uuid, _anchor='reservierungen')}}\">Belegung</a></br>" +
                         "Adresse: {{ shelter.address }}</br>" +
-                        "Schlafplätze ohne Isomatte: {{ shelter.shelters_luxury }}</br>" +
-                        "Schlafplätze mit Isomatte: {{ shelter.shelters_basic }}</br>";
+                        "Schlafplätze ohne Isomatte: {{ shelter.beds_luxury }}</br>" +
+                        "Schlafplätze mit Isomatte: {{ shelter.beds_basic }}</br>";
           // todo: from_june weg (muss überalle gegeeben sein)
           {% if shelter.date_from_june and shelter.date_to_june %}
                         description += "Zeitraum: {{ shelter.date_from_june.strftime("%d.%m. (%a)") }} - {{ shelter.date_to_june.strftime("%d.%m. (%a)") }}</br>";

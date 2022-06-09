@@ -261,7 +261,6 @@ def show_map():
     empty_shelters = []
     complete_shelters = []
     for shelter in shelters:
-        print(shelter)
         if shelter.latitude and len(shelter.latitude) > 0:
             complete_shelters.append(shelter)
         else:
@@ -276,13 +275,14 @@ def show_map():
 @app.route('/übersicht')
 def overview():
     #sps = Shelter.query.filter_by(date_from_june=None).all()
-    sps = Shelter.query.filter_by().all()
-    sps_list = []
-    for sp in sps:
-        if sp.date_to_june:
-            sps_list.append(f"{sp.name:<50} {sp.sleeping_places_luxury + sp.sleeping_places_basic:>4} Betten   {sp.date_from_june} -> {sp.date_to_june}   {(sp.date_to_june - sp.date_from_june).days} Tage")
+    shelters = Shelter.query.filter_by().all()
+    shelters_list = []
+    for shelter in shelters:
+        if shelter.date_to_june:
+            shelters_list.append(f"{shelter.name:<50} {shelter.beds_luxury + shelter.beds_basic:>4} Betten   {shelter.date_from_june} -> {shelter.date_to_june}   {(shelter.date_to_june - shelter.date_from_june).days} Tage")
         else:
-            sps_list.append(f"{sp.name:<50} {sp.sleeping_places_luxury + sp.sleeping_places_basic:>4} Betten   {sp.date_from_june} -> {sp.date_to_june} - kein End-Datum angegeben")
+            #shelters.list.append(f"{shelter.name:<50} {shelter.beds_luxury + shelter.beds_basic:>4} Betten   {shelter.date_from_june} -> {shelter.date_to_june} - kein End-Datum angegeben")
+            pass
     delta = timedelta(days=1)
 
     start = settings.start_date
@@ -293,7 +293,7 @@ def overview():
         beds_total = 0
         used_beds = 0
         places = []
-        for sp in sps:
+        for sp in []:
             if not sp.date_from_june:
                 #print(f"{sp} has no from date ({start})")
                 continue
@@ -315,8 +315,7 @@ def overview():
         start += delta
     for day, bed in beds.items():
         print(f"{day}: {bed}")
-    print(beds)
-    return render_template("übersicht.html", beds=beds, sleeping_places=sps_list)
+    return render_template("übersicht.html", beds=beds, shelters=shelters_list)
 
 
 @app.route("/shell")
