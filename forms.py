@@ -119,6 +119,7 @@ class DeleteSleepingPlace(FlaskForm):
 class MenschForm(FlaskForm):
     name = StringField('Name', validators=[validators.InputRequired()])
     telephone = StringField('Telefonnummer', validators=[validators.InputRequired()])
+    bezugsgruppe = StringField('Bezugsgruppe', validators=[validators.InputRequired()])
 
 
 class DeleteMensch(FlaskForm):

@@ -7,13 +7,6 @@
 
 {% block content %}
 
-{% if form.errors %}
-<strong>Fehler bei der Eingabe:</strong></br>
-{% for field, error in form.errors.items() %}
-{{ error }} ({{ field }})</br>
-{% endfor %}
-</br>
-{% endif %}
 
 <form action="" method="POST">
     {{ form.hidden_tag() }}
@@ -22,6 +15,11 @@
         {{ form.name(class_="form-control") }}
     </div>
       
+    <div class="form-group">
+        {{ form.bezugsgruppe.label }}
+        {{ form.bezugsgruppe(class_="form-control") }}
+    </div>
+    
     <div class="form-group">
         {{ form.telephone.label }}
         {{ form.telephone(class_="form-control") }}

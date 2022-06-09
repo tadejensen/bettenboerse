@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 from flask import Flask, render_template, redirect, flash, url_for, session, request
 from flask_httpauth import HTTPBasicAuth
-from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import UniqueConstraint
 
 from flask_migrate import Migrate
@@ -14,7 +13,8 @@ from flask_qrcode import QRcode
 
 import settings
 
-from models import ReservationState
+from models import ReservationState, SleepingPlace, Mensch, Reservation, ReservationMensch
+from models import User, Shelter, Reservation2
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = settings.FLASK_SECRET_KEY
@@ -24,57 +24,24 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 QRcode(app)
 auth = HTTPBasicAuth()
 
-db = SQLAlchemy()
+
+from models import db
 
 migrate = Migrate(app, db, compare_type=True, render_as_batch=True)
 
-
-class SleepingPlace(db.Model):
-    __tablename__ = 'sleeping_places'
-
-    uuid = db.Column(db.String(100), primary_key=True)
-    name = db.Column(db.String(100))
-    pronoun = db.Column(db.String(100))
-    telephone = db.Column(db.String(100))
-    address = db.Column(db.String())
-    keys = db.Column(db.String())
-    rules = db.Column(db.String())
-    sleeping_places_basic = db.Column(db.Integer())
-    sleeping_places_luxury = db.Column(db.Integer())
-    date_from_june = db.Column(db.Date())
-    date_to_june = db.Column(db.Date())
-    latitude = db.Column(db.String())
-    longitude = db.Column(db.String())
-    lg_comment = db.Column(db.String())
-
-
-class Mensch(db.Model):
-    __tablename__ = 'menschen'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String())
-    telephone = db.Column(db.String())
-
-
-class Reservation(db.Model):
-    __tablename__ = 'reservations'
-
-    id = db.Column(db.Integer, primary_key=True)
-    sleeping_place = db.Column(db.String(100), db.ForeignKey(
-        'sleeping_places.uuid'))
-    date = db.Column(db.Date())
-    #__table_args__ = (UniqueConstraint('sleeping_place', 'date', name='uniq_reservation_per_day'),)
-    #state = db.Column(db.Enum(ReservationState))
-
-
-class ReservationMensch(db.Model):
-    __tablename__ = 'reservations_mensch'
-    mensch = db.Column(db.Integer, db.ForeignKey('menschen.id'), primary_key=True)
-    reservation = db.Column(db.Integer, db.ForeignKey('reservations.id'))
-
-
-# this needs to be placed here!
 db.init_app(app)
 db.create_all(app=app)
+
+
+@app.route("/shell")
+def shell():
+    #u = User(name="Hans22")
+    #s = Shelter(address="Hauptstraße 22")
+    #r = Reservation2(user=u, shelter=s, date="22.02.2022")
+    #db.session.add(r)
+    #db.session.commit()
+    breakpoint()
+    return "ok"
 
 
 @auth.verify_password
@@ -305,25 +272,35 @@ def list_menschen():
     )
 
 
+@app.route('/mensch/add', methods=['GET', 'POST'])
+@auth.login_required
+def create_mensch():
+    form = MenschForm()
+    if form.validate_on_submit():
+        mensch = Mensch()
+        form.populate_obj(mensch)
+        db.session.add(mensch)
+        db.session.commit()
+        flash("Der Mensch wurde gespeichert", "success")
+        return redirect(url_for('list_menschen'))
+
+    return render_template(
+        'mensch_add.html',
+        form=form
+    )
+
+
 @app.route('/mensch/<id>/edit', methods=['GET', 'POST'])
 @auth.login_required
 def edit_mensch(id):
-    mensch = Mensch.query.filter_by(id=id).first()
-    if not mensch:
-        flash("Dieser Mensch existiert nicht.", "danger")
-        return redirect(url_for('list_menschen'))
+    mensch = Mensch.query.get_or_404(id, description=f"Mensch mit der id {id} wurde nicht gefunden")
+    form = MenschForm(obj=mensch)
 
-    form = MenschForm()
     if form.validate_on_submit():
-        mensch.name = form.data['name']
-        mensch.telephone = form.data['telephone']
+        form.populate_obj(mensch)
         db.session.commit()
         flash("Die Änderungen wurden gespeichert", "success")
         return redirect(url_for('list_menschen'))
-
-    if not form.errors:
-        form = MenschForm(name=mensch.name,
-                          telephone=mensch.telephone)
 
     return render_template(
         'mensch_edit.html',
@@ -331,35 +308,12 @@ def edit_mensch(id):
     )
 
 
-@app.route('/mensch/create', methods=['GET', 'POST'])
-@auth.login_required
-def create_mensch():
-    form = MenschForm()
-    if form.validate_on_submit():
-        mensch = Mensch()
-        mensch.name = form.data['name']
-        mensch.telephone = form.data['telephone']
-        db.session.add(mensch)
-        db.session.commit()
-        flash("Der Mensch wurde gespeichert", "success")
-        return redirect(url_for('list_menschen'))
-
-    form = MenschForm()
-    return render_template(
-        'mensch_create.html',
-        form=form
-    )
-
-
 @app.route('/mensch/<id>/delete', methods=['GET', 'POST'])
 @auth.login_required
 def delete_mensch(id):
-    mensch = Mensch.query.filter_by(id=id).first()
-    if not mensch:
-        flash("Diese Mensch existiert nicht.", "danger")
-        return redirect(url_for('list_menschen'))
-
+    mensch = Mensch.query.get_or_404(id, description=f"Mensch mit der id {id} wurde nicht gefunden")
     form = DeleteMensch()
+
     if form.validate_on_submit():
         db.session.delete(mensch)
         db.session.commit()
@@ -371,17 +325,6 @@ def delete_mensch(id):
         form=form,
         mensch=mensch
     )
-
-
-@app.route('/login')
-@auth.login_required
-def login():
-    return redirect(url_for('list_sleeping_places'))
-
-
-@app.route('/test', methods=['GET', 'POST'])
-def test():
-    return render_template('test.html')
 
 
 @app.route('/karte')
@@ -454,6 +397,21 @@ def overview():
     print(beds)
     return render_template("übersicht.html", beds=beds, sleeping_places=sps_list)
 
+
+@app.route('/login')
+@auth.login_required
+def login():
+    return redirect(url_for('list_sleeping_places'))
+
+
+#@app.route('/test', methods=['GET', 'POST'])
+#def test():
+#    return render_template('test.html')
+
+
+@app.errorhandler(404)
+def page_not_found(description):
+    return render_template("404.html", description=description), 404
 
 
 if __name__ == '__main__':

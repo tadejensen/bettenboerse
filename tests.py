@@ -245,19 +245,19 @@ def test_delete_unterkunft(client):
 def test_menschen(client):
     resp = client.get("/menschen", follow_redirects=False)
     assert resp.status_code == 401
-    resp = client.get("/mensch/create", follow_redirects=False)
+    resp = client.get("/mensch/add", follow_redirects=False)
     assert resp.status_code == 401
     resp = client.get("/mensch/123/edit", follow_redirects=False)
     assert resp.status_code == 401
 
     resp = client.get("/mensch/12333333/edit", follow_redirects=False, auth=(USER, USER))
-    assert resp.status_code == 302
-    resp = client.get("/mensch/create", follow_redirects=False, auth=(USER, USER))
+    assert resp.status_code == 404
+    resp = client.get("/mensch/add", follow_redirects=False, auth=(USER, USER))
     assert resp.status_code == 200
 
     data = {'name': 'mensch234234',
             'telephone': '4687936'}
-    resp = client.post("/mensch/create", data=data, follow_redirects=False, auth=(USER, USER))
+    resp = client.post("/mensch/add", data=data, follow_redirects=False, auth=(USER, USER))
     assert resp.status_code == 302
 
     resp = client.get("/menschen", follow_redirects=False, auth=(USER, USER))
