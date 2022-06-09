@@ -15,7 +15,6 @@
 
 
 {% block content %}
-
       <link rel="stylesheet" href = "http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css"/>
       <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
       
@@ -77,20 +76,20 @@
          }
          */
 
-          {% for sp in sps %}
-          description = "Gastgeber*in: {{ sp.name }}</br>" +
-                        "Links: <a href=\"{{ url_for('show_sleeping_place', uuid=sp.uuid)}}\">Unterkunft</a> " + 
-                        "<a href=\"{{ url_for('show_sleeping_place', uuid=sp.uuid, _anchor='reservierungen')}}\">Belegung</a></br>" +
-                        "Adresse: {{ sp.address }}</br>" +
-                        "Schlafplätze ohne Isomatte: {{ sp.sleeping_places_luxury }}</br>" +
-                        "Schlafplätze mit Isomatte: {{ sp.sleeping_places_basic }}</br>";
+          {% for shelter in complete_shelters %}
+          description = "Gastgeber*in: {{ shelter.name }}</br>" +
+                        "Links: <a href=\"{{ url_for('show_shelter', uuid=shelter.uuid)}}\">Unterkunft</a> " + 
+                        "<a href=\"{{ url_for('show_shelter', uuid=shelter.uuid, _anchor='reservierungen')}}\">Belegung</a></br>" +
+                        "Adresse: {{ shelter.address }}</br>" +
+                        "Schlafplätze ohne Isomatte: {{ shelter.shelters_luxury }}</br>" +
+                        "Schlafplätze mit Isomatte: {{ shelter.shelters_basic }}</br>";
           // todo: from_june weg (muss überalle gegeeben sein)
-          {% if sp.date_from_june and sp.date_to_june %}
-                        description += "Zeitraum: {{ sp.date_from_june.strftime("%d.%m. (%a)") }} - {{ sp.date_to_june.strftime("%d.%m. (%a)") }}</br>";
+          {% if shelter.date_from_june and shelter.date_to_june %}
+                        description += "Zeitraum: {{ shelter.date_from_june.strftime("%d.%m. (%a)") }} - {{ shelter.date_to_june.strftime("%d.%m. (%a)") }}</br>";
           {% endif %}
 
-            //var marker = L.marker([{{ sp.longitude }}, {{ sp.latitude }}]);
-            var marker = L.marker([{{ sp.longitude }}, {{ sp.latitude }}], {icon: greenIcon});
+            //var marker = L.marker([{{ shelter.longitude }}, {{ shelter.latitude }}]);
+            var marker = L.marker([{{ shelter.longitude }}, {{ shelter.latitude }}], {icon: greenIcon});
             marker.bindPopup(description).openPopup();
             marker.addTo(map);
           
@@ -101,8 +100,8 @@
       </script>
 
       </br></br>
-      {% for sp in empty_sps %}
-      Hinweis: Unterkunft <a href="{{ url_for('show_sleeping_place', uuid=sp.uuid) }}">{{ sp.uuid }} ({{ sp.name }})</a> hat noch keine Längen/Breiten-Grade eingetragen.</br>
+      {% for shelter in empty_shelters %}
+        Hinweis: Unterkunft <a href="{{ url_for('show_shelter', uuid=shelter.uuid) }}">{{ shelter.uuid }} ({{ shelter.name }})</a> hat noch keine Längen/Breiten-Grade eingetragen.</br>
       {% endfor %}
       </br></br>
 

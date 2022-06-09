@@ -58,8 +58,8 @@ def edit_shelter(uuid):
         shelter.date_from_june = date_from_june
         date_to_june = form.data['date_to_june'] if form.data['date_to_june'] else None
         shelter.date_to_june = date_to_june
-        shelter.sleeping_places_basic = int(form.data['sleeping_places_basic'])
-        shelter.sleeping_places_luxury = int(form.data['sleeping_places_luxury'])
+        shelter.beds_basic = int(form.data['beds_basic'])
+        shelter.beds_luxury = int(form.data['beds_luxury'])
         db.session.commit()
         flash("Die Änderungen wurden gespeichert", "success")
         return redirect(url_for('show_shelter', uuid=uuid))
@@ -190,8 +190,8 @@ def list_menschen():
 def create_mensch():
     form = MenschForm()
     if form.validate_on_submit():
-        if Mensch.query.filter_by(name=form.name.value).first():
-            flash("Es existiert bereits ein Mensch mit diesem Namen", "danger")
+        if Mensch.query.filter_by(name=form.name.data).first():
+            flash(f"Es existiert bereits ein Mensch mit Namen {form.name.data}", "danger")
             return render_template(
                 'mensch_add.html',
                 form=form
@@ -255,19 +255,21 @@ def show_map():
             date = datetime.strptime(date, "%Y-%m-%d").date()
         except ValueError:
             return render_template("error.html", description="Datum im falschen Format angegeben. TT.MM.YYYY")
-        sps = Shelter.query.filter(Shelter.date_from_june <= date).filter(Shelter.date_to_june > date).all()
+        shelters = Shelter.query.filter(Shelter.date_from_june <= date).filter(Shelter.date_to_june > date).all()
     else:
-        sps = Shelter.query.all()
-    empty_sps = []
-    complete_sps = []
-    for sp in sps:
-        if sp.latitude and len(sp.latitude) > 0:
-            complete_sps.append(sp)
+        shelters = Shelter.query.all()
+    empty_shelters = []
+    complete_shelters = []
+    for shelter in shelters:
+        print(shelter)
+        if shelter.latitude and len(shelter.latitude) > 0:
+            complete_shelters.append(shelter)
         else:
-            empty_sps.append(sp)
+            empty_shelters.append(shelter)
+    print(complete_shelters)
     return render_template('map.html',
-                           empty_sps=empty_sps,
-                           sps=complete_sps,
+                           empty_shelters=empty_shelters,
+                           complete_shelters=complete_shelters,
                            date=date)
 
 
