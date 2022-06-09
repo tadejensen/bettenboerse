@@ -7,7 +7,7 @@
 {% block content %}
 
 {% if session['logged_in'] %}
-  <a href="{{ url_for('edit_sleeping_place', uuid=sleeping_place.uuid) }}">Unterkunft editieren</a> |
+  <a href="{{ url_for('edit_shelter', uuid=shelter.uuid) }}">Unterkunft editieren</a> |
   <a href="#reservierungen">Reservierungen anzeigen</a> |
 {% endif %}
   <a href="#share">Unterkunft teilen</a>
@@ -19,47 +19,47 @@
   <tbody>
     <tr>
       <td>Name</td>
-      <td>{{ sleeping_place.name }}</td>
+      <td>{{ shelter.name }}</td>
     </tr>
     <tr>
       <td>Pronomen</td>
-      <td>{{ sleeping_place.pronoun }}</td>
+      <td>{{ shelter.pronoun }}</td>
     </tr>
     <tr>
       <td>Telefonnummer</td>
-      <td>{{ sleeping_place.telephone }}</td>
+      <td>{{ shelter.telephone }}</td>
     </tr>
     <tr>
       <td>Addresse</td>
-      {% if sleeping_place.longitude %}
-      <td>{{ sleeping_place.address }} <a href="https://www.google.com/maps/search/{{ sleeping_place.longitude }},{{ sleeping_place.latitude }}" >(Google Maps)</a></td>
+      {% if shelter.longitude %}
+      <td>{{ shelter.address }} <a href="https://www.google.com/maps/search/{{ shelter.longitude }},{{ shelter.latitude }}" >(Google Maps)</a></td>
       {% else %}
-      <td>{{ sleeping_place.address }} <a href="https://www.google.com/maps/search/{{ sleeping_place.address }}" >(Google Maps)</a></td>
+      <td>{{ shelter.address }} <a href="https://www.google.com/maps/search/{{ shelter.address }}" >(Google Maps)</a></td>
       {% endif %}
     </tr>
     <tr>
       <td>Schlafplätze ohne Isomatte</td>
-      <td>{{ sleeping_place.sleeping_places_basic }}</td>
+      <td>{{ shelter.beds_basic }}</td>
     </tr>
     <tr>
       <td>Schlafplätze mit Isomatte</td>
-      <td>{{ sleeping_place.sleeping_places_luxury }}</td>
+      <td>{{ shelter.beds_luxury }}</td>
     </tr>
     <tr>
       <td>Zeitraum</td>
-      {% if sleeping_place.date_from_june %}
-        <td>{{ sleeping_place.date_from_june.strftime("%d.%m. (%a)") }}
+      {% if shelter.date_from_june %}
+        <td>{{ shelter.date_from_june.strftime("%d.%m. (%a)") }}
       {% else %}
         <td>nicht angegeben
       {% endif %}
       bis
-      {% if sleeping_place.date_to_june %}
-        {{ sleeping_place.date_to_june.strftime("%d.%m. (%a)") }}
+      {% if shelter.date_to_june %}
+        {{ shelter.date_to_june.strftime("%d.%m. (%a)") }}
       {% else %}
         nicht angegeben</td>
       {% endif %}
-      {% if sleeping_place.date_from_june and sleeping_place.date_to_june %} 
-        - {{ (sleeping_place.date_to_june - sleeping_place.date_from_june).days }} Tage
+      {% if shelter.date_from_june and shelter.date_to_june %} 
+        - {{ (shelter.date_to_june - shelter.date_from_june).days }} Tage
       {% endif %}
       </td>
     </tr>
@@ -69,19 +69,17 @@
 
 Zugang zur Wohnung
 <textarea class="form-control" readonly rows=3>
-{{ sleeping_place.keys }}
+{{ shelter.keys }}
 </textarea>
 Hausregeln
 <textarea class="form-control" readonly rows=5>
-{{ sleeping_place.rules }}
+{{ shelter.rules }}
 </textarea>
 LG interner Kommentar
 <textarea class="form-control" readonly rows=3>
-{% if sleeping_place.lg_comment %}{{ sleeping_place.lg_comment }}{% endif %}
+{% if shelter.lg_comment %}{{ shelter.lg_comment }}{% endif %}
 </textarea>
 &nbsp;
-
-{% if session['logged_in'] %}
 
 <hr>
 <div id="reservierungen"> <h4>Belegung - Wer schläft hier?</h4> </div>
@@ -93,7 +91,7 @@ LG interner Kommentar
         <th>belegte Betten</th>
         <th>Betten insgesamt</th>
         <th>Reservierung ändern</th>
-        <th>Wer schläft da?</th>
+        <th>Wer schläft da nachts?</th>
     </tr>
 
   </thead>
@@ -107,31 +105,30 @@ LG interner Kommentar
             {{ reservation.used_beds }}
         </td>
         <td>
-            {{  sleeping_place.sleeping_places_basic + sleeping_place.sleeping_places_luxury}}
+            {{  shelter.beds_total }}
         </td>
     {% else %}
         <td>
             0
         </td>
         <td>
-            {{  sleeping_place.sleeping_places_basic + sleeping_place.sleeping_places_luxury}}
+            {{  shelter.beds_total }}
         </td>
     {% endif %}
     <td>
-        <a href="{{ url_for('edit_reservation', uuid=sleeping_place.uuid, date=date.strftime("%d.%m.%Y")) }}">ändern</a>
+        <a href="{{ url_for('edit_reservation', uuid=shelter.uuid, date=date.strftime("%d.%m.%Y")) }}">ändern</a>
     </td>
-    {% if reservation %}
-        <td>{{ reservation.names }}</td>
-    {% else %}
-        <td//td>
-    {% endif %}
+        <td>
+        {% for res in reservation.reservations %}
+            {{ res.mensch.name }} ({{ res.mensch.bezugsgruppe }}) 
+        {% endfor %}
+        </td>
     </tr>
 {% endfor %}
 
   </tbody>
 </table>
 
-{% endif %}
 
 
 
@@ -140,12 +137,12 @@ LG interner Kommentar
 Menschen müssen eingeloggt sein, um die Reservierungen zu sehen.</br>
 Link zur Wohnung:
 <div class="alert alert-primary">
-{{ base_url + url_for('show_sleeping_place', uuid=sleeping_place.uuid) }}
+{{ base_url + url_for('show_shelter', uuid=shelter.uuid) }}
 </div>
 
 Link zur Wohnung (QR-Code):
 <br>
-<img src="{{ qrcode(base_url + url_for('show_sleeping_place', uuid=sleeping_place.uuid), box_size=5 ) }}">
+<img src="{{ qrcode(base_url + url_for('show_shelter', uuid=shelter.uuid), box_size=5 ) }}">
 <br>
 &nbsp;
 

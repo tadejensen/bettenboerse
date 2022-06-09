@@ -1,5 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, column_property
 
 db = SQLAlchemy()
 
@@ -32,15 +32,24 @@ class Shelter(db.Model):
     address = db.Column(db.String())
     keys = db.Column(db.String())
     rules = db.Column(db.String())
-    sleeping_places_basic = db.Column(db.Integer)
-    sleeping_places_luxury = db.Column(db.Integer)
+    beds_basic = db.Column(db.Integer)
+    beds_luxury = db.Column(db.Integer)
     date_from_june = db.Column(db.Date())
     date_to_june = db.Column(db.Date())
     latitude = db.Column(db.String())
     longitude = db.Column(db.String())
     # TODO: rename lg_comment to internal_comment
     lg_comment = db.Column(db.String())
-    menschen = relationship("Reservation2", back_populates="shelter")
+    menschen = relationship("Reservation", back_populates="shelter")
+    beds_total = column_property(beds_basic + beds_luxury)
+
+    def get_reservations_by_date(self):
+        reservations = {}
+        for reservation in self.menschen:
+            reservations[reservation.date] = reservation
+        return reservations
+
+
 
 
 #class Mensch(db.Model):
@@ -68,12 +77,11 @@ class Shelter(db.Model):
 #    reservation = db.Column(db.Integer, db.ForeignKey('reservations.id'))
 
 
-
-class Reservation2(db.Model):
-    __tablename__ = "reservations2"
+class Reservation(db.Model):
+    __tablename__ = "reservation"
     shelter_id = db.Column(db.ForeignKey("shelter.uuid"), primary_key=True)
     mensch_id = db.Column(db.ForeignKey("mensch.id"), primary_key=True)
-    date = db.Column(db.String(50))
+    date = db.Column(db.Date(), primary_key=True)
     mensch = relationship("Mensch", back_populates="shelters")
     shelter = relationship("Shelter", back_populates="menschen")
 
@@ -89,7 +97,7 @@ class Mensch(db.Model):
     __tablename__ = "mensch"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
-    shelters = relationship("Reservation2", back_populates="mensch")
+    shelters = relationship("Reservation", back_populates="mensch")
     telephone = db.Column(db.String())
     bezugsgruppe = db.Column(db.String())
 

@@ -74,11 +74,11 @@ class ShelterForm(FlaskForm):
         'Hausregeln - was ist zu beachten (diese Info wird den Menschen weitergegeben, die dort übernachten)*',
         validators=[validators.InputRequired()]
     )
-    sleeping_places_basic = IntegerField(
+    beds_basic = IntegerField(
         'Wie viele Schlafplätze kannst du anbieten, wenn Menschen Isomatte/Schlafsack mitbringen*',
         validators=[validators.InputRequired(), validators.NumberRange(min=0)]
     )
-    sleeping_places_luxury = IntegerField(
+    beds_luxury = IntegerField(
         'Wie viele Schlafplätze kannst du anbieten, wenn Menschen keine Isomatte/Schlafsack mitbringen*',
         validators=[validators.InputRequired(), validators.NumberRange(min=0)]
     )

@@ -20,23 +20,23 @@
     </tr>
   </thead>
   <tbody>
-{% for sp in sleeping_places %}
+{% for shelter in shelters %}
     <tr>
-      <td>{{ sp.name }}</td>
-      <td>{{ sp.address }}</td>
-      <td>{{ sp.sleeping_places_luxury }}</td>
-      <td>{{ sp.sleeping_places_basic }}</td>
+      <td>{{ shelter.name }}</td>
+      <td>{{ shelter.address }}</td>
+      <td>{{ shelter.sleeping_places_luxury }}</td>
+      <td>{{ shelter.sleeping_places_basic }}</td>
       <td>
-            <p><a href="{{ url_for('edit_sleeping_place', uuid=sp.uuid) }}">Editieren</a></p>
+            <p><a href="{{ url_for('edit_shelter', uuid=shelter.uuid) }}">Editieren</a></p>
      </td>
       <td>
-            <p><a href="{{ url_for('show_sleeping_place', uuid=sp.uuid) }}">Details</a></p>
+            <p><a href="{{ url_for('show_shelter', uuid=shelter.uuid) }}">Details</a></p>
      </td>
       <td>
-            <p><a href="{{ url_for('show_sleeping_place', uuid=sp.uuid, _anchor='reservierungen') }}">Reservierungen</a></p>
+            <p><a href="{{ url_for('show_shelter', uuid=shelter.uuid, _anchor='reservierungen') }}">Reservierungen</a></p>
      </td>
       <td>
-            <p><a href="{{ url_for('delete_sleeping_place', uuid=sp.uuid) }}">Löschen</a></p>
+            <p><a href="{{ url_for('delete_shelter', uuid=shelter.uuid) }}">Löschen</a></p>
      </td>
     </tr>
 {% endfor %}
