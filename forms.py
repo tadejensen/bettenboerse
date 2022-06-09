@@ -49,7 +49,7 @@ def validate_reservation(form, field):
     # reihenfolge anzeigen (freie betten weiter oben
 
 
-class SleepingPlaceForm(FlaskForm):
+class ShelterForm(FlaskForm):
     name = StringField(
         'Name*',
         validators=[validators.InputRequired()]
@@ -112,7 +112,7 @@ class ReservationForm(FlaskForm):
     #                         validators=[validators.InputRequired(), validators.NumberRange(min=0)])
 
 
-class DeleteSleepingPlace(FlaskForm):
+class DeleteShelter(FlaskForm):
     submit = SubmitField('Unterkunft löschen', validators=[validators.InputRequired()])
 
 

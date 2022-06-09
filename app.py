@@ -6,15 +6,15 @@ from sqlalchemy import UniqueConstraint
 
 from flask_migrate import Migrate
 from werkzeug.security import check_password_hash
-from forms import SleepingPlaceForm, ReservationForm, DeleteSleepingPlace, MenschForm, DeleteMensch
+from forms import ShelterForm, ReservationForm, DeleteShelter, MenschForm, DeleteMensch
 from datetime import datetime, timedelta
 import uuid
 from flask_qrcode import QRcode
 
 import settings
 
-from models import ReservationState, SleepingPlace, Mensch, Reservation, ReservationMensch
-from models import User, Shelter, Reservation2
+from models import ReservationState, Shelter, Mensch#, Reservation, ReservationMensch
+from models import Shelter, Reservation2
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = settings.FLASK_SECRET_KEY
@@ -24,7 +24,6 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 QRcode(app)
 auth = HTTPBasicAuth()
 
-
 from models import db
 
 migrate = Migrate(app, db, compare_type=True, render_as_batch=True)
@@ -33,58 +32,81 @@ db.init_app(app)
 db.create_all(app=app)
 
 
-@app.route("/shell")
-def shell():
-    #u = User(name="Hans22")
-    #s = Shelter(address="Hauptstraße 22")
-    #r = Reservation2(user=u, shelter=s, date="22.02.2022")
-    #db.session.add(r)
-    #db.session.commit()
-    breakpoint()
-    return "ok"
-
-
-@auth.verify_password
-def verify_password(username, password):
-    if username == settings.USER and \
-            check_password_hash(settings.PASSWORD_HASH, password):
-        session['logged_in'] = True
-        return username
 
 
 @app.route('/', methods=['GET', 'POST'])
-def index():
-    form = SleepingPlaceForm()
+def add_shelter():
+    form = ShelterForm()
 
     if form.validate_on_submit():
-
-        # try:     form = UserDetails(request.POST, obj=user)
-        new_sp = SleepingPlace(uuid=str(uuid.uuid4()),
-                               name=form.data['name'],
-                               pronoun=form.data['pronoun'],
-                               telephone=form.data['telephone'],
-                               address=form.data['address'],
-                               keys=form.data['keys'],
-                               rules=form.data['rules'],
-                               sleeping_places_basic=form.data['sleeping_places_basic'],
-                               sleeping_places_luxury=form.data['sleeping_places_luxury'],
-                               date_from_june=form.data['date_from_june'],
-                               date_to_june=form.data['date_to_june'])
-
-        db.session.add(new_sp)
+        shelter = Shelter(uuid=str(uuid.uuid4()))
+        form.populate_obj(shelter)
+        db.session.add(shelter)
         db.session.commit()
         flash("Danke, wir haben deinen Schlafplatz aufgenommen. Vielen Dank für deine Unterstützung!", "success")
-        return redirect(url_for('index'))
+        return redirect(url_for('add_shelter'))
 
     return render_template(
-        'index.html',
+        'shelter_add.html',
+        form=form,
+    )
+
+
+@app.route('/unterkunft/<uuid>/edit', methods=['GET', 'POST'])
+@auth.login_required
+def edit_sleeping_place(uuid):
+    sp = Shelter.query.filter_by(uuid=uuid).first()
+    if not sp:
+        flash("Diese Unterkunft existiert nicht.", "danger")
+        return redirect(url_for('index'))
+
+    form = ShelterForm()
+    if form.validate_on_submit():
+        sp.name = form.data['name']
+        sp.pronoun = form.data['pronoun']
+        sp.telephone = form.data['telephone']
+        sp.address = form.data['address']
+        sp.keys = form.data['keys']
+        sp.rules = form.data['rules']
+        sp.sleeping_places_basic = int(form.data['sleeping_places_basic'],)
+        sp.sleeping_places_luxury = int(form.data['sleeping_places_luxury'])
+        sp.latitude = form.data['latitude']
+        sp.longitude = form.data['longitude']
+        sp.lg_comment = form.data['lg_comment']
+
+        date_from_june = form.data['date_from_june'] if form.data['date_from_june'] else None
+        sp.date_from_june = date_from_june
+        date_to_june = form.data['date_to_june'] if form.data['date_to_june'] else None
+        sp.date_to_june = date_to_june
+
+        db.session.commit()
+        flash("Die Änderungen wurden gespeichert", "success")
+        return redirect(url_for('show_sleeping_place', uuid=uuid))
+
+    if not form.errors:
+        form = ShelterForm(name=sp.name,
+                                 pronoun=sp.pronoun,
+                                 telephone=sp.telephone,
+                                 address=sp.address,
+                                 keys=sp.keys,
+                                 rules=sp.rules,
+                                 sleeping_places_basic=sp.sleeping_places_basic,
+                                 sleeping_places_luxury=sp.sleeping_places_luxury,
+                                 date_from_june=sp.date_from_june,
+                                 date_to_june=sp.date_to_june,
+                                 latitude=sp.latitude,
+                                 longitude=sp.longitude,
+                                 lg_comment=sp.lg_comment)
+
+    return render_template(
+        'sleeping_place_edit.html',
         form=form,
     )
 
 
 @app.route('/unterkunft/<uuid>/')
 def show_sleeping_place(uuid):
-    sleeping_place = SleepingPlace.query.filter_by(uuid=uuid).first()
+    sleeping_place = Shelter.query.filter_by(uuid=uuid).first()
     if not sleeping_place:
         flash("Diese Unterkunft existiert nicht.", "danger")
         return redirect(url_for('index'))
@@ -124,7 +146,7 @@ def show_sleeping_place(uuid):
 @app.route('/unterkunft/<uuid>/reservation/<date>/edit', methods=['GET', 'POST'])
 @auth.login_required
 def edit_reservation(uuid, date):
-    sp = SleepingPlace.query.filter_by(uuid=uuid).first()
+    sp = Shelter.query.filter_by(uuid=uuid).first()
     if not sp:
         flash("Diese Unterkunft existiert nicht.", "danger")
         return redirect(url_for('index'))
@@ -176,67 +198,17 @@ def edit_reservation(uuid, date):
                                 _anchor=f"reservierung-{date.strftime('%d%m')}"))
 
 
-@app.route('/unterkunft/<uuid>/edit', methods=['GET', 'POST'])
-@auth.login_required
-def edit_sleeping_place(uuid):
-    sp = SleepingPlace.query.filter_by(uuid=uuid).first()
-    if not sp:
-        flash("Diese Unterkunft existiert nicht.", "danger")
-        return redirect(url_for('index'))
-
-    form = SleepingPlaceForm()
-    if form.validate_on_submit():
-        sp.name = form.data['name']
-        sp.pronoun = form.data['pronoun']
-        sp.telephone = form.data['telephone']
-        sp.address = form.data['address']
-        sp.keys = form.data['keys']
-        sp.rules = form.data['rules']
-        sp.sleeping_places_basic = int(form.data['sleeping_places_basic'],)
-        sp.sleeping_places_luxury = int(form.data['sleeping_places_luxury'])
-        sp.latitude = form.data['latitude']
-        sp.longitude = form.data['longitude']
-        sp.lg_comment = form.data['lg_comment']
-
-        date_from_june = form.data['date_from_june'] if form.data['date_from_june'] else None
-        sp.date_from_june = date_from_june
-        date_to_june = form.data['date_to_june'] if form.data['date_to_june'] else None
-        sp.date_to_june = date_to_june
-
-        db.session.commit()
-        flash("Die Änderungen wurden gespeichert", "success")
-        return redirect(url_for('show_sleeping_place', uuid=uuid))
-
-    if not form.errors:
-        form = SleepingPlaceForm(name=sp.name,
-                                 pronoun=sp.pronoun,
-                                 telephone=sp.telephone,
-                                 address=sp.address,
-                                 keys=sp.keys,
-                                 rules=sp.rules,
-                                 sleeping_places_basic=sp.sleeping_places_basic,
-                                 sleeping_places_luxury=sp.sleeping_places_luxury,
-                                 date_from_june=sp.date_from_june,
-                                 date_to_june=sp.date_to_june,
-                                 latitude=sp.latitude,
-                                 longitude=sp.longitude,
-                                 lg_comment=sp.lg_comment)
-
-    return render_template(
-        'sleeping_place_edit.html',
-        form=form,
-    )
 
 
 @app.route('/unterkunft/<uuid>/delete', methods=['GET', 'POST'])
 @auth.login_required
 def delete_sleeping_place(uuid):
-    sp = SleepingPlace.query.filter_by(uuid=uuid).first()
+    sp = Shelter.query.filter_by(uuid=uuid).first()
     if not sp:
         flash("Diese Unterkunft existiert nicht.", "danger")
         return redirect(url_for('index'))
 
-    form = DeleteSleepingPlace()
+    form = DeleteShelter()
     if form.validate_on_submit():
         db.session.delete(sp)
         db.session.commit()
@@ -253,7 +225,7 @@ def delete_sleeping_place(uuid):
 @app.route('/unterkünfte')
 @auth.login_required
 def list_sleeping_places():
-    sleeping_places = SleepingPlace.query
+    sleeping_places = Shelter.query
 
     return render_template(
         'sleeping_place_list.html',
@@ -336,9 +308,9 @@ def show_map():
             date = datetime.strptime(date, "%Y-%m-%d").date()
         except ValueError:
             return "Datum im falschen Format. TT.MM.YYYY", 400
-        sps = SleepingPlace.query.filter(SleepingPlace.date_from_june <= date).filter(SleepingPlace.date_to_june > date).all()
+        sps = Shelter.query.filter(Shelter.date_from_june <= date).filter(Shelter.date_to_june > date).all()
     else:
-        sps = SleepingPlace.query.all()
+        sps = Shelter.query.all()
     empty_sps = []
     complete_sps = []
     for sp in sps:
@@ -354,8 +326,8 @@ def show_map():
 
 @app.route('/übersicht')
 def overview():
-    #sps = SleepingPlace.query.filter_by(date_from_june=None).all()
-    sps = SleepingPlace.query.filter_by().all()
+    #sps = Shelter.query.filter_by(date_from_june=None).all()
+    sps = Shelter.query.filter_by().all()
     sps_list = []
     for sp in sps:
         if sp.date_to_june:
@@ -397,6 +369,24 @@ def overview():
     print(beds)
     return render_template("übersicht.html", beds=beds, sleeping_places=sps_list)
 
+
+@app.route("/shell")
+def shell():
+    #u = User(name="Hans22")
+    #s = Shelter(address="Hauptstraße 22")
+    #r = Reservation2(user=u, shelter=s, date="22.02.2022")
+    #db.session.add(r)
+    #db.session.commit()
+    breakpoint()
+    return "ok"
+
+
+@auth.verify_password
+def verify_password(username, password):
+    if username == settings.USER and \
+            check_password_hash(settings.PASSWORD_HASH, password):
+        session['logged_in'] = True
+        return username
 
 @app.route('/login')
 @auth.login_required

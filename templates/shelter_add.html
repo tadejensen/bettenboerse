@@ -11,14 +11,6 @@
 {% block content %}
 
 
-{% if form.errors %}
-<strong>Fehler bei der Eingabe:</strong></br>
-{% for field, error in form.errors.items() %}
-{{ error }} ({{ field }})</br>
-{% endfor %}
-</br>
-{% endif %}
-
 Mit * gekennzeichnete Fragen sind Pflichtfelder und müssen ausgefüllt werden.</br></br>
 <form action="" method="POST">
     {{ form.hidden_tag() }}

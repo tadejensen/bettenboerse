@@ -24,7 +24,7 @@
     <img src="/static/header-logo.png" style="background-color: black;", class="img-fluid">
   <h1>Letzte Generation - Bettenbörse</h1>
 </div>
-  <a href="{{ url_for('index') }}">Schlafplatz anbieten</a> | 
+  <a href="{{ url_for('add_shelter') }}">Schlafplatz anbieten</a> | 
 {% if session['logged_in'] %}
   <a href="{{ url_for('list_sleeping_places') }}">Unterkünfte anzeigen</a> |
   <a href="{{ url_for('list_menschen') }}">Menschen anzeigen</a> | 

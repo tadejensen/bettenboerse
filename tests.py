@@ -3,7 +3,7 @@
 from datetime import date
 import uuid
 import pytest
-from app import app, db, SleepingPlace, Mensch
+from app import app, db, Shelter, Mensch
 import settings
 
 USER = "lg"
@@ -39,7 +39,7 @@ def test_login(client):
 def test_list_unterkuenfte(client):
     resp = client.get('/unterkünfte', auth=(USER, USER))
     assert "Übersicht Schlafplätze" in resp.text
-    for sp in SleepingPlace.query.all():
+    for sp in Shelter.query.all():
         assert sp.uuid in resp.text
         assert sp.name in resp.text
         assert sp.address in resp.text
@@ -47,7 +47,7 @@ def test_list_unterkuenfte(client):
 
 def test_unterkunft_details_view(client):
     resp = client.get("/")
-    for sp in SleepingPlace.query.all():
+    for sp in Shelter.query.all():
         print(f"Testing {sp}")
         resp = client.get(f"/unterkunft/{sp.uuid}/", auth=(USER, USER))
         assert resp.status_code == 200
@@ -59,7 +59,7 @@ def test_unterkunft_details_view(client):
 
 def test_unterkunft_edit_view(client):
     resp = client.get("/")
-    for sp in SleepingPlace.query.all():
+    for sp in Shelter.query.all():
         print(f"Testing {sp}")
         resp = client.get(f"/unterkunft/{sp.uuid}/edit", auth=(USER, USER))
         assert resp.status_code == 200
@@ -82,7 +82,7 @@ def test_add_valid_unterkunft(client):
             }
     resp = client.post("/", data=data, follow_redirects=False)
     assert resp.status_code == 302
-    for sp in SleepingPlace.query.filter_by(name="testname"):
+    for sp in Shelter.query.filter_by(name="testname"):
         print(f"Deleting {sp}")
         db.session.delete(sp)
     db.session.commit()
@@ -148,7 +148,7 @@ def test_reservation(client):
     # I need this to get context to get the db context!?
     client.get('/', auth=(USER, USER))
     id = str(uuid.uuid4())
-    new_sp = SleepingPlace(uuid=id,
+    new_sp = Shelter(uuid=id,
                            name="Pippi",
                            pronoun="sie/her",
                            telephone="0123123123",
@@ -200,7 +200,7 @@ def test_reservation(client):
     assert resp.status_code == 200
     assert "der kmille" in resp.text
 
-    sp = SleepingPlace.query.filter_by(uuid=id).first()
+    sp = Shelter.query.filter_by(uuid=id).first()
     print(f"Deleting {sp}")
     db.session.delete(sp)
     print(f"Removed {new_sp} from db")
@@ -224,7 +224,7 @@ def test_delete_unterkunft(client):
     assert resp.status_code == 302
 
     # check if it is in the db
-    sp = SleepingPlace.query.filter_by(name="yolo472").first()
+    sp = Shelter.query.filter_by(name="yolo472").first()
     assert sp is not None
 
     # show edit page
@@ -238,7 +238,7 @@ def test_delete_unterkunft(client):
     assert resp.status_code == 302
 
     # check if it still exists
-    sp = SleepingPlace.query.filter_by(name="yolo472").first()
+    sp = Shelter.query.filter_by(name="yolo472").first()
     assert sp is None
 
 
