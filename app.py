@@ -2,19 +2,16 @@
 # -*- coding: utf-8 -*-
 from flask import Flask, render_template, redirect, flash, url_for, session, request
 from flask_httpauth import HTTPBasicAuth
-from sqlalchemy import UniqueConstraint
-
 from flask_migrate import Migrate
 from werkzeug.security import check_password_hash
-from forms import ShelterForm, ReservationForm, DeleteShelter, MenschForm, DeleteMensch
+from forms import ShelterForm, DeleteShelter, MenschForm, DeleteMensch
 from datetime import datetime, timedelta
 import uuid
 from flask_qrcode import QRcode
 
 import settings
 
-from models import ReservationState, Shelter, Mensch#, Reservation, ReservationMensch
-from models import Shelter, Reservation
+from models import Shelter, Reservation, Mensch
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = settings.FLASK_SECRET_KEY
@@ -30,8 +27,6 @@ migrate = Migrate(app, db, compare_type=True, render_as_batch=True)
 
 db.init_app(app)
 db.create_all(app=app)
-
-
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -101,57 +96,48 @@ def show_shelter(uuid):
 @app.route('/unterkunft/<uuid>/reservation/<date>/edit', methods=['GET', 'POST'])
 @auth.login_required
 def edit_reservation(uuid, date):
-    sp = Shelter.query.filter_by(uuid=uuid).first()
-    if not sp:
-        flash("Diese Unterkunft existiert nicht.", "danger")
-        return redirect(url_for('add_shelter'))
+    shelter = Shelter.query.get_or_404(uuid, description=f"Unterkunft mit der id {uuid} wurde nicht gefunden")
     # TODO: check if for start und end (between from and to)
     try:
         date = datetime.strptime(date, "%d.%m.%Y").date()
     except ValueError:
-        return "Datum im falschen Format. TT.MM.YYYY", 400
+        return render_template("error.html", description="Datum im falschen Format angegeben. TT.MM.YYYY"), 400
 
     menschen = Mensch.query.all()
-    reservation = Reservation.query.filter(Reservation.sleeping_place == uuid). \
-                      filter(Reservation.date == date).first()
 
-    already_reserved = []
     if request.method == "GET":
-        if reservation:
-            already_reserved = ReservationMensch.query.filter_by(reservation=reservation.id).all()
-            already_reserved = [p.mensch for p in already_reserved]
+        reservations_per_day = Reservation.query.filter_by(shelter=shelter).filter_by(date=date).all()
+        reservations_menschen_ids = [reservation.mensch.id for reservation in reservations_per_day]
         return render_template(
             'reservation_edit.html',
             uuid=uuid,
             date=date,
             menschen=menschen,
-            sleeping_place=sp,
-            already_reserved=already_reserved,
+            shelter=shelter,
+            reservations_menschen_ids=reservations_menschen_ids,
         )
 
     if request.method == "POST":
+        # TODO: first check if there is enough space!
         ids_menschen_all = [m.id for m in menschen]
         ids_menschen_submitted = request.form.to_dict(flat=False).get('mensch', [])
 
         for id in ids_menschen_submitted:
             if int(id) not in ids_menschen_all:
-                return f"Kein Mensch mit der id {id} gefunden", 400
-        if not reservation:
-            reservation = Reservation(sleeping_place=uuid, date=date)
-            db.session.add(reservation)
-        print("Deleting all reservations with reservation_id", reservation.id)
-        ReservationMensch.query.filter_by(reservation=reservation.id).delete()
+                return render_template("error.html", description=f"Kein Mensch mit der id {id} zum hinzufügen gefunden"), 400
 
+        # delete all existing reservations
+        Reservation.query.filter_by(shelter=shelter).filter_by(date=date).delete()
         for mensch_id in ids_menschen_submitted:
-            print("Doing Mensch", mensch_id)
-            reservationMensch = ReservationMensch(reservation=reservation.id, mensch=mensch_id)
-            db.session.add(reservationMensch)
+            mensch = Mensch.query.get(int(mensch_id))
+            reservation = Reservation.query.filter_by(shelter=shelter).filter_by(date=date).filter_by(mensch=mensch).first()
+            if not reservation:
+                reservation = Reservation(shelter=shelter, date=date, mensch=mensch)
         db.session.commit()
 
         return redirect(url_for('show_shelter',
                                 uuid=uuid,
                                 _anchor=f"reservierung-{date.strftime('%d%m')}"))
-
 
 
 
@@ -204,6 +190,12 @@ def list_menschen():
 def create_mensch():
     form = MenschForm()
     if form.validate_on_submit():
+        if Mensch.query.filter_by(name=form.name.value).first():
+            flash("Es existiert bereits ein Mensch mit diesem Namen", "danger")
+            return render_template(
+                'mensch_add.html',
+                form=form
+            )
         mensch = Mensch()
         form.populate_obj(mensch)
         db.session.add(mensch)
@@ -262,7 +254,7 @@ def show_map():
         try:
             date = datetime.strptime(date, "%Y-%m-%d").date()
         except ValueError:
-            return "Datum im falschen Format. TT.MM.YYYY", 400
+            return render_template("error.html", description="Datum im falschen Format angegeben. TT.MM.YYYY")
         sps = Shelter.query.filter(Shelter.date_from_june <= date).filter(Shelter.date_to_june > date).all()
     else:
         sps = Shelter.query.all()
@@ -356,7 +348,7 @@ def login():
 
 @app.errorhandler(404)
 def page_not_found(description):
-    return render_template("404.html", description=description), 404
+    return render_template("error.html", description=description), 404
 
 
 if __name__ == '__main__':

@@ -20,7 +20,7 @@
         <label for="mensch">Wer schläft hier nachts?</label>
         <select name="mensch" class="selectpicker form-control" multiple data-live-search="true">
         {% for mensch in menschen %}
-            {% if mensch.id in already_reserved %}
+            {% if mensch.id in reservations_menschen_ids %}
                 <option selected value="{{ mensch.id }}">{{ mensch.name }}</option>
             {% else %}
                 <option value="{{ mensch.id }}">{{ mensch.name }}</option>
@@ -37,35 +37,35 @@
   <tbody>
     <tr>
       <td>Name</td>
-      <td>{{ sleeping_place.name }} ({{ sleeping_place.pronoun }})</td>
+      <td>{{ shelter.name }} ({{ shelter.pronoun }})</td>
     </tr>
     <tr>
       <td>Addresse</td>
-      <td>{{ sleeping_place.address }} <a href="https://www.google.com/maps/search/{{ sleeping_place.address }}" >(Google Maps)</a></td>
+      <td>{{ shelter.address }} <a href="https://www.google.com/maps/search/{{ shelter.address }}" >(Google Maps)</a></td>
     </tr>
     <tr>
       <td>Schlafplätze ohne Isomatte</td>
-      <td>{{ sleeping_place.sleeping_places_basic }}</td>
+      <td>{{ shelter.beds_basic }}</td>
     </tr>
     <tr>
       <td>Schlafplätze mit Isomatte</td>
-      <td>{{ sleeping_place.sleeping_places_luxury }}</td>
+      <td>{{ shelter.beds_luxury }}</td>
     </tr>
     <tr>
       <td>Zeitraum</td>
-      {% if sleeping_place.date_from_june %}
-        <td>{{ sleeping_place.date_from_june.strftime("%d.%m. (%a)") }}
+      {% if shelter.date_from_june %}
+        <td>{{ shelter.date_from_june.strftime("%d.%m. (%a)") }}
       {% else %}
         <td>nicht angegeben
       {% endif %}
       bis
-      {% if sleeping_place.date_to_june %}
-        {{ sleeping_place.date_to_june.strftime("%d.%m. (%a)") }}
+      {% if shelter.date_to_june %}
+        {{ shelter.date_to_june.strftime("%d.%m. (%a)") }}
       {% else %}
         nicht angegeben</td>
       {% endif %}
-      {% if sleeping_place.date_from_june and sleeping_place.date_to_june %} 
-        - {{ (sleeping_place.date_to_june - sleeping_place.date_from_june).days }} Tage
+      {% if shelter.date_from_june and shelter.date_to_june %} 
+        - {{ (shelter.date_to_june - shelter.date_from_june).days }} Tage
       {% endif %}
       </td>
     </tr>

@@ -2,8 +2,6 @@ from wtforms import IntegerField, StringField, TextAreaField, DateField, SelectF
 from wtforms import validators, ValidationError
 from flask_wtf import FlaskForm
 
-from models import ReservationState
-
 
 def validate_date(form, field):
     if form.data['date_to_june'] and form.data['date_from_june']:
@@ -22,7 +20,7 @@ def validate_long_lat(form, field):
         except ValueError:
             raise ValidationError('Falsches Format für Längen/Breitengrad-Angabe')
     if form.data['longitude']:
-        
+
         try:
             float(form.data['longitude'])
             float(form.data['longitude'])
@@ -102,14 +100,6 @@ class ShelterForm(FlaskForm):
         'Interner Kommentar',
         validators=[validators.Optional()]
     )
-
-
-class ReservationForm(FlaskForm):
-    reservation = TextAreaField("Wer schläft hier nachts?")
-    #state = SelectField('Belegung für diese Nacht', choices=[(s.name, s.value[1]) for s in ReservationState])
-    # TODO:add/fix validator: validate_reservation
-    #free_beds = IntegerField('Wie viele Menschen können hier heute Nacht noch schlafen?',
-    #                         validators=[validators.InputRequired(), validators.NumberRange(min=0)])
 
 
 class DeleteShelter(FlaskForm):
