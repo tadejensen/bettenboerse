@@ -11,7 +11,7 @@ from flask_qrcode import QRcode
 
 import settings
 
-from models import Shelter, Reservation, Mensch
+from models import Shelter, Reservation, Mensch, SignalLog
 
 import messages
 
@@ -303,7 +303,6 @@ def show_map():
             complete_shelters.append(shelter)
         else:
             empty_shelters.append(shelter)
-    print(complete_shelters)
     return render_template('map.html',
                            empty_shelters=empty_shelters,
                            complete_shelters=complete_shelters,
@@ -336,6 +335,24 @@ def overview():
     return render_template("übersicht.html", beds=beds, shelters=shelters_list)
 
 
+def send_signal_message(to_mensch_id, to_number, message):
+    status = 0
+    error = ""
+    try:
+        messages.sendDirectMessage(to_number, message)
+    except Exception as e:
+        status = 1
+        error = str(e)
+    log = SignalLog(telephone=to_number,
+                    message=message,
+                    status=status,
+                    error=error,
+                    mensch=to_mensch_id)
+    db.session.add(log)
+    db.session.commit()
+    return (status, error)
+
+
 @app.route("/signal", methods=["GET", "POST"])
 @auth.login_required
 def signal_index():
@@ -348,17 +365,29 @@ def signal_index():
 
     send_form = SignalMessageForm()
     if send_form.validate_on_submit():
-        messages.sendDirectMessage(send_form.telephone.data,
-                                   send_form.message.data)
-        flash("Die Nachricht wurde erfolgreicht verschickt", "success")
-        #send_form.message.data = ""
-        #send_form.telephone.data = ""
+        status, error = send_signal_message(-1,
+                                            send_form.telephone.data,
+                                            send_form.message.data)
+        if status == 0:
+            flash("Die Nachricht wurde erfolgreicht verschickt", "success")
+            send_form.message.data = ""
+            send_form.telephone.data = ""
+        else:
+            flash(f"Fehler beim Senden der Nachricht an {send_form.telephone.data}", "danger")
+            flash(error, "danger")
 
     return render_template("signal_index.html",
                            account=account,
                            account_form=account_form,
                            device_uri=device_uri,
                            send_form=send_form)
+
+
+@app.route("/signal/log")
+@auth.login_required
+def signal_log():
+    logs = SignalLog.query.all()
+    return render_template("signal_logs.html", logs=logs)
 
 
 @app.route("/shell")

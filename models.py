@@ -1,5 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import relationship, column_property
+import datetime
 import settings
 
 db = SQLAlchemy()
@@ -59,6 +60,18 @@ class Mensch(db.Model):
     shelters = relationship("Reservation", back_populates="mensch")
     telephone = db.Column(db.String())
     bezugsgruppe = db.Column(db.String())
+
+
+class SignalLog(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    created = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    telephone = db.Column(db.String())
+    message = db.Column(db.String())
+    # status (0: no error, 1 error)
+    status = db.Column(db.Integer)
+    error = db.Column(db.String())
+    mensch = db.Column(db.ForeignKey("mensch.id"))
+
 
 
 #import enum

@@ -1,12 +1,7 @@
 from pydbus import SystemBus
-from gi.repository import GLib
 bus = SystemBus()
 
-
 dbus_endpoint = "org.asamk.Signal"
-
-
-# TODO: error handling
 
 
 def get_dbus_account_interface():
@@ -32,12 +27,6 @@ def link_account(device_name):
     signal = bus.get(dbus_endpoint)
     device_uri = signal.link(device_name)
     return device_uri
-
-
-#print(device_uri)
-#breakpoint()
-#signal = bus.get('org.asamk.Signal')
-#print(signal.listAccounts())
 
 
 def sendDirectMessage(telephone, message):

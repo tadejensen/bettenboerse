@@ -4,7 +4,7 @@
 {% block header %}
     <h3>
     {% block title %}
-        Signal Nachricht
+        Signal
     {% endblock %}
     </h3>
 {% endblock %}
@@ -12,8 +12,10 @@
 
 {% block content %}
 
+<a href="{{ url_for('signal_log') }}">Versendete Nachrichten anzeigen</a></br></br>
+
 {% if account %}
-hinterlegter Signal Account: {{ account['number'] }} ({{ account['name'] }}).</br></br>
+hinterlegter Signal Account: {{ account['number'] }} ({{ account['name'] }})</br></br>
 
     <form action="" method="POST">
         {{ send_form.hidden_tag() }}
@@ -24,7 +26,7 @@ hinterlegter Signal Account: {{ account['number'] }} ({{ account['name'] }}).</b
         
         <div class="form-group">
             {{ send_form.message.label }}
-            {{ send_form.message(class_="form-control") }}
+            {{ send_form.message(class_="form-control", rows=5) }}
         </div>
 
         <div class="form-group">
@@ -36,9 +38,17 @@ hinterlegter Signal Account: {{ account['number'] }} ({{ account['name'] }}).</b
 {% else %}
     
     {% if device_uri %}
-        Bitte den folgenden QR Code in der Signal App scannen (Einstellungen, verilnkte Geräte)</br></br>.
+
+        Bitte den folgenden QR Code in der Signal App scannen (Einstellungen, verlinkte Geräte)</br></br>.
         <img src="{{ qrcode(device_uri, box_size=5) }}">
+        </br></br>
+        Wenn das Gerät in der Signal-App hinzugefügt wurde, bitte diese Seite <a href="javascript:window.location.href=window.location.href">neu laden</a>.</br></br>
+    
     {% else %}
+
+        
+         Aktuell ist kein Signal Account hinterlegt. Neuen Signal Account hinterlegen</br></br>
+
 
         <form action="" method="POST">
             {{ account_form.hidden_tag() }}
@@ -53,6 +63,7 @@ hinterlegter Signal Account: {{ account['number'] }} ({{ account['name'] }}).</b
             </div>
 
         </form>
+        
     
     {% endif %}
 
