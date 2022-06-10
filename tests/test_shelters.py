@@ -116,7 +116,7 @@ def test_add_invalid_unterkunft_date(client):
     data['date_from_june'] = '2022-06-20'
     resp = client.post("/", data=data, follow_redirects=False)
     assert resp.status_code == 200
-    assert "Das End-Datum liegt vor dem End-Datum" in resp.text
+    assert "Das End-Datum liegt vor dem Start-Datum" in resp.text
 
 
 def test_shelter_reservation(client):

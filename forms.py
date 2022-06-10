@@ -2,11 +2,23 @@ from wtforms import IntegerField, StringField, TextAreaField, DateField, SelectF
 from wtforms import validators, ValidationError
 from flask_wtf import FlaskForm
 
+import settings
 
-def validate_date(form, field):
+
+def shelter_validate_date(form, field):
     if form.data['date_to_june'] and form.data['date_from_june']:
         if not form.data['date_to_june'] > form.data['date_from_june']:
-            raise ValidationError('Das End-Datum liegt vor dem End-Datum.')
+            raise ValidationError('Das End-Datum liegt vor dem Start-Datum.')
+
+
+def mensch_validate_date_to(form, field):
+    if form.data['date_to'] < form.data['date_from']:
+        raise ValidationError('Das End-Datum liegt vor dem Start-Datum.')
+
+
+def mensch_validate_date_from(form, field):
+    if form.data['date_from'] < settings.start_date:
+        raise ValidationError("Du kommst zu früh :)")
 
 
 def validate_phone(form, field):
@@ -96,7 +108,7 @@ class ShelterForm(FlaskForm):
     )
     date_to_june = DateField(
         'Bis wann kannst du für die Aktionen im Juni Schlafplätze anbieten (Dauer: mehrere Wochen)',
-        validators=[validators.InputRequired(), validate_date]
+        validators=[validators.InputRequired(), shelter_validate_date]
     )
     latitude = StringField(
         'Breitengrad (latitude)',
@@ -117,9 +129,14 @@ class DeleteShelterForm(FlaskForm):
 
 
 class MenschForm(FlaskForm):
-    name = StringField('Name', validators=[validators.InputRequired()])
+    name = StringField("Vor- und Nachname", validators=[validators.InputRequired()])
+    birthday = DateField("Dein Geburtstagsdatum", validators=[validators.InputRequired()])
     telephone = StringField('Telefonnummer', validators=[validators.InputRequired(), validate_phone])
-    bezugsgruppe = StringField('Bezugsgruppe', validators=[validators.InputRequired()])
+    relative = StringField('Angehörigenkontakt (Name und Telefonnummer)', validators=[validators.Optional()])
+    bezugsgruppe = StringField('Bezugsgruppe (oder auch "Support" oder "Orga", wann das deiner Rolle eher entspricht', validators=[validators.InputRequired()])
+    date_from = DateField("Von wann bist du in Berlin", validators=[validators.InputRequired(), mensch_validate_date_from])
+    date_to = DateField("Bis wann bist du in Berlin", validators=[validators.InputRequired(), mensch_validate_date_to])
+    flinta = SelectField("Ich möchte in einem FLINTA Space unterkommen (Frauen, Lesben, intergeschlechtliche, nichtbinäre, trans und agender Personen)", choices=["Nein", "Ja"])
 
 
 class DeleteMenschForm(FlaskForm):

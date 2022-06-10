@@ -11,12 +11,17 @@ def test_login(client):
     assert resp.status_code == 401
 
 
+def test_no_auth_needed(client):
+    for path in ["/", "/mensch/add", "/suche-schlafplatz"]:
+        resp = client.get(path)
+        assert resp.status_code == 200, path
+
+
 def test_auth(client):
     for path in ["/unterkünfte",
                  "/karte",
                  "/übersicht",
                  "/menschen",
-                 "/mensch/add",
                  "/mensch/1/edit",
                  "/mensch/1/delete",
                  "/unterkünfte",

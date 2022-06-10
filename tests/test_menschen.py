@@ -1,18 +1,17 @@
 from base import client, USER, db
 from app import Mensch
+from datetime import datetime
 
 
 def test_menschen_auth(client):
     resp = client.get("/menschen", follow_redirects=False)
-    assert resp.status_code == 401
-    resp = client.get("/mensch/add", follow_redirects=False)
     assert resp.status_code == 401
     resp = client.get("/mensch/123/edit", follow_redirects=False)
     assert resp.status_code == 401
 
 
 def test_menschen_list(client):
-    resp = client.get("/mensch/add", follow_redirects=False, auth=(USER, USER))
+    resp = client.get("/menschen", follow_redirects=False, auth=(USER, USER))
     assert resp.status_code == 200
 
 
@@ -26,7 +25,13 @@ def test_menschen_add_valid(client):
 
     data = {'name': name,
             'telephone': phone,
-            'bezugsgruppe': bezugsgruppe}
+            'bezugsgruppe': bezugsgruppe,
+            'relative': 'Mama (112)',
+            'birthday': '2002-12-02',
+            'flinta': 'Nein',
+            'date_from': '2022-07-20',
+            'date_to': '2022-07-22'
+            }
     resp = client.post("/mensch/add", data=data, follow_redirects=False, auth=(USER, USER))
     assert resp.status_code == 302
 
@@ -48,7 +53,13 @@ def test_menschen_add_invalid_already_exists(client):
 
     data = {'name': name,
             'telephone': phone,
-            'bezugsgruppe': bezugsgruppe}
+            'bezugsgruppe': bezugsgruppe,
+            'relative': 'Mama (112)',
+            'birthday': '2002-12-02',
+            'flinta': 'Nein',
+            'date_from': '2022-07-20',
+            'date_to': '2022-07-22',
+           }
     resp = client.post("/mensch/add", data=data, follow_redirects=False, auth=(USER, USER))
     assert resp.status_code == 302
 
@@ -64,11 +75,17 @@ def test_menschen_add_invalid_already_exists(client):
 def test_menschen_add_invalid_error_message_missing_field(client):
     # bezugsgruppe is missing
     data = {'name': "test_user123",
-            'telephone': "34342"}
+            'telephone': "034342",
+            'relative': 'Mama (112)',
+            'birthday': '2002-12-02',
+            'flinta': 'Nein',
+            'date_from': '2022-07-20',
+            'date_to': '2022-07-22',
+            }
 
     resp = client.post("/mensch/add", data=data, follow_redirects=False, auth=(USER, USER))
     assert resp.status_code == 200
-    assert "Bezugsgruppe</label>: This field is required" in resp.text
+    assert "This field is required" in resp.text
 
 
 def test_menschen_add_invalid_phone(client):
@@ -106,7 +123,13 @@ def test_menschen_edit(client):
     name = "test_user11011"
     data = {'name': name,
             'bezugsgruppe': 'Hasen',
-            'telephone': "0234324"}
+            'telephone': "0234324",
+            'relative': 'Mama (112)',
+            'birthday': '2002-12-02',
+            'flinta': 'Nein',
+            'date_from': '2022-07-20',
+            'date_to': '2022-07-22',
+            }
     resp = client.post(f"/mensch/{mensch.id}/edit", data=data, follow_redirects=False, auth=(USER, USER))
     assert resp.status_code == 302
     assert Mensch.query.get(mensch.id).name == name

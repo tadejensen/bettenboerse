@@ -223,7 +223,7 @@ def list_menschen():
 
 
 @app.route('/mensch/add', methods=['GET', 'POST'])
-@auth.login_required
+@app.route('/suche-schlafplatz', methods=['GET', 'POST'])
 def create_mensch():
     form = MenschForm()
     if form.validate_on_submit():
@@ -237,8 +237,11 @@ def create_mensch():
         form.populate_obj(mensch)
         db.session.add(mensch)
         db.session.commit()
-        flash("Der Mensch wurde gespeichert", "success")
-        return redirect(url_for('list_menschen'))
+        flash("Dein Eintrag wurde hinterlegt", "success")
+        if session.get('logged_in', False) is True:
+            return redirect(url_for('list_menschen'))
+        else:
+            return redirect(url_for('create_mensch'))
 
     return render_template(
         'mensch_add.html',

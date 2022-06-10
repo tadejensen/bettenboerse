@@ -12,8 +12,8 @@
   <thead>
     <tr>
       <th scope="col">Name</th>
-      <th scope="col">Telefon</th>
       <th scope="col">Bezugsgruppe</th>
+      <th scope="col">Telefon</th>
       <th scope="col">Editieren</th>
       <th scope="col">Löschen</th>
     </tr>
@@ -22,8 +22,8 @@
 {% for mensch in menschen %}
     <tr>
       <td>{{ mensch.name }}</td>
-      <td>{{ mensch.telephone }}</td>
       <td>{{ mensch.bezugsgruppe }}</td>
+      <td>{{ mensch.telephone }}</td>
       <td>
             <p><a href="{{ url_for('edit_mensch', id=mensch.id) }}">editieren</a></p>
      </td>

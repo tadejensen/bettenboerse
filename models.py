@@ -59,6 +59,11 @@ class Mensch(db.Model):
     shelters = relationship("Reservation", back_populates="mensch")
     telephone = db.Column(db.String())
     bezugsgruppe = db.Column(db.String())
+    date_from = db.Column(db.Date())
+    date_to = db.Column(db.Date())
+    birthday = db.Column(db.Date())
+    relative = db.Column(db.String())
+    flinta = db.Column(db.String())
 
 
 class SignalLog(db.Model):
