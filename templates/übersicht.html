@@ -17,7 +17,7 @@ Wann stehen welche Betten zur Verfügung?
 Wann sind wie viele Betten belegt?
 <pre>
 {% for day,data in beds.items() %}
-{{ day }}: {{ data['used_beds'] }}/{{ data['beds_total'] }}{% endfor %}
+{{ day.strftime("%a %d.%m.") }} {{ data['used_beds'] }}/{{ data['beds_total'] }} {{ data['shelters']}} {% endfor %}
 </pre>
 
 

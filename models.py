@@ -1,5 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import relationship, column_property
+import settings
 
 db = SQLAlchemy()
 
@@ -24,6 +25,16 @@ class Shelter(db.Model):
     lg_comment = db.Column(db.String())
     menschen = relationship("Reservation", back_populates="shelter")
     beds_total = column_property(beds_basic + beds_luxury)
+
+    def date_to_june_safe(self):
+        if self.date_to_june_safe:
+            return self.date_to_june_safe
+        else:
+            settings.end_date
+
+    def __repr__(self):
+        #return f"{self.name} ({self.date_from_june} {self.date_to_june})"
+        return f"{self.name} {self.beds_total}"
 
     #def get_reservations_by_date(self, date):
     #    reservations = {}

@@ -67,6 +67,7 @@ def edit_shelter(uuid):
     return render_template(
         'shelter_edit.html',
         form=form,
+        shelter=shelter,
     )
 
 
@@ -118,15 +119,51 @@ def edit_reservation(uuid, date):
         )
 
     if request.method == "POST":
-        # TODO: first check if there is enough space!
         ids_menschen_all = [m.id for m in menschen]
         ids_menschen_submitted = request.form.to_dict(flat=False).get('mensch', [])
+        ids_menschen_submitted = [int(x) for x in ids_menschen_submitted]
 
         for id in ids_menschen_submitted:
-            if int(id) not in ids_menschen_all:
+            # user input: does the user exist?
+            if id not in ids_menschen_all:
+                flash(f"Kein Mensch mit der id {id} zum hinzufügen gefunden", "danger")
+                return render_template(
+                    'reservation_edit.html',
+                    uuid=uuid,
+                    date=date,
+                    menschen=menschen,
+                    shelter=shelter,
+                    reservations_menschen_ids=reservations_menschen_ids,
+                )
                 return render_template("error.html", description=f"Kein Mensch mit der id {id} zum hinzufügen gefunden"), 400
 
-        # delete all existing reservations
+        # check: more pepole than space?
+        if len(ids_menschen_submitted) > shelter.beds_total:
+            flash(f"Mehr Menschen ausgewählt als Betten verfügbar ({len(ids_menschen_submitted)} ausgewählt, {shelter.beds_total} verfügbar)", "danger")
+            return render_template(
+                'reservation_edit.html',
+                uuid=uuid,
+                date=date,
+                menschen=menschen,
+                shelter=shelter,
+                reservations_menschen_ids=ids_menschen_submitted,
+            )
+
+        # check: is there already a reservation for a Mensch for that day?
+        for id in ids_menschen_submitted:
+            reservation = Reservation.query.filter_by(date=date).filter_by(mensch_id=id).first()
+            if reservation:
+                mensch = Mensch.query.get(id)
+                flash(f"{mensch.name} hat bereits eine Übernachtung für diesen Tag bei {reservation.shelter.name}", "danger")
+                return render_template(
+                    'reservation_edit.html',
+                    uuid=uuid,
+                    date=date,
+                    menschen=menschen,
+                    shelter=shelter,
+                    reservations_menschen_ids=ids_menschen_submitted,
+                )
+
         Reservation.query.filter_by(shelter=shelter).filter_by(date=date).delete()
         for mensch_id in ids_menschen_submitted:
             mensch = Mensch.query.get(int(mensch_id))
@@ -157,7 +194,7 @@ def delete_shelter(uuid):
         return redirect(url_for('list_shelters'))
 
     return render_template(
-        'sleeping_place_delete.html',
+        'shelter_delete.html',
         form=form,
         sp=sp,
     )
@@ -274,15 +311,13 @@ def show_map():
 
 @app.route('/übersicht')
 def overview():
-    #sps = Shelter.query.filter_by(date_from_june=None).all()
     shelters = Shelter.query.filter_by().all()
     shelters_list = []
     for shelter in shelters:
         if shelter.date_to_june:
-            shelters_list.append(f"{shelter.name:<50} {shelter.beds_luxury + shelter.beds_basic:>4} Betten   {shelter.date_from_june} -> {shelter.date_to_june}   {(shelter.date_to_june - shelter.date_from_june).days} Tage")
+            shelters_list.append(f"{shelter.name:<55} {shelter.beds_luxury + shelter.beds_basic:>4} Betten   {shelter.date_from_june} -> {shelter.date_to_june}   {(shelter.date_to_june - shelter.date_from_june).days} Tage")
         else:
-            #shelters.list.append(f"{shelter.name:<50} {shelter.beds_luxury + shelter.beds_basic:>4} Betten   {shelter.date_from_june} -> {shelter.date_to_june} - kein End-Datum angegeben")
-            pass
+            shelters_list.append(f"{shelter.name:<55} {shelter.beds_luxury + shelter.beds_basic:>4} Betten   {shelter.date_from_june} -> {shelter.date_to_june} - kein End-Datum angegeben")
     delta = timedelta(days=1)
 
     start = settings.start_date
@@ -290,31 +325,12 @@ def overview():
     beds = {}
 
     while start < end:
-        beds_total = 0
-        used_beds = 0
-        places = []
-        for sp in []:
-            if not sp.date_from_june:
-                #print(f"{sp} has no from date ({start})")
-                continue
-            if not sp.date_to_june:
-                sp_end = end
-            else:
-                sp_end = sp.date_to_june
-            if start >= sp.date_from_june and start <= sp_end:
-                beds_total += sp.sleeping_places_luxury
-                beds_total += sp.sleeping_places_basic
-                places.append(sp.name)
-
-            reservation = Reservation.query.filter(Reservation.sleeping_place == sp.uuid). \
-                              filter(Reservation.date == start).first()
-            if reservation:
-                used_beds += ReservationMensch.query.filter_by(reservation=reservation.id).count()
-
-        beds[start] = {'beds_total': beds_total, 'used_beds': used_beds}
+        used_beds = Reservation.query.filter_by(date=start).count()
+        shelters = Shelter.query.filter(start >= Shelter.date_from_june).filter(start < Shelter.date_to_june).all()
+        beds_total = sum([s.beds_total for s in shelters])
+        beds[start] = {'beds_total': beds_total, 'used_beds': used_beds, 'shelters': shelters}
         start += delta
-    for day, bed in beds.items():
-        print(f"{day}: {bed}")
+
     return render_template("übersicht.html", beds=beds, shelters=shelters_list)
 
 

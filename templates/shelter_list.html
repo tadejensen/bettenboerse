@@ -24,8 +24,8 @@
     <tr>
       <td>{{ shelter.name }}</td>
       <td>{{ shelter.address }}</td>
-      <td>{{ shelter.sleeping_places_luxury }}</td>
-      <td>{{ shelter.sleeping_places_basic }}</td>
+      <td>{{ shelter.beds_luxury }}</td>
+      <td>{{ shelter.beds_basic }}</td>
       <td>
             <p><a href="{{ url_for('edit_shelter', uuid=shelter.uuid) }}">Editieren</a></p>
      </td>

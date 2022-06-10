@@ -6,14 +6,13 @@
 
 
 {% block content %}
+      
+<div class="alert alert-{{ category }} alert-dismissible" role="alert">
+          alerta!
+</div>
 
-{% if form.errors %}
-<strong>Fehler bei der Eingabe:</strong></br>
-{% for field, error in form.errors.items() %}
-{{ error }} ({{ field }})</br>
-{% endfor %}
-</br>
-{% endif %}
+
+<a href="{{ url_for('show_shelter', uuid=shelter.uuid) }}">Detail-Ansicht</a></br></br>
 
 <form action="" method="POST">
     {{ form.hidden_tag() }}
