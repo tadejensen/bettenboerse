@@ -9,6 +9,16 @@ def validate_date(form, field):
             raise ValidationError('Das End-Datum liegt vor dem End-Datum.')
 
 
+def validate_phone(form, field):
+    phone = form.data.get('telephone', '').strip()
+    if not phone.startswith("+"):
+        if not phone.isnumeric():
+            raise ValidationError('Die Telefonnummer muss entweder mit + und der Länderkennung anfangen oder numerisch sein')
+        if phone[0] != "0":
+            raise ValidationError('Die Telefonnummer muss entweder mit 0 anfangen oder + (und der Länderkennung anfangen)')
+
+
+
 def validate_long_lat(form, field):
     # TODO: dry
     if form.data['latitude']:
@@ -108,7 +118,7 @@ class DeleteShelterForm(FlaskForm):
 
 class MenschForm(FlaskForm):
     name = StringField('Name', validators=[validators.InputRequired()])
-    telephone = StringField('Telefonnummer', validators=[validators.InputRequired()])
+    telephone = StringField('Telefonnummer', validators=[validators.InputRequired(), validate_phone])
     bezugsgruppe = StringField('Bezugsgruppe', validators=[validators.InputRequired()])
 
 
