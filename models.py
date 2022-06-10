@@ -64,6 +64,7 @@ class Mensch(db.Model):
     birthday = db.Column(db.Date())
     relative = db.Column(db.String())
     flinta = db.Column(db.String())
+    non_food = db.Column(db.String())
 
 
 class SignalLog(db.Model):

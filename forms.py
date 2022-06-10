@@ -130,13 +130,14 @@ class DeleteShelterForm(FlaskForm):
 
 class MenschForm(FlaskForm):
     name = StringField("Vor- und Nachname", validators=[validators.InputRequired()])
-    birthday = DateField("Dein Geburtstagsdatum", validators=[validators.InputRequired()])
+    birthday = DateField("Geburtstagsdatum", validators=[validators.InputRequired()])
     telephone = StringField('Telefonnummer', validators=[validators.InputRequired(), validate_phone])
-    relative = StringField('Angehörigenkontakt (Name und Telefonnummer)', validators=[validators.Optional()])
-    bezugsgruppe = StringField('Bezugsgruppe (oder auch "Support" oder "Orga", wann das deiner Rolle eher entspricht', validators=[validators.InputRequired()])
-    date_from = DateField("Von wann bist du in Berlin", validators=[validators.InputRequired(), mensch_validate_date_from])
-    date_to = DateField("Bis wann bist du in Berlin", validators=[validators.InputRequired(), mensch_validate_date_to])
+    relative = StringField('Angehörigen/Notfallkontakte (Name, Telefonnummer und wann die Person angerufen werden soll)', validators=[validators.Optional()])
+    bezugsgruppe = StringField('Bezugsgruppe (oder auch "Support" oder "Orga", wenn das deiner Rolle eher entspricht)', validators=[validators.InputRequired()])
+    date_from = DateField("Von wann bist du in Berlin?", validators=[validators.InputRequired(), mensch_validate_date_from])
+    date_to = DateField("Bis wann bist du in Berlin?", validators=[validators.InputRequired(), mensch_validate_date_to])
     flinta = SelectField("Ich möchte in einem FLINTA Space unterkommen (Frauen, Lesben, intergeschlechtliche, nichtbinäre, trans und agender Personen)", choices=["Nein", "Ja"])
+    non_food = StringField('Hast du Lebensmittelunverträglichkeiten?', validators=[validators.Optional()])
 
 
 class DeleteMenschForm(FlaskForm):

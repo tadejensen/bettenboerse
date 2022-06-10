@@ -21,9 +21,9 @@
         <select id="select_menschen" name="mensch" class="selectpicker form-control" multiple data-live-search="true">
         {% for mensch in menschen %}
             {% if mensch.id in reservations_menschen_ids %}
-                <option selected value="{{ mensch.id }}">{{ mensch.name }}</option>
+                <option selected value="{{ mensch.id }}">{{ mensch.name }} ({{ mensch.bezugsgruppe }})</option>
             {% else %}
-                <option value="{{ mensch.id }}">{{ mensch.name }}</option>
+                <option value="{{ mensch.id }}">{{ mensch.name }} ({{ mensch.bezugsgruppe }})</option>
             {% endif %}
         {% endfor %}
         </select>

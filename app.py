@@ -106,7 +106,7 @@ def edit_reservation(uuid, date):
     except ValueError:
         return render_template("error.html", description="Datum im falschen Format angegeben. TT.MM.YYYY"), 400
 
-    menschen = Mensch.query.all()
+    menschen = Mensch.query.order_by(Mensch.bezugsgruppe.asc()).all()
 
     reservations_per_day = Reservation.query.filter_by(shelter=shelter).filter_by(date=date).all()
     reservations_menschen_ids = [reservation.mensch.id for reservation in reservations_per_day]
@@ -214,7 +214,7 @@ def list_shelters():
 @app.route('/menschen')
 @auth.login_required
 def list_menschen():
-    menschen = Mensch.query
+    menschen = Mensch.query.order_by(Mensch.bezugsgruppe.asc())
 
     return render_template(
         'menschen_list.html',
