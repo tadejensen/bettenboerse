@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+
+{% block header %}
+    <h3>
+    {% block title %}
+        Signal Nachricht
+    {% endblock %}
+    </h3>
+{% endblock %}
+
+
+{% block content %}
+
+{% if account %}
+hinterlegter Signal Account: {{ account['number'] }} ({{ account['name'] }}).</br></br>
+
+    <form action="" method="POST">
+        {{ send_form.hidden_tag() }}
+        <div class="form-group">
+            {{ send_form.telephone.label }}
+            {{ send_form.telephone(class_="form-control") }}
+        </div>
+        
+        <div class="form-group">
+            {{ send_form.message.label }}
+            {{ send_form.message(class_="form-control") }}
+        </div>
+
+        <div class="form-group">
+            {{ send_form.submit(class_="form-control btn btn-primary") }}
+        </div>
+        
+
+    </form>
+{% else %}
+    
+    {% if device_uri %}
+        Bitte den folgenden QR Code in der Signal App scannen (Einstellungen, verilnkte Geräte)</br></br>.
+        <img src="{{ qrcode(device_uri, box_size=5) }}">
+    {% else %}
+
+        <form action="" method="POST">
+            {{ account_form.hidden_tag() }}
+            <div class="form-group">
+                {{ account_form.device_name.label }}
+                {{ account_form.device_name(class_="form-control") }}
+            </div>
+            
+            <div class="form-group">
+                {{ account_form.submit.label }}
+                {{ account_form.submit(class_="form-control btn btn-primary") }}
+            </div>
+
+        </form>
+    
+    {% endif %}
+
+
+{% endif %}
+
+{% endblock %}
+

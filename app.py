@@ -4,7 +4,7 @@ from flask import Flask, render_template, redirect, flash, url_for, session, req
 from flask_httpauth import HTTPBasicAuth
 from flask_migrate import Migrate
 from werkzeug.security import check_password_hash
-from forms import ShelterForm, DeleteShelter, MenschForm, DeleteMensch
+from forms import ShelterForm, DeleteShelterForm, MenschForm, DeleteMenschForm, SignalAccountForm, SignalMessageForm
 from datetime import datetime, timedelta
 import uuid
 from flask_qrcode import QRcode
@@ -12,6 +12,8 @@ from flask_qrcode import QRcode
 import settings
 
 from models import Shelter, Reservation, Mensch
+
+import messages
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = settings.FLASK_SECRET_KEY
@@ -177,7 +179,6 @@ def edit_reservation(uuid, date):
                                 _anchor=f"reservierung-{date.strftime('%d%m')}"))
 
 
-
 @app.route('/unterkunft/<uuid>/delete', methods=['GET', 'POST'])
 @auth.login_required
 def delete_shelter(uuid):
@@ -186,7 +187,7 @@ def delete_shelter(uuid):
         flash("Diese Unterkunft existiert nicht.", "danger")
         return redirect(url_for('add_shelter'))
 
-    form = DeleteShelter()
+    form = DeleteShelterForm()
     if form.validate_on_submit():
         db.session.delete(sp)
         db.session.commit()
@@ -268,7 +269,7 @@ def edit_mensch(id):
 @auth.login_required
 def delete_mensch(id):
     mensch = Mensch.query.get_or_404(id, description=f"Mensch mit der id {id} wurde nicht gefunden")
-    form = DeleteMensch()
+    form = DeleteMenschForm()
 
     if form.validate_on_submit():
         db.session.delete(mensch)
@@ -310,6 +311,7 @@ def show_map():
 
 
 @app.route('/übersicht')
+@auth.login_required
 def overview():
     shelters = Shelter.query.filter_by().all()
     shelters_list = []
@@ -334,7 +336,33 @@ def overview():
     return render_template("übersicht.html", beds=beds, shelters=shelters_list)
 
 
+@app.route("/signal", methods=["GET", "POST"])
+@auth.login_required
+def signal_index():
+    account = messages.get_account()
+    device_uri = None
+
+    account_form = SignalAccountForm()
+    if account_form.validate_on_submit():
+        device_uri = messages.link_account(account_form.device_name.data)
+
+    send_form = SignalMessageForm()
+    if send_form.validate_on_submit():
+        messages.sendDirectMessage(send_form.telephone.data,
+                                   send_form.message.data)
+        flash("Die Nachricht wurde erfolgreicht verschickt", "success")
+        #send_form.message.data = ""
+        #send_form.telephone.data = ""
+
+    return render_template("signal_index.html",
+                           account=account,
+                           account_form=account_form,
+                           device_uri=device_uri,
+                           send_form=send_form)
+
+
 @app.route("/shell")
+@auth.login_required
 def shell():
     m = Mensch.query.first()
     s = Shelter.query.first()

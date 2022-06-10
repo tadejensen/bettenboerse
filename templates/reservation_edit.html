@@ -18,7 +18,7 @@
 
     <div class="form-group">
         <label for="mensch">Wer schläft hier nachts?</label>
-        <select name="mensch" class="selectpicker form-control" multiple data-live-search="true">
+        <select id="select_menschen" name="mensch" class="selectpicker form-control" multiple data-live-search="true">
         {% for mensch in menschen %}
             {% if mensch.id in reservations_menschen_ids %}
                 <option selected value="{{ mensch.id }}">{{ mensch.name }}</option>
@@ -30,6 +30,8 @@
         </div>
    <button class="btn btn-primary" type="submit">speichern</button>
 </form>
+   <button id="reset_button" class="btn btn-primary">zurücksetzen</button>
+
 
 </br>
 <h4>Infos zur Unterkunft</h4>

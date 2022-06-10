@@ -102,7 +102,7 @@ class ShelterForm(FlaskForm):
     )
 
 
-class DeleteShelter(FlaskForm):
+class DeleteShelterForm(FlaskForm):
     submit = SubmitField('Unterkunft löschen', validators=[validators.InputRequired()])
 
 
@@ -112,5 +112,16 @@ class MenschForm(FlaskForm):
     bezugsgruppe = StringField('Bezugsgruppe', validators=[validators.InputRequired()])
 
 
-class DeleteMensch(FlaskForm):
+class DeleteMenschForm(FlaskForm):
     submit = SubmitField('löschen', validators=[validators.InputRequired()])
+
+
+class SignalAccountForm(FlaskForm):
+    device_name = StringField('Name für das gelinkte Gerät', validators=[validators.DataRequired()])
+    submit = SubmitField('Gerät hinzufügen', validators=[validators.InputRequired()])
+
+
+class SignalMessageForm(FlaskForm):
+    telephone = StringField('Telefonnummer', validators=[validators.DataRequired()])
+    message = TextAreaField('Nachricht', validators=[validators.DataRequired()])
+    submit = SubmitField('Nachricht abschicken', validators=[validators.InputRequired()])
