@@ -33,7 +33,8 @@ def test_menschen_add_valid(client):
             'date_to': '2022-07-22'
             }
     resp = client.post("/mensch/add", data=data, follow_redirects=False, auth=(USER, USER))
-    assert resp.status_code == 302
+    # 200 if we are not logged in (creds are not enough)
+    assert resp.status_code == 200
 
     resp = client.get("/menschen", follow_redirects=False, auth=(USER, USER))
     assert resp.status_code == 200
@@ -61,7 +62,9 @@ def test_menschen_add_invalid_already_exists(client):
             'date_to': '2022-07-22',
            }
     resp = client.post("/mensch/add", data=data, follow_redirects=False, auth=(USER, USER))
-    assert resp.status_code == 302
+    # 200 if we are not logged in
+    assert resp.status_code == 200
+    assert "Verwendungszweck" in resp.text
 
     resp = client.post("/mensch/add", data=data, follow_redirects=False, auth=(USER, USER))
     assert resp.status_code == 200

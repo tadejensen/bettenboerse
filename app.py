@@ -237,11 +237,12 @@ def create_mensch():
         form.populate_obj(mensch)
         db.session.add(mensch)
         db.session.commit()
-        flash("Dein Eintrag wurde hinterlegt", "success")
         if session.get('logged_in', False) is True:
+            flash("Der Mensch wurder erfolgreich angelegt", "success")
             return redirect(url_for('list_menschen'))
         else:
-            return redirect(url_for('create_mensch'))
+            flash("Dein Gesuch wurde aufgenommen", "success")
+            return render_template("spenden.html")
 
     return render_template(
         'mensch_add.html',
