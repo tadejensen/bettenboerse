@@ -22,8 +22,7 @@ class Shelter(db.Model):
     date_to_june = db.Column(db.Date())
     latitude = db.Column(db.String())
     longitude = db.Column(db.String())
-    # TODO: rename lg_comment to internal_comment
-    lg_comment = db.Column(db.String())
+    internal_comment = db.Column(db.String())
     menschen = relationship("Reservation", back_populates="shelter")
     beds_total = column_property(beds_basic + beds_luxury)
 

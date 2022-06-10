@@ -399,15 +399,15 @@ def signal_log():
     return render_template("signal_logs.html", logs=logs)
 
 
-@app.route("/shell")
-@auth.login_required
-def shell():
-    m = Mensch.query.first()
-    s = Shelter.query.first()
-    r = Reservation(mensch=m, shelter=s, date=datetime(day=21, month=7, year=2022))
-    db.session.add(r)
-    db.session.commit()
-    return "ok"
+#@app.route("/shell")
+#@auth.login_required
+#def shell():
+#    m = Mensch.query.first()
+#    s = Shelter.query.first()
+#    r = Reservation(mensch=m, shelter=s, date=datetime(day=21, month=7, year=2022))
+#    db.session.add(r)
+#    db.session.commit()
+#    return "ok"
 
 
 @auth.verify_password

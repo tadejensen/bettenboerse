@@ -75,10 +75,14 @@ Infos zur Unterkunft
 <textarea class="form-control" readonly rows=5>
 {{ shelter.rules }}
 </textarea>
-LG interner Kommentar
+
+{% if session['logged_in'] %}
+Interner Kommentar (nur für Menschen, die Unterkünfte koordinieren/organisieren)
 <textarea class="form-control" readonly rows=3>
-{% if shelter.lg_comment %}{{ shelter.lg_comment }}{% endif %}
+{% if shelter.internal_comment %}{{ shelter.internal_comment }}{% endif %}
 </textarea>
+{% endif %}
+
 &nbsp;
 
 <hr>

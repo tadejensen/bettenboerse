@@ -106,8 +106,8 @@ class ShelterForm(FlaskForm):
         'Längengrad (longitude)',
         validators=[validators.Optional(), validate_long_lat]
     )
-    lg_comment = TextAreaField(
-        'Interner Kommentar',
+    internal_comment = TextAreaField(
+        'Interner Kommentar (nur für Menschen, die Unterkünfte koordinieren/organisieren)',
         validators=[validators.Optional()]
     )
 
