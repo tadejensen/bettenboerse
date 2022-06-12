@@ -26,6 +26,7 @@ def test_menschen_list(client):
 def test_menschen_add_valid(client):
     resp = client.get("/mensch/add", follow_redirects=False, auth=(USER, USER))
     assert settings.phone_shelter_support in resp.text
+    assert settings.phone_shelter_support != ""
     assert resp.status_code == 200
 
     name = "test_user1"
