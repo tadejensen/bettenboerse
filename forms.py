@@ -138,6 +138,8 @@ class MenschForm(FlaskForm):
     date_to = DateField("Bis wann bist du in Berlin?", validators=[validators.InputRequired(), mensch_validate_date_to])
     flinta = SelectField("Ich möchte in einem FLINTA Space unterkommen (Frauen, Lesben, intergeschlechtliche, nichtbinäre, trans und agender Personen)", choices=["Nein", "Ja"])
     non_food = StringField('Hast du Lebensmittelunverträglichkeiten?', validators=[validators.Optional()])
+    needs = StringField('Hast du besondere Bedürfnisse (z. B. kannst nicht länger auf einer Isomatte schlafen, generell Barrierefreiheit)', validators=[validators.Optional()])
+    fellows = StringField('Ich reise mit folgenden Menschen an/möchte mit folgenden Menschen zusammen übernachten', validators=[validators.Optional()])
 
 
 class DeleteMenschForm(FlaskForm):

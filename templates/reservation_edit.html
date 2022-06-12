@@ -20,10 +20,11 @@
         <label for="mensch">Wer schläft hier nachts?</label>
         <select id="select_menschen" name="mensch" class="selectpicker form-control" multiple data-live-search="true">
         {% for mensch in menschen %}
+            {% set fellows = ", da mit: " ~ mensch.fellows if mensch.fellows else '' %}
             {% if mensch.id in reservations_menschen_ids %}
-                <option selected value="{{ mensch.id }}">{{ mensch.name }} ({{ mensch.bezugsgruppe }})</option>
+            <option selected value="{{ mensch.id }}">{{ mensch.name }} ({{ mensch.bezugsgruppe }}{{ fellows }})</option>
             {% else %}
-                <option value="{{ mensch.id }}">{{ mensch.name }} ({{ mensch.bezugsgruppe }})</option>
+        <option value="{{ mensch.id }}">{{ mensch.name }} ({{ mensch.bezugsgruppe }}{{ fellows }})</option>
             {% endif %}
         {% endfor %}
         </select>

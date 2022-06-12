@@ -9,6 +9,9 @@
 {% block content %}
 
 
+Wenn ihr nach Berlin kommt und zwischendurch mal nach Hause fahrt, tragt bitte eure erste Abreise ein und meldet euch nochmal diesbezüglich bei uns via Signal.
+Wenn ihr zusammen mit Familie/anderen Menschen anreist: tragt euch bitte alle einzeln ein und gebt das hier unten im entsprechenden Feld mit an. Wenn ihr Fragen oder Probleme mit eurer Unterkunft habt, könnt ihr euch unter folgender Nummer melden: {{ settings.phone_shelter_support }}.</br></br>
+
 <form action="" method="POST">
     {{ form.hidden_tag() }}
     <div class="form-group">
@@ -49,6 +52,16 @@
     <div class="form-group">
         {{ form.flinta.label }}
         {{ form.flinta(class_="form-control") }}
+    </div>
+    
+    <div class="form-group">
+        {{ form.needs.label }}
+        {{ form.needs(class_="form-control") }}
+    </div>
+    
+    <div class="form-group">
+        {{ form.fellows.label }}
+        {{ form.fellows(class_="form-control") }}
     </div>
     
     <div class="form-group">

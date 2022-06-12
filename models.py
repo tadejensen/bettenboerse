@@ -65,6 +65,12 @@ class Mensch(db.Model):
     relative = db.Column(db.String())
     flinta = db.Column(db.String())
     non_food = db.Column(db.String())
+    needs = db.Column(db.String())
+    fellows = db.Column(db.String())
+
+    def get_last_reservation_date(self):
+        last_reservation = Reservation.query.filter_by(mensch_id=self.id).order_by(Reservation.date.desc()).first()
+        return last_reservation.date.strftime("%d.%m.") if last_reservation else "keine Reservierung"
 
 
 class SignalLog(db.Model):

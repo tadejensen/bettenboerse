@@ -1,11 +1,20 @@
+import pytest
 from base import client, USER, db
-from app import Shelter, Mensch
+from app import Shelter, Mensch, app
 import uuid
 from datetime import date
 
 
+@pytest.fixture(autouse=True)
+def my_fixture():
+    with app.app_context():
+        assert Shelter.query.filter(Shelter.name.like("test_unterkunft%")).all() == []
+        yield
+        assert Shelter.query.filter(Shelter.name.like("test_unterkunft%")).all() == []
+
+
 def test_add_valid_shelter(client):
-    name = "unterkunft1312"
+    name = "test_unterkunft1312"
     data = {'name': name,
             'pronoun': 'pronomen',
             'telephone': 'tele',
@@ -98,7 +107,7 @@ def test_all_unterkünfte_detail_edit(client):
 
 
 def test_add_invalid_unterkunft_date(client):
-    data = {'name': 'Hans',
+    data = {'name': 'test_unterkunft111',
             'pronoun': 'er',
             'telephone': '0123',
             'address': 'Haupstraße 4',
@@ -124,7 +133,7 @@ def test_shelter_reservation(client):
     client.get('/', auth=(USER, USER))
     id = str(uuid.uuid4())
     shelter = Shelter(uuid=id,
-                      name="Pippi",
+                      name="test_unterkunft_should_not_exist",
                       pronoun="sie/her",
                       telephone="0123123123",
                       address="Aufm Acker 4",

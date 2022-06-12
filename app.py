@@ -231,7 +231,8 @@ def create_mensch():
             flash(f"Es existiert bereits ein Mensch mit Namen {form.name.data}", "danger")
             return render_template(
                 'mensch_add.html',
-                form=form
+                form=form,
+                settings=settings,
             )
         mensch = Mensch()
         form.populate_obj(mensch)
@@ -246,7 +247,8 @@ def create_mensch():
 
     return render_template(
         'mensch_add.html',
-        form=form
+        form=form,
+        settings=settings,
     )
 
 

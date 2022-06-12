@@ -1,6 +1,14 @@
+import pytest
 from base import client, USER, db
-from app import Mensch
-from datetime import datetime
+from app import Mensch, app, settings
+
+
+@pytest.fixture(autouse=True)
+def my_fixture():
+    with app.app_context():
+        assert Mensch.query.filter(Mensch.name.like("test_user%")).all() == []
+        yield
+        assert Mensch.query.filter(Mensch.name.like("test_user%")).all() == []
 
 
 def test_menschen_auth(client):
@@ -17,6 +25,7 @@ def test_menschen_list(client):
 
 def test_menschen_add_valid(client):
     resp = client.get("/mensch/add", follow_redirects=False, auth=(USER, USER))
+    assert settings.phone_shelter_support in resp.text
     assert resp.status_code == 200
 
     name = "test_user1"

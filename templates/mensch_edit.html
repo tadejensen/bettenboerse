@@ -51,6 +51,16 @@
     </div>
     
     <div class="form-group">
+        {{ form.needs.label }}
+        {{ form.needs(class_="form-control") }}
+    </div>
+    
+    <div class="form-group">
+        {{ form.fellows.label }}
+        {{ form.fellows(class_="form-control") }}
+    </div>
+    
+    <div class="form-group">
         {{ form.non_food.label }}
         {{ form.non_food(class_="form-control") }}
     </div>
