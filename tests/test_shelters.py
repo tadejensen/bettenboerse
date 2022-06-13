@@ -2,15 +2,17 @@ import pytest
 from base import client, USER, db
 from app import Shelter, Mensch, app
 import uuid
-from datetime import date
+from datetime import date, datetime
 
 
 @pytest.fixture(autouse=True)
 def my_fixture():
     with app.app_context():
         assert Shelter.query.filter(Shelter.name.like("test_unterkunft%")).all() == []
+        assert Mensch.query.filter(Mensch.name.like("alerta%")).all() == []
         yield
         assert Shelter.query.filter(Shelter.name.like("test_unterkunft%")).all() == []
+        assert Mensch.query.filter(Mensch.name.like("alerta%")).all() == []
 
 
 def test_add_valid_shelter(client):
@@ -158,8 +160,10 @@ def test_shelter_reservation(client):
     assert resp.status_code == 200
     assert "Reservierung ändern" in resp.text
 
-    mensch = Mensch(name="alerta", bezugsgruppe="erste reihe", telephone="0123")
-    mensch2 = Mensch(name="alerta2", bezugsgruppe="erste reihe", telephone="0483")
+    mensch = Mensch(name="alerta", bezugsgruppe="erste reihe", telephone="0123",
+            date_from=datetime(year=2021, month=6, day=22), date_to=datetime(year=2023, month=6, day=28))
+    mensch2 = Mensch(name="alerta2", bezugsgruppe="erste reihe", telephone="0483",
+            date_from=datetime(year=2021, month=6, day=22), date_to=datetime(year=2023, month=6, day=28))
     db.session.add(mensch)
     db.session.add(mensch2)
     db.session.commit()

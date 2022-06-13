@@ -8,8 +8,10 @@ from datetime import datetime
 def my_fixture():
     with app.app_context():
         assert Mensch.query.filter(Mensch.name.like("test_user%")).all() == []
+        assert Mensch.query.filter(Mensch.name.like("alerta%")).all() == []
         yield
         assert Mensch.query.filter(Mensch.name.like("test_user%")).all() == []
+        assert Mensch.query.filter(Mensch.name.like("alerta%")).all() == []
 
 
 def test_menschen_auth(client):
@@ -131,7 +133,7 @@ def test_menschen_delete(client):
 def test_menschen_edit(client):
     # I need this to get access to db ...
     resp = client.get("/menschen", follow_redirects=False, auth=(USER, USER))
-    mensch = Mensch(name="test_user2222", bezugsgruppe="Fisch", 
+    mensch = Mensch(name="test_user2222", bezugsgruppe="Fisch",
                     telephone="01487538", date_from=datetime(year=2022, month=6, day=22),
                     date_to=datetime(year=2022, month=6, day=28), birthday=datetime(year=1991, month=6, day=22))
     db.session.add(mensch)
