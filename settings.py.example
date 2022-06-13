@@ -9,3 +9,5 @@ PASSWORD_HASH = 'pbkdf2:sha256:260000$sg3EYr3BgaNmiLNk$ed0195889b815194d1a144eea
 start_date = date(year=2022, month=6, day=17)
 end_date = date(year=2022, month=9, day=18)
 phone_shelter_support = ""
+phone_vor_ort_support = ""
+phone_ea = ""
