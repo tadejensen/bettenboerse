@@ -13,8 +13,11 @@
     <tr>
       <th scope="col">Name</th>
       <th scope="col">Bezugsgruppe</th>
+      <th scope="col">von</th>
+      <th scope="col">bis</th>
       <th scope="col">späteste Reservierung</th>
-      <th scope="col">Telefon</th>
+      <th scope="col">FLINTA-Space</th>
+      <th scope="col">Details</th>
       <th scope="col">Editieren</th>
       <th scope="col">Löschen</th>
     </tr>
@@ -24,8 +27,13 @@
     <tr>
       <td>{{ mensch.name }}</td>
       <td>{{ mensch.bezugsgruppe }}</td>
+      <td>{{ mensch.date_from.strftime("%d.%m.") }}</td>
+      <td>{{ mensch.date_to.strftime("%d.%m.") }}</td>
       <td>{{ mensch.get_last_reservation_date()}}</td>
-      <td>{{ mensch.telephone }}</td>
+      <td>{{ mensch.flinta }}</td>
+      <td>
+            <p><a href="{{ url_for('show_mensch', id=mensch.id) }}">anzeigen</a></p>
+     </td>
       <td>
             <p><a href="{{ url_for('edit_mensch', id=mensch.id) }}">editieren</a></p>
      </td>
@@ -36,5 +44,6 @@
 {% endfor %}
   </tbody>
 </table>
+
 
 {% endblock %}

@@ -289,6 +289,19 @@ def delete_mensch(id):
     )
 
 
+@app.route('/mensch/<id>/', methods=['GET', 'POST'])
+@auth.login_required
+def show_mensch(id):
+    mensch = Mensch.query.get_or_404(id, description=f"Mensch mit der id {id} wurde nicht gefunden")
+    reservations = Reservation.query.filter_by(mensch=mensch).order_by(Reservation.date.asc()).all()
+
+    return render_template(
+        'mensch_show.html',
+        mensch=mensch,
+        reservations=reservations,
+    )
+
+
 @app.route('/karte')
 @auth.login_required
 def show_map():

@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h3>{% block title %}Infos zum Menschen{% endblock %}</h3>
+{% endblock %}
+
+
+{% block content %}
+
+</br>
+<table class="table">
+  <tbody>
+    <tr>
+      <td>Name</td>
+      <td>{{ mensch.name }}</td>
+    </tr>
+    <tr>
+      <td>Zeitraum</td>
+        <td>{{ mensch.date_from.strftime("%d.%m. (%a)") }}
+      bis
+        {{ mensch.date_to.strftime("%d.%m. (%a)") }}
+      </td>
+    </tr>
+    <tr>
+      <td>Telefon-Nr</td>
+      <td>{{ mensch.telephone }}</td>
+    </tr>
+    <tr>
+      <td>Bezugsgruppe</td>
+      <td>{{ mensch.bezugsgruppe }}</td>
+    </tr>
+    <tr>
+      <td>Bin in Berlin mit</td>
+      <td>{{ mensch.follows }}</td>
+    </tr>
+    <tr>
+      <td>Suche einen FLINTA Space mit</td>
+      <td>{{ mensch.flinta }}</td>
+    </tr>
+    <tr>
+      <td>Lebensmitteluntervträglichkeiten</td>
+      <td>{{ mensch.non_food }}</td>
+    </tr>
+    <tr>
+      <td>besondere Beüdrfnisse</td>
+      <td>{{ mensch.needs }}</td>
+    </tr>
+    <tr>
+      <td>Angehörigenkontakt</td>
+      <td>{{ mensch.relative }}</td>
+    </tr>
+    <tr>
+      <td>Geburtstag</td>
+      <td>{{ mensch.birthday }}</td>
+    </tr>
+
+  </tbody>
+</table>
+
+<h4>Reservierungen</h4>
+
+<table class="table">
+  <thead>
+    <tr>
+        <th>Datum</th>
+        <th>Unterkunft</th>
+    </tr>
+  </thead>
+  <tbody>
+{% for mensch in menschen %}
+    <tr>
+      <td>{{ mensch.name }}</td>
+    </tr>
+{% endfor %}
+  </tbody>
+</table>
+
+
+<ul>
+{% for reservation in reservations %}
+
+<li>
+    {{ reservation.date.strftime("%a %d.%m.") }} <a href="{{ url_for('show_shelter', uuid=reservation.shelter.uuid, _anchor='reservierung-' + reservation.date.strftime("%d%m")) }}">{{ reservation.shelter.name  }}</a>
+</li>
+
+{% endfor %}
+</ul>
+
+{% endblock %}
+

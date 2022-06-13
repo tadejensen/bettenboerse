@@ -1,6 +1,7 @@
 import pytest
 from base import client, USER, db
 from app import Mensch, app, settings
+from datetime import datetime
 
 
 @pytest.fixture(autouse=True)
@@ -15,6 +16,9 @@ def test_menschen_auth(client):
     resp = client.get("/menschen", follow_redirects=False)
     assert resp.status_code == 401
     resp = client.get("/mensch/123/edit", follow_redirects=False)
+    assert resp.status_code == 401
+    assert resp.status_code == 401
+    resp = client.get("/mensch/123/", follow_redirects=False)
     assert resp.status_code == 401
 
 
@@ -45,11 +49,11 @@ def test_menschen_add_valid(client):
     resp = client.post("/mensch/add", data=data, follow_redirects=False, auth=(USER, USER))
     # 200 if we are not logged in (creds are not enough)
     assert resp.status_code == 200
+    resp = client.post("/mensch/add", data=data, follow_redirects=False, auth=(USER, USER))
 
     resp = client.get("/menschen", follow_redirects=False, auth=(USER, USER))
     assert resp.status_code == 200
     assert name in resp.text
-    assert phone in resp.text
     assert bezugsgruppe in resp.text
 
     mensch = Mensch.query.filter_by(name=name)
@@ -127,10 +131,14 @@ def test_menschen_delete(client):
 def test_menschen_edit(client):
     # I need this to get access to db ...
     resp = client.get("/menschen", follow_redirects=False, auth=(USER, USER))
-    mensch = Mensch(name="test_user2222", bezugsgruppe="Fisch", telephone="01487538")
+    mensch = Mensch(name="test_user2222", bezugsgruppe="Fisch", 
+                    telephone="01487538", date_from=datetime(year=2022, month=6, day=22),
+                    date_to=datetime(year=2022, month=6, day=28), birthday=datetime(year=1991, month=6, day=22))
     db.session.add(mensch)
     db.session.commit()
     resp = client.get(f"/mensch/{mensch.id}/edit", follow_redirects=False, auth=(USER, USER))
+    assert resp.status_code == 200
+    resp = client.get(f"/mensch/{mensch.id}/", follow_redirects=False, auth=(USER, USER))
     assert resp.status_code == 200
 
     name = "test_user11011"
