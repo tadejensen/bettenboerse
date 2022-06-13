@@ -266,7 +266,8 @@ def edit_mensch(id):
 
     return render_template(
         'mensch_edit.html',
-        form=form
+        form=form,
+        mensch=mensch,
     )
 
 

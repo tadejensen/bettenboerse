@@ -7,6 +7,7 @@
 
 {% block content %}
 
+<a href="{{ url_for('show_mensch', id=mensch.id) }}">Menschen anzeigen</a> <br/></br>
 
 <form action="" method="POST">
     {{ form.hidden_tag() }}
