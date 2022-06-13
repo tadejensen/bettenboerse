@@ -17,6 +17,7 @@
       <th scope="col">bis</th>
       <th scope="col">späteste Reservierung</th>
       <th scope="col">FLINTA-Space</th>
+      <th scope="col">besonere Bedürfnisse</th>
       <th scope="col">Details</th>
       <th scope="col">Editieren</th>
       <th scope="col">Löschen</th>
@@ -30,6 +31,14 @@
       <td>{{ mensch.date_from.strftime("%d.%m.") }}</td>
       <td>{{ mensch.date_to.strftime("%d.%m.") }}</td>
       <td>{{ mensch.get_last_reservation_date()}}</td>
+      <td>{{ mensch.flinta }}</td>
+      <td>
+      {% if mensch.needs %}
+      Ja
+      {% else %}
+      Nein
+      {% endif %}
+      </td>
       <td>{{ mensch.flinta }}</td>
       <td>
             <p><a href="{{ url_for('show_mensch', id=mensch.id) }}">anzeigen</a></p>
