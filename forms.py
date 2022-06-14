@@ -11,12 +11,12 @@ def shelter_validate_date(form, field):
             raise ValidationError('Das End-Datum liegt vor dem Start-Datum.')
 
 
-def mensch_validate_date_to(form, field):
+def validate_date_to(form, field):
     if form.data['date_to'] < form.data['date_from']:
         raise ValidationError('Das End-Datum liegt vor dem Start-Datum.')
 
 
-def mensch_validate_date_from(form, field):
+def validate_date_from(form, field):
     if form.data['date_from'] < settings.start_date:
         raise ValidationError("Du kommst zu früh :)")
 
@@ -134,8 +134,8 @@ class MenschForm(FlaskForm):
     telephone = StringField('Telefonnummer', validators=[validators.InputRequired(), validate_phone])
     relative = StringField('Angehörigen/Notfallkontakte (Name, Telefonnummer und wann die Person angerufen werden soll)', validators=[validators.Optional()])
     bezugsgruppe = StringField('Bezugsgruppe (oder auch "Support" oder "Orga", wenn das deiner Rolle eher entspricht)', validators=[validators.InputRequired()])
-    date_from = DateField("Von wann bist du in Berlin?", validators=[validators.InputRequired(), mensch_validate_date_from])
-    date_to = DateField("Bis wann bist du in Berlin?", validators=[validators.InputRequired(), mensch_validate_date_to])
+    date_from = DateField("Von wann bist du in Berlin?", validators=[validators.InputRequired(), validate_date_from])
+    date_to = DateField("Bis wann bist du in Berlin?", validators=[validators.InputRequired(), validate_date_to])
     flinta = SelectField("Ich möchte in einem FLINTA Space unterkommen (Frauen, Lesben, intergeschlechtliche, nichtbinäre, trans und agender Personen)", choices=["Nein", "Ja"])
     non_food = StringField('Hast du Lebensmittelunverträglichkeiten?', validators=[validators.Optional()])
     needs = StringField('Hast du besondere Bedürfnisse (z. B. kannst nicht länger auf einer Isomatte schlafen, generell Barrierefreiheit)', validators=[validators.Optional()])
@@ -155,3 +155,18 @@ class SignalMessageForm(FlaskForm):
     telephone = StringField('Telefonnummer', validators=[validators.DataRequired()])
     message = TextAreaField('Nachricht', validators=[validators.DataRequired()])
     submit = SubmitField('Nachricht abschicken', validators=[validators.InputRequired()])
+
+
+class FindShelterForm(FlaskForm):
+    date_from = DateField("Von wann wird eine Unterkunft gesucht?", validators=[validators.InputRequired(), validate_date_from])
+    date_to = DateField("Bis wann wird eine Unterkunft gesucht?", validators=[validators.InputRequired(), validate_date_to])
+    beds_needed = IntegerField('Für wie viele Menschen wird eine Unterkunft benötigt?', validators=[validators.InputRequired(), validators.NumberRange(min=0)])
+    submit = SubmitField('Unterkunft suchen', validators=[validators.InputRequired()])
+
+
+class ReservationForm(FlaskForm):
+    class Meta:
+        csrf = False 
+    date_from = DateField("Von wann wird eine Unterkunft gesucht?", validators=[validators.InputRequired(), validate_date_from])
+    date_to = DateField("Bis wann wird eine Unterkunft gesucht?", validators=[validators.InputRequired(), validate_date_to])
+    beds_needed = IntegerField('Für wie viele Menschen wird eine Unterkunft benötigt?', validators=[validators.InputRequired(), validators.NumberRange(min=0)])

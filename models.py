@@ -36,6 +36,15 @@ class Shelter(db.Model):
         #return f"{self.name} ({self.date_from_june} {self.date_to_june})"
         return f"{self.name} {self.beds_total}"
 
+    def get_capacity_by_date(self, date):
+        capacity = {}
+        reservations = Reservation.query.filter_by(shelter=self).filter_by(date=date).all()
+        capacity = {'beds_total': self.beds_total,
+                    'beds_used': len(reservations),
+                    'beds_free': self.beds_total - len(reservations),
+                   }
+        return capacity
+
     #def get_reservations_by_date(self, date):
     #    reservations = {}
     #    for reservation in self.menschen:

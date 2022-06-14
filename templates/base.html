@@ -7,9 +7,8 @@
 
     <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
 
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css" integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn" crossorigin="anonymous">
 
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 
     <title>Letzte Generation - Bettenbörse</title>
   </head>
@@ -26,11 +25,13 @@
 </div>
   <a href="{{ url_for('add_shelter') }}">Schlafplatz anbieten</a> | 
 {% if session['logged_in'] %}
-  <a href="{{ url_for('list_shelters') }}">Unterkünfte verwalten</a> |
-  <a href="{{ url_for('list_menschen') }}">Menschen verwalten</a> | 
-  <a href="{{ url_for('overview') }}">Betten-Übersicht</a> | 
-  <a href="{{ url_for('show_map') }}">Karte anzeigen</a> |
-  <a href="{{ url_for('signal_index') }}">Signal</a>
+  <a href="{{ url_for('signal_index') }}">Signal</a> |
+  <a href="{{ url_for('list_menschen') }}">Menschen verwalten</a>
+  </br>
+  <a href="{{ url_for('list_shelters') }}">Unterkünfte anzeigen</a> |
+  <a href="{{ url_for('find_shelter') }}">Unterkunft finden</a> |
+  <a href="{{ url_for('overview') }}">Unterkünfte Übersicht</a> | 
+  <a href="{{ url_for('show_map') }}">Karte anzeigen</a> 
 {% else %}
   <a href="{{ url_for('login') }}">Login</a>
 {% endif %}
@@ -67,14 +68,13 @@
 
 </div> <!-- container -->
 
-  </body>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.min.js" integrity="sha384-VHvPCCyXqtD5DqJeNxl2dtTyhF78xXNXdkwX1CZeRusQfRKp+tA7hAShOK/B/fQ2" crossorigin="anonymous"></script>
     
-  <!-- Optional JavaScript -->
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    {% block more_script %}{% endblock %}
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+  </body>
 </html>
 
 

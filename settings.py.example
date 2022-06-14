@@ -11,3 +11,4 @@ end_date = date(year=2022, month=9, day=18)
 phone_shelter_support = ""
 phone_vor_ort_support = ""
 phone_ea = ""
+phone_logistics = ""

@@ -56,9 +56,11 @@ def test_add_valid_shelter(client):
     assert settings.phone_shelter_support != ""
     assert settings.phone_vor_ort_support != ""
     assert settings.phone_ea != ""
+    assert settings.phone_logistics != ""
     assert settings.phone_shelter_support in resp.text
     assert settings.phone_vor_ort_support in resp.text
     assert settings.phone_ea in resp.text
+    assert settings.phone_logistics in resp.text
 
     # check delete view
     resp = client.get(f"/unterkunft/{shelter.uuid}/delete", auth=(USER, USER))

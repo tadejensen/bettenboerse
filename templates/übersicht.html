@@ -17,7 +17,7 @@ Wann stehen welche Betten zur Verfügung?
 Wann sind wie viele Betten belegt?
 <pre>
 {% for day,data in beds.items() %}
-{{ day.strftime("%a %d.%m.") }}   {{ data['used_beds'] }}/{{ data['beds_total'] }} Betten verfügbar, {{ data['menschen_on_site'] }} Menschen sind da {% endfor %}
+{{ day.strftime("%a %d.%m.") }}  {{ data['used_beds'] }}/{{ data['beds_total'] }} Betten belegt, {{ data['menschen_on_site'] }} Menschen sind vor Ort {% endfor %}
 </pre>
 
 

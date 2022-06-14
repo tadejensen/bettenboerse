@@ -4,7 +4,7 @@ from flask import Flask, render_template, redirect, flash, url_for, session, req
 from flask_httpauth import HTTPBasicAuth
 from flask_migrate import Migrate
 from werkzeug.security import check_password_hash
-from forms import ShelterForm, DeleteShelterForm, MenschForm, DeleteMenschForm, SignalAccountForm, SignalMessageForm
+from forms import ShelterForm, DeleteShelterForm, MenschForm, DeleteMenschForm, SignalAccountForm, SignalMessageForm, FindShelterForm, ReservationForm
 from datetime import datetime, timedelta
 import uuid
 from flask_qrcode import QRcode
@@ -29,6 +29,33 @@ migrate = Migrate(app, db, compare_type=True, render_as_batch=True)
 
 db.init_app(app)
 db.create_all(app=app)
+
+
+@app.route('/unterkunft-finden', methods=['GET', 'POST'])
+@auth.login_required
+def find_shelter():
+    shelters_ok = []
+    form = FindShelterForm()
+    if form.validate_on_submit():
+        stay_begin = form.date_from.data
+        shelters = Shelter.query.filter(stay_begin >= Shelter.date_from_june).filter(form.date_to.data < Shelter.date_to_june).all()
+        delta = timedelta(days=1)
+        for shelter in shelters:
+            stay_begin = form.date_from.data
+            space_ok = True
+            while stay_begin < form.date_to.data:
+                if shelter.get_capacity_by_date(stay_begin)['beds_free'] < int(form.beds_needed.data):
+                    print(f"{shelter.name} hat am {stay_begin} nur {shelter.get_capacity_by_date(stay_begin)['beds_free']} Betten frei")
+                    space_ok = False
+                    break
+                stay_begin += delta
+            if space_ok:
+                shelters_ok.append(shelter)
+    return render_template(
+        'find_shelter.html',
+        form=form,
+        shelters=shelters_ok,
+    )
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -95,6 +122,81 @@ def show_shelter(uuid):
         reservations=reservations,
         settings=settings,
     )
+
+
+@app.route('/unterkunft/<uuid>/reservieren', methods=['GET', 'POST'])
+@auth.login_required
+def edit_reservation_bulk(uuid):
+    shelter = Shelter.query.get_or_404(uuid, description=f"Unterkunft mit der id {uuid} wurde nicht gefunden")
+
+    if request.method == "GET":
+        form = ReservationForm(request.args)
+
+        if form.validate():
+            menschen = Mensch.query.filter(form.date_from.data >= Mensch.date_from). \
+                                    filter(form.date_to.data < Mensch.date_to).order_by(Mensch.bezugsgruppe.asc()).all()
+        else:
+            menschen = Mensch.query.order_by(Mensch.bezugsgruppe.asc()).all()
+        return render_template("bulk_reservation.html",
+                               shelter=shelter,
+                               form=form,
+                               menschen=menschen)
+
+    if request.method == "POST":
+        form = ReservationForm()
+        if form.validate_on_submit():
+            menschen = Mensch.query.filter(form.date_from.data >= Mensch.date_from). \
+                                    filter(form.date_to.data <= Mensch.date_to).all()
+            delta = timedelta(days=1)
+            # check user input: Can we use the shelter in this time?
+            if form.date_from.data < shelter.date_from_june or form.date_to.data > shelter.date_to_june:
+                menschen = Mensch.query.all()
+                flash("Die Unterkunft steht uns zu dem angegebenen Zeitraum nicht zur Verfügung", "danger")
+                return render_template("bulk_reservation.html",
+                                       shelter=shelter,
+                                       form=form,
+                                       menschen=menschen)
+            stay_start = form.date_from.data
+            ids_menschen_all = [m.id for m in menschen]
+            ids_menschen_submitted = request.form.to_dict(flat=False).get('mensch', [])
+            ids_menschen_submitted = [int(x) for x in ids_menschen_submitted]
+            for id in ids_menschen_submitted:
+                # user input: does the user exist. And: is the user on site during this time??
+                menschen = Mensch.query.all()
+                if id not in ids_menschen_all:
+                    flash(f"{Mensch.query.get(id).name} ist im gewünschten Zeitraum nicht vor Ort", "danger")
+                    return render_template("bulk_reservation.html",
+                                           shelter=shelter,
+                                           form=form,
+                                           menschen=menschen)
+                # check user: does the user alrady have a reservation for that day?
+                while stay_start < form.date_to.data:
+                    res = Reservation.query.filter_by(date=stay_start).filter_by(mensch_id=id).first()
+                    if res:
+                        menschen = Mensch.query.all()
+                        flash(f"{Mensch.query.get(id).name} hat am {stay_start.strftime('%d.%m.')} schon eine Reservierung in der Unterkunft '{res.shelter.name}'", "danger")
+                        return render_template("bulk_reservation.html",
+                                               shelter=shelter,
+                                               form=form,
+                                               menschen=menschen)
+                    stay_start += delta
+            # check if there is enough space
+            delta = timedelta(days=1)
+            stay_begin = form.date_from.data
+            while stay_begin < form.date_to.data:
+                if shelter.get_capacity_by_date(stay_begin)['beds_free'] < len(ids_menschen_submitted):
+                    flash(f"Unterkunft '{shelter.name}' hat am {stay_begin.strftime('%d.%m.')} nur {shelter.get_capacity_by_date(stay_begin)['beds_free']} Betten frei (angegeben wurden {len(ids_menschen_submitted)})", "danger")
+                    return render_template("bulk_reservation.html",
+                                           shelter=shelter,
+                                           form=form,
+                                           menschen=menschen,
+                                           ids_menschen_submitted=ids_menschen_submitted)
+                stay_begin += delta
+    else:
+        return render_template("bulk_reservation.html",
+                               shelter=shelter,
+                               form=form,
+                               menschen=menschen)
 
 
 @app.route('/unterkunft/<uuid>/reservation/<date>/edit', methods=['GET', 'POST'])
@@ -165,6 +267,7 @@ def edit_reservation(uuid, date):
                 shelter=shelter,
                 reservations_menschen_ids=ids_menschen_submitted,
             )
+    # TODO: is the user on site for that day?
 
     Reservation.query.filter_by(shelter=shelter).filter_by(date=date).delete()
     for mensch_id in ids_menschen_submitted:
@@ -332,7 +435,7 @@ def show_map():
 @app.route('/übersicht')
 @auth.login_required
 def overview():
-    shelters = Shelter.query.filter_by().all()
+    shelters = Shelter.query.order_by(Shelter.beds_total.desc()).all()
     shelters_list = []
     for shelter in shelters:
         if shelter.date_to_june:
@@ -446,9 +549,9 @@ def login():
     return redirect(url_for('list_shelters'))
 
 
-#@app.route('/test', methods=['GET', 'POST'])
-#def test():
-#    return render_template('test.html')
+@app.route('/test', methods=['GET', 'POST'])
+def test():
+    return render_template('test.html')
 
 
 @app.errorhandler(404)
