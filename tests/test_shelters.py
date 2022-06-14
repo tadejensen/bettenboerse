@@ -42,7 +42,7 @@ def test_add_valid_shelter(client):
 
     # check list view
     resp = client.get('/unterkünfte', auth=(USER, USER))
-    assert "Übersicht Schlafplätze" in resp.text
+    assert "Übersicht Unterkünfte" in resp.text
     assert shelter.uuid in resp.text
     assert shelter.name in resp.text
     assert shelter.address in resp.text
@@ -78,7 +78,7 @@ def test_add_valid_shelter(client):
 
 def test_list_unterkuenfte(client):
     resp = client.get('/unterkünfte', auth=(USER, USER))
-    assert "Übersicht Schlafplätze" in resp.text
+    assert "Übersicht Unterkünfte" in resp.text
     for shelter in Shelter.query.all():
         assert shelter.uuid in resp.text
         assert shelter.name in resp.text

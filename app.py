@@ -553,6 +553,208 @@ def login():
 #def test():
 #    return render_template('test.html')
 
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from matplotlib.patches import Rectangle, Patch
+from datetime import timedelta
+import sqlite3
+import io
+from flask import Response
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from flask import Flask
+
+
+def read_sqlite(dbfile):
+    with sqlite3.connect(dbfile) as dbcon:
+        #tables = list(pd.read_sql_query("SELECT name FROM sqlite_master WHERE type='table';", dbcon)['name'])
+        tables = ["shelter", "reservation"]
+        out = {tbl: pd.read_sql_query(f"SELECT * from {tbl}", dbcon) for tbl in tables}
+        return out
+
+
+def format_name(name, linelen=20):
+    lines = int(np.ceil(len(name) / linelen))
+    charperline = int(len(name) / lines)
+    ukname = ""
+    for line in range(lines):
+        namefitzel = name[line * charperline:(line + 1) * charperline]
+        if line != lines - 1:
+            namefitzel = namefitzel + "-\n"
+        ukname = ukname + namefitzel
+
+    return ukname
+
+
+@app.route("/hist_betten.png")
+def hist_betten(dbfile="unterkünfte.db", start_plot="2022-06-18", end_plot="2022-07-15"):
+    a = read_sqlite(dbfile)
+    start = pd.to_datetime("2022-06-18")
+    end_plot = pd.to_datetime(end_plot)
+    start_plot = pd.to_datetime(start_plot)
+
+    betten = pd.DataFrame(a["shelter"])
+    reservations = pd.DataFrame(a["reservation"])
+
+    fig_hist = plt.figure(tight_layout=True, figsize=(13, 7))
+    ax_hist = plt.subplot(111)
+
+    bedcounts = []
+
+    t1_max = max(pd.to_datetime(betten["date_to_june"]))
+
+    for i in range((t1_max - start).days):
+        day = start + timedelta(days=i)
+        valbeds = betten[(pd.to_datetime(betten["date_from_june"]) <= day) & (pd.to_datetime(betten["date_to_june"]) > day)]
+        valbedcount = np.sum([valbeds["beds_basic"], valbeds["beds_luxury"]])
+        bedcounts.append((i, valbedcount))
+
+    reservations["date"] = pd.to_datetime(reservations["date"])
+    resdates = set(reservations["date"])
+    resdates_ind = []
+    resplaces = []
+
+    for date in resdates:
+        resdates_ind.append((date - start).days)
+        reses = reservations[reservations["date"] == date]
+        date_ind = (date-start).days
+        for ind in reses.index:
+            res = reses.loc[ind]
+            rescount = len(reses)
+        resplaces.append((date_ind, rescount))
+
+    bedcounts = np.array(bedcounts)
+    resplaces = np.array(resplaces)
+
+    ax_hist.bar(bedcounts[:, 0], bedcounts[:, 1], color="lightgreen", zorder=2.11, label="gesamt")
+    ax_hist.bar(resplaces[:, 0], resplaces[:, 1], zorder=2.12, color="lightcoral", label="belegt")
+
+    OG_xlim = ax_hist.get_xlim()
+    ax_hist.set_xticks(np.arange(0, (t1_max - start).days, 5))
+
+    xticklabs = []
+    for tick in ax_hist.get_xticks():
+        date = start + timedelta(days=int(tick))
+
+        xticklabs.append(date.strftime("%d. %B"))
+    ax_hist.set_yticks(np.arange(0, np.max(ax_hist.get_yticks()), 5), minor=True)
+    ax_hist.yaxis.grid()
+    ax_hist.yaxis.grid(which="minor", alpha=.25)
+
+    xlim = ((start_plot-start).days-.5, (end_plot-start).days+.5)
+
+    ax_hist.set(xticklabels=xticklabs, xlim=xlim,
+                xlabel="Datum", ylabel="Schlafplätze")
+    ax_hist.legend()
+    ax_hist.xaxis.set_tick_params(rotation=45)
+
+    output = io.BytesIO()
+    FigureCanvas(fig_hist).print_png(output)
+    return Response(output.getvalue(), mimetype="image/png")
+
+
+@app.route("/plot_calendar.png")
+def plot_calendar(dbfile="unterkünfte.db", start_plot="2022-06-18", end_plot="2022-07-15"):
+    """
+    dbfile: str zu unterkuefte.db
+    start_date: str im Format 'yyyy-mm-dd'
+        linke Anzeigegrenze des Plots
+    end_date:
+
+    """
+
+    a = read_sqlite(dbfile)
+    start = pd.to_datetime("2022-06-18")
+    end_plot = pd.to_datetime(end_plot)
+    start_plot = pd.to_datetime(start_plot)
+
+    betten = pd.DataFrame(a["shelter"])
+    reservations = pd.DataFrame(a["reservation"])
+    # reshuman = pd.DataFrame(a["reservations_mensch"])
+    # humans = pd.DataFrame(a["menschen"])
+
+    height = 1
+    legend_elements = [Patch(facecolor="lightgreen", edgecolor="none", label="frei Isomatte"),
+                       Patch(facecolor="tab:green", edgecolor="none", label="frei Isomatte"),
+                       Patch(facecolor="lightcoral", edgecolor="none", label="belegt")]
+
+    fig_cal = plt.figure(tight_layout=True, figsize=(13, 8))
+    ax_cal = plt.subplot()
+
+    k = 0
+    t1_max = pd.to_datetime("2022-06-18")
+
+    yticks = []
+    yticklabs = []
+
+    for ind in betten.index:
+        unterkunft = betten.loc[ind]
+        ax_cal.axhline(k, ls="dashed", color="grey", lw=.75)
+        k += .4 * height
+        bed = unterkunft["beds_luxury"]
+        iso = unterkunft["beds_basic"]
+        ukname = format_name(unterkunft["name"])
+        yticklabs.append(f'{ukname} ({bed + iso})')
+        yticks.append(k + (bed + iso) / 2)
+
+        t0 = pd.to_datetime(unterkunft["date_from_june"])
+        t1 = pd.to_datetime(unterkunft["date_to_june"])
+
+        if t1 is None:
+            print(f"Unterkunft von {unterkunft['name']} hat kein Enddatum angegeben. 2. Juli angenommen.")
+            t1 = pd.to_datetime("2022-07-02")
+
+        t1_max = max(t1, t1_max)
+
+        if unterkunft["uuid"] in list(reservations["shelter_id"]):
+            reses = reservations[reservations["shelter_id"] == unterkunft["uuid"]]
+            datecounts = reses.date.value_counts()
+            for resdate in datecounts.index:
+                datecount = datecounts.loc[resdate]
+                resdate = pd.to_datetime(resdate)
+                resdate_ind = (resdate-start).days
+
+                ax_cal.add_patch(Rectangle((resdate_ind + .5, k), 1, datecount * height,
+                                 facecolor="lightcoral", edgecolor="none", zorder=3))
+
+        for bedi in range(bed):
+            ax_cal.add_patch(Rectangle(((t0 - start).days + .5, k), (t1 - t0).days, height, facecolor="tab:green",
+                                       edgecolor="none", zorder=2))
+            ax_cal.add_patch(Rectangle(((t0 - start).days + .5, k), (t1 - t0).days, height, facecolor="none",
+                                       edgecolor="grey", lw=.5, zorder=3.5))
+            k += height
+        for isoi in range(iso):
+            ax_cal.add_patch(Rectangle(((t0 - start).days + .5, k), (t1 - t0).days, height, facecolor="lightgreen",
+                                       edgecolor="none", zorder=2))
+            ax_cal.add_patch(Rectangle(((t0 - start).days + .5, k), (t1 - t0).days, height, facecolor="none",
+                                       edgecolor="grey", lw=.5, zorder=3.5))
+            k += height
+
+        k += .4 * height
+
+    fig_cal.set_size_inches(13, k * .075)
+
+    ax_cal.legend(handles=legend_elements)
+    ax_cal.xaxis.grid(zorder=1)
+    ax_cal.set(xlim=((start_plot-start).days - 1, (end_plot - start).days + 1), ylim=(0, k + .5),
+               xlabel="Datum",
+               yticks=yticks, yticklabels=yticklabs)
+
+    ax_cal.set_xticks(np.arange(0, (t1_max - start).days, 5))
+    ax_cal.set_xticks(np.arange((t1_max - start).days), minor=True)
+    ax_cal.xaxis.grid(which="minor", zorder=1, alpha=.25)
+    dates = []
+    for d in ax_cal.get_xticks():
+        day = start + timedelta(days=int(d))
+
+        dates.append(day.strftime("%d. %B"))
+
+    ax_cal.xaxis.set_tick_params(rotation=45)
+    ax_cal.set(xticklabels=dates, xlim=((start_plot-start).days - 1, (end_plot - start).days + 1), ylim=(.001, k + .5))
+    output = io.BytesIO()
+    FigureCanvas(fig_cal).print_png(output)
+    return Response(output.getvalue(), mimetype="image/png")
+
 
 @app.errorhandler(404)
 def page_not_found(description):
