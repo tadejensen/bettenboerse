@@ -549,9 +549,9 @@ def login():
     return redirect(url_for('list_shelters'))
 
 
-@app.route('/test', methods=['GET', 'POST'])
-def test():
-    return render_template('test.html')
+#@app.route('/test', methods=['GET', 'POST'])
+#def test():
+#    return render_template('test.html')
 
 
 @app.errorhandler(404)
