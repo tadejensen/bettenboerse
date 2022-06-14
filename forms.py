@@ -152,7 +152,7 @@ class SignalAccountForm(FlaskForm):
 
 
 class SignalMessageForm(FlaskForm):
-    telephone = StringField('Telefonnummer', validators=[validators.DataRequired()])
+    telephone = StringField('Weitere Empfänger*in?', validators=[validators.Optional()])
     message = TextAreaField('Nachricht', validators=[validators.DataRequired()])
     submit = SubmitField('Nachricht abschicken', validators=[validators.InputRequired()])
 
@@ -166,7 +166,7 @@ class FindShelterForm(FlaskForm):
 
 class ReservationForm(FlaskForm):
     class Meta:
-        csrf = False 
+        csrf = False
     date_from = DateField("Von wann wird eine Unterkunft gesucht?", validators=[validators.InputRequired(), validate_date_from])
     date_to = DateField("Bis wann wird eine Unterkunft gesucht?", validators=[validators.InputRequired(), validate_date_to])
-    beds_needed = IntegerField('Für wie viele Menschen wird eine Unterkunft benötigt?', validators=[validators.InputRequired(), validators.NumberRange(min=0)])
+    #beds_needed = IntegerField('Für wie viele Menschen wird eine Unterkunft benötigt?', validators=[validators.InputRequired(), validators.NumberRange(min=0)])

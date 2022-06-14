@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from flask import Flask, render_template, redirect, flash, url_for, session, request
+import threading
+from flask import Flask, render_template, redirect, flash, url_for, session, request, Markup
 from flask_httpauth import HTTPBasicAuth
 from flask_migrate import Migrate
 from werkzeug.security import check_password_hash
@@ -132,9 +133,10 @@ def edit_reservation_bulk(uuid):
     if request.method == "GET":
         form = ReservationForm(request.args)
 
-        if form.validate():
+        if "beds_needed" in request.args.keys() and form.validate():
             menschen = Mensch.query.filter(form.date_from.data >= Mensch.date_from). \
-                                    filter(form.date_to.data < Mensch.date_to).order_by(Mensch.bezugsgruppe.asc()).all()
+                                    filter(form.date_to.data < Mensch.date_to). \
+                                    order_by(Mensch.bezugsgruppe.asc()).all()
         else:
             menschen = Mensch.query.order_by(Mensch.bezugsgruppe.asc()).all()
         return render_template("bulk_reservation.html",
@@ -147,22 +149,28 @@ def edit_reservation_bulk(uuid):
         if form.validate_on_submit():
             menschen = Mensch.query.filter(form.date_from.data >= Mensch.date_from). \
                                     filter(form.date_to.data <= Mensch.date_to).all()
-            delta = timedelta(days=1)
             # check user input: Can we use the shelter in this time?
             if form.date_from.data < shelter.date_from_june or form.date_to.data > shelter.date_to_june:
-                menschen = Mensch.query.all()
                 flash("Die Unterkunft steht uns zu dem angegebenen Zeitraum nicht zur Verfügung", "danger")
                 return render_template("bulk_reservation.html",
                                        shelter=shelter,
                                        form=form,
                                        menschen=menschen)
-            stay_start = form.date_from.data
+
+            delta = timedelta(days=1)
+            stay_begin = form.date_from.data
             ids_menschen_all = [m.id for m in menschen]
             ids_menschen_submitted = request.form.to_dict(flat=False).get('mensch', [])
             ids_menschen_submitted = [int(x) for x in ids_menschen_submitted]
+            # check user input: no menschen supplied?
+            if ids_menschen_submitted == []:
+                flash("Keine Menschen ausgewählt, die dort schlafen sollen", "danger")
+                return render_template("bulk_reservation.html",
+                                       shelter=shelter,
+                                       form=form,
+                                       menschen=menschen)
             for id in ids_menschen_submitted:
                 # user input: does the user exist. And: is the user on site during this time??
-                menschen = Mensch.query.all()
                 if id not in ids_menschen_all:
                     flash(f"{Mensch.query.get(id).name} ist im gewünschten Zeitraum nicht vor Ort", "danger")
                     return render_template("bulk_reservation.html",
@@ -170,33 +178,46 @@ def edit_reservation_bulk(uuid):
                                            form=form,
                                            menschen=menschen)
                 # check user: does the user alrady have a reservation for that day?
-                while stay_start < form.date_to.data:
-                    res = Reservation.query.filter_by(date=stay_start).filter_by(mensch_id=id).first()
+                while stay_begin < form.date_to.data:
+                    res = Reservation.query.filter_by(date=stay_begin).filter_by(mensch_id=id).filter(Reservation.shelter != shelter).first()
                     if res:
-                        menschen = Mensch.query.all()
-                        flash(f"{Mensch.query.get(id).name} hat am {stay_start.strftime('%d.%m.')} schon eine Reservierung in der Unterkunft '{res.shelter.name}'", "danger")
+                        flash(f"{Mensch.query.get(id).name} hat am {stay_begin.strftime('%d.%m.')} schon eine Reservierung in der Unterkunft '{res.shelter.name}'", "danger")
                         return render_template("bulk_reservation.html",
                                                shelter=shelter,
                                                form=form,
                                                menschen=menschen)
-                    stay_start += delta
+                    stay_begin += delta
             # check if there is enough space
-            delta = timedelta(days=1)
             stay_begin = form.date_from.data
             while stay_begin < form.date_to.data:
                 if shelter.get_capacity_by_date(stay_begin)['beds_free'] < len(ids_menschen_submitted):
-                    flash(f"Unterkunft '{shelter.name}' hat am {stay_begin.strftime('%d.%m.')} nur {shelter.get_capacity_by_date(stay_begin)['beds_free']} Betten frei (angegeben wurden {len(ids_menschen_submitted)})", "danger")
+                    flash(f"Unterkunft '{shelter.name}' hat am {stay_begin.strftime('%d.%m.')} nur noch {shelter.get_capacity_by_date(stay_begin)['beds_free']} Betten frei (angegeben wurden {len(ids_menschen_submitted)})", "danger")
                     return render_template("bulk_reservation.html",
                                            shelter=shelter,
                                            form=form,
                                            menschen=menschen,
                                            ids_menschen_submitted=ids_menschen_submitted)
                 stay_begin += delta
-    else:
-        return render_template("bulk_reservation.html",
-                               shelter=shelter,
-                               form=form,
-                               menschen=menschen)
+            # all checks done - create Reservations (for each day and mensch)
+            stay_begin = form.date_from.data
+            while stay_begin < form.date_to.data:
+                for id in ids_menschen_submitted:
+                    new_reservation = Reservation(date=stay_begin,
+                                                  shelter=shelter,
+                                                  mensch_id=id)
+                    db.session.add(new_reservation)
+                    flash(f"Reservierung für {Mensch.query.get(id).name} in der Unterkunft {shelter.name} am {stay_begin.strftime('%d.%m.')} hinterlegt", "success")
+                stay_begin += delta
+            db.session.commit()
+            return redirect(url_for('show_shelter',
+                                    uuid=uuid,
+                                    _anchor=f"reservierung-{form.date_from.data.strftime('%d%m')}"))
+        else:
+            menschen = Mensch.query.order_by(Mensch.bezugsgruppe.asc()).all()
+            return render_template("bulk_reservation.html",
+                                   shelter=shelter,
+                                   form=form,
+                                   menschen=menschen)
 
 
 @app.route('/unterkunft/<uuid>/reservation/<date>/edit', methods=['GET', 'POST'])
@@ -255,7 +276,7 @@ def edit_reservation(uuid, date):
 
     # check: is there already a reservation for a Mensch for that day?
     for id in ids_menschen_submitted:
-        reservation = Reservation.query.filter_by(date=date).filter_by(mensch_id=id).first()
+        reservation = Reservation.query.filter_by(date=date).filter_by(mensch_id=id).filter(Reservation.shelter != shelter).first()
         if reservation:
             mensch = Mensch.query.get(id)
             flash(f"{mensch.name} hat bereits eine Übernachtung für diesen Tag bei {reservation.shelter.name}", "danger")
@@ -399,11 +420,13 @@ def delete_mensch(id):
 def show_mensch(id):
     mensch = Mensch.query.get_or_404(id, description=f"Mensch mit der id {id} wurde nicht gefunden")
     reservations = Reservation.query.filter_by(mensch=mensch).order_by(Reservation.date.asc()).all()
+    signal_messages = SignalLog.query.filter_by(mensch=mensch).order_by(SignalLog.created.desc()).all()
 
     return render_template(
         'mensch_show.html',
         mensch=mensch,
         reservations=reservations,
+        signal_messages=signal_messages,
     )
 
 
@@ -462,26 +485,74 @@ def overview():
 def send_signal_message(to_mensch_id, to_number, message):
     status = 0
     error = ""
+    with app.app_context():
+        try:
+            messages.sendDirectMessage(to_number, message)
+            pass
+        except Exception as e:
+            status = 1
+            error = str(e)
+        log = SignalLog(telephone=to_number,
+                        message=message,
+                        status=status,
+                        error=error,
+                        mensch_id=to_mensch_id)
+        db.session.add(log)
+        db.session.commit()
+        return (status, error)
+
+
+@app.route("/signal/send", methods=["GET", "POST"])
+@auth.login_required
+def signal_send_message():
+    form = SignalMessageForm()
+    menschen = Mensch.query.order_by(Mensch.bezugsgruppe.asc())
+
     try:
-        messages.sendDirectMessage(to_number, message)
+        account = messages.get_account()
     except Exception as e:
-        status = 1
-        error = str(e)
-    log = SignalLog(telephone=to_number,
-                    message=message,
-                    status=status,
-                    error=error,
-                    mensch=to_mensch_id)
-    db.session.add(log)
-    db.session.commit()
-    return (status, error)
+        flash("Fehler beim Zugreifen auf die Signal-Schnittstelle", "danger")
+        flash(str(e), "danger")
+        return redirect(url_for('signal_index'))
+    if form.validate_on_submit():
+
+        ids_menschen_submitted = request.form.to_dict(flat=False).get('mensch', [])
+        ids_menschen_submitted = [int(x) for x in ids_menschen_submitted]
+        ids_menschen_all = [mensch.id for mensch in menschen]
+        for id in ids_menschen_submitted:
+            # user input: does the user exist
+            if id not in ids_menschen_all:
+                flash(f"Mensch mit der id {id} existiert nicht", "danger")
+                return render_template("signal_send.html",
+                                       account=account,
+                                       form=form,
+                                       menschen=menschen)
+        if len(form.telephone.data) > 0:
+            send_signal_message(-1,
+                                form.telephone.data,
+                                form.message.data)
+            flash(Markup(f'Nachricht an {form.telephone.data} wurde verschickt. Bitte im <a href="{ url_for("signal_log") }">Log</a> nachschauen, obs geklappt hat (kann einen Moment brauchen)'), "primary")
+        for id in ids_menschen_submitted:
+            mensch = Mensch.query.get(id)
+            args = (mensch.id, mensch.telephone, form.message.data)
+            t = threading.Thread(target=send_signal_message, args=args)
+            t.start()
+            flash(Markup(f'Nachricht an {mensch.name} wurde verschickt. Bitte im <a href="{ url_for("signal_log") }">Log</a> nachschauen, obs geklappt hat (kann einen Moment brauchen)'), "primary")
+
+        # mit ner GET-Request sollen selected übergeben werden (Nachricht und Mensch(en)
+        # wenn nur an 3 User => schicks direkt, ansonsten in nem neuen Thread und verweis auf das Log
+        form.message.data = ""
+        form.telephone.data = ""
+    return render_template("signal_send.html",
+                           account=account,
+                           form=form,
+                           menschen=menschen)
 
 
 @app.route("/signal/", methods=["GET", "POST"])
 @auth.login_required
 def signal_index():
-    account_form = SignalAccountForm()
-    send_form = SignalMessageForm()
+    form = SignalAccountForm()
     device_uri = None
 
     try:
@@ -491,48 +562,23 @@ def signal_index():
         flash(str(e), "danger")
         return render_template("signal_index.html",
                                account=None,
-                               account_form=account_form,
-                               device_uri=device_uri,
-                               send_form=send_form)
+                               form=form,
+                               device_uri=device_uri)
 
-    if account_form.validate_on_submit():
-        device_uri = messages.link_account(account_form.device_name.data)
-
-    if send_form.validate_on_submit():
-        status, error = send_signal_message(-1,
-                                            send_form.telephone.data,
-                                            send_form.message.data)
-        if status == 0:
-            flash("Die Nachricht wurde erfolgreicht verschickt", "success")
-            send_form.message.data = ""
-            send_form.telephone.data = ""
-        else:
-            flash(f"Fehler beim Senden der Nachricht an {send_form.telephone.data}", "danger")
-            flash(error, "danger")
+    if form.validate_on_submit():
+        device_uri = messages.link_account(form.device_name.data)
 
     return render_template("signal_index.html",
                            account=account,
-                           account_form=account_form,
-                           device_uri=device_uri,
-                           send_form=send_form)
+                           form=form,
+                           device_uri=device_uri)
 
 
 @app.route("/signal/log")
 @auth.login_required
 def signal_log():
-    logs = SignalLog.query.all()
+    logs = SignalLog.query.order_by(SignalLog.created.desc()).all()
     return render_template("signal_logs.html", logs=logs)
-
-
-#@app.route("/shell")
-#@auth.login_required
-#def shell():
-#    m = Mensch.query.first()
-#    s = Shelter.query.first()
-#    r = Reservation(mensch=m, shelter=s, date=datetime(day=21, month=7, year=2022))
-#    db.session.add(r)
-#    db.session.commit()
-#    return "ok"
 
 
 @auth.verify_password
@@ -548,10 +594,6 @@ def verify_password(username, password):
 def login():
     return redirect(url_for('list_shelters'))
 
-
-#@app.route('/test', methods=['GET', 'POST'])
-#def test():
-#    return render_template('test.html')
 
 import numpy as np
 import pandas as pd

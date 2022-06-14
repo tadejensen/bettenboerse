@@ -10,31 +10,19 @@
 {% endblock %}
 
 
+{% block more_script %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/css/bootstrap-select.min.css">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/js/bootstrap-select.min.js"></script>
+{% endblock %}
+
 {% block content %}
 
-<a href="{{ url_for('signal_log') }}">Versendete Nachrichten anzeigen</a></br></br>
+<a href="{{ url_for('signal_send_message') }}">Nachricht verschicken</a> |
+<a href="{{ url_for('signal_log') }}">Nachrichten-Verlauf anzeigen</a></br></br>
 
 {% if account %}
 hinterlegter Signal Account: {{ account['number'] }} ({{ account['name'] }})</br></br>
 
-    <form action="" method="POST">
-        {{ send_form.hidden_tag() }}
-        <div class="form-group">
-            {{ send_form.telephone.label }}
-            {{ send_form.telephone(class_="form-control") }}
-        </div>
-        
-        <div class="form-group">
-            {{ send_form.message.label }}
-            {{ send_form.message(class_="form-control", rows=5) }}
-        </div>
-
-        <div class="form-group">
-            {{ send_form.submit(class_="form-control btn btn-primary") }}
-        </div>
-        
-
-    </form>
 {% else %}
     
     {% if device_uri %}
@@ -51,15 +39,15 @@ hinterlegter Signal Account: {{ account['number'] }} ({{ account['name'] }})</br
 
 
         <form action="" method="POST">
-            {{ account_form.hidden_tag() }}
+            {{ form.hidden_tag() }}
             <div class="form-group">
-                {{ account_form.device_name.label }}
-                {{ account_form.device_name(class_="form-control") }}
+                {{ form.device_name.label }}
+                {{ form.device_name(class_="form-control") }}
             </div>
             
             <div class="form-group">
-                {{ account_form.submit.label }}
-                {{ account_form.submit(class_="form-control btn btn-primary") }}
+                {{ form.submit.label }}
+                {{ form.submit(class_="form-control btn btn-primary") }}
             </div>
 
         </form>

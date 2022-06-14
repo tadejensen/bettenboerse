@@ -45,12 +45,6 @@ class Shelter(db.Model):
                    }
         return capacity
 
-    #def get_reservations_by_date(self, date):
-    #    reservations = {}
-    #    for reservation in self.menschen:
-    #        reservations[reservation.date] = reservation
-    #    return reservations
-
 
 class Reservation(db.Model):
     __tablename__ = "reservation"
@@ -90,8 +84,8 @@ class SignalLog(db.Model):
     # status (0: no error, 1 error)
     status = db.Column(db.Integer)
     error = db.Column(db.String())
-    mensch = db.Column(db.ForeignKey("mensch.id"))
-
+    mensch_id = db.Column(db.ForeignKey("mensch.id"))
+    mensch = relationship("Mensch")
 
 
 #import enum

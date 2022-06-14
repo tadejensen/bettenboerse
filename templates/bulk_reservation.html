@@ -22,6 +22,7 @@
 
 {% block content %}
 
+<a href="{{ url_for('show_shelter', uuid=shelter.uuid, _anchor='reservierungen')}}">Reservierungen anzeigen</a>
 
 <form action="" method="POST">
     {{ form.hidden_tag() }}
@@ -37,7 +38,7 @@
     </div>
     
     <div class="form-group">
-        <label for="mensch">Wer soll hier noch schlafen?</label>
+        <label for="mensch">Wer soll hier noch noch zusätzlich schlafen?</label>
         <select id="select_menschen" name="mensch" class="selectpicker form-control" multiple data-live-search="true">
         {% for mensch in menschen %}
             {% set fellows = ", da mit: " ~ mensch.fellows if mensch.fellows else '' %}
@@ -49,7 +50,6 @@
         {% endfor %}
         </select>
     </div>
-    <input type="hidden" name="beds_needed"" value="{{ form.beds_needed.data }}">
     <button class="btn btn-primary" type="submit">reservieren</button>
 
 </form>

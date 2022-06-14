@@ -88,14 +88,20 @@
                         "<a href=\"{{ url_for('show_shelter', uuid=shelter.uuid, _anchor='reservierungen')}}\">Belegung</a></br>" +
                         "Adresse: {{ shelter.address }}</br>" +
                         "Schlafplätze ohne Isomatte: {{ shelter.beds_luxury }}</br>" +
-                        "Schlafplätze mit Isomatte: {{ shelter.beds_basic }}</br>";
-          // todo: from_june weg (muss überalle gegeeben sein)
-          {% if shelter.date_from_june and shelter.date_to_june %}
-                        description += "Zeitraum: {{ shelter.date_from_june.strftime("%d.%m. (%a)") }} - {{ shelter.date_to_june.strftime("%d.%m. (%a)") }}</br>";
-          {% endif %}
+                        "Schlafplätze mit Isomatte: {{ shelter.beds_basic }}</br>" +
+                        "Zeitraum: {{ shelter.date_from_june.strftime("%d.%m. (%a)") }} - {{ shelter.date_to_june.strftime("%d.%m. (%a)") }}</br>";
+          {% if date %}
+            {% set capacity = shelter.get_capacity_by_date(date) %}
+            description += "Am {{ date.strftime("%d.%m. (%a)") }} sind noch {{ capacity['beds_free'] }} Betten frei";
+              {% if capacity['beds_free'] > 0 %}
+                    var marker = L.marker([{{ shelter.longitude }}, {{ shelter.latitude }}], {icon: greenIcon});
+              {% else %}
+                    var marker = L.marker([{{ shelter.longitude }}, {{ shelter.latitude }}], {icon: redIcon});
+              {% endif %}
 
-            //var marker = L.marker([{{ shelter.longitude }}, {{ shelter.latitude }}]);
-            var marker = L.marker([{{ shelter.longitude }}, {{ shelter.latitude }}], {icon: greenIcon});
+          {% else %}
+            var marker = L.marker([{{ shelter.longitude }}, {{ shelter.latitude }}], {icon: blackIcon});
+          {% endif %}
             marker.bindPopup(description).openPopup();
             marker.addTo(map);
           

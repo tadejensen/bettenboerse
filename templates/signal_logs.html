@@ -14,7 +14,11 @@
 
     {% for log in logs %}
         <strong>
-            Nachricht an {{ log.telephone }} ({{ log.created.strftime("%a %d.%m.%Y um %H:%M:%S"  ) }})</br>
+            {% if log.mensch_id == -1 %}
+                Nachricht an {{ log.telephone }} ({{ log.created.strftime("%a %d.%m.%Y um %H:%M:%S"  ) }})</br>
+            {% else %}
+                Nachricht an {{ log.mensch.name }} ({{ log.telephone }}) ({{ log.created.strftime("%a %d.%m.%Y um %H:%M:%S"  ) }})</br>
+            {% endif %}
         </strong>
         {{ log.message }}</br>
             Status: 
