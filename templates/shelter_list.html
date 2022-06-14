@@ -15,6 +15,7 @@
                     });
         });
     </script>
+
 {% endblock %}
 
 {% block content %}
@@ -22,14 +23,13 @@
 <table id="table_shelter" class="table">
   <thead>
     <tr>
-      <th scope="col">Name</th>
-      <th scope="col">Adresse</th>
-      <th scope="col">Schlafplätze - keine Isomatte benötigt</th>
-      <th scope="col">Schlafplätze - Isomatte benötigt</th>
-      <th scope="col">Editieren</th>
-      <th scope="col">Details</th>
-      <th scope="col">Reservierung</th>
-      <th scope="col">Löschen</th>
+      <th>Name</th>
+      <th>Adresse</th>
+      <th>Schlafplätze - keine Isomatte benötigt</th>
+      <th>Schlafplätze - Isomatte benötigt</th>
+      <th>von</th>
+      <th>bis</th>
+      <th>Actions</th>
     </tr>
   </thead>
   <tbody>
@@ -39,17 +39,13 @@
       <td>{{ shelter.address }}</td>
       <td>{{ shelter.beds_luxury }}</td>
       <td>{{ shelter.beds_basic }}</td>
+      <td>{{ shelter.date_from_june.strftime("%d.%m.") }}</td>
+      <td>{{ shelter.date_to_june.strftime("%d.%m.") }}</td>
       <td>
-            <p><a href="{{ url_for('edit_shelter', uuid=shelter.uuid) }}">Editieren</a></p>
-     </td>
-      <td>
-            <p><a href="{{ url_for('show_shelter', uuid=shelter.uuid) }}">Details</a></p>
-     </td>
-      <td>
-            <p><a href="{{ url_for('show_shelter', uuid=shelter.uuid, _anchor='reservierungen') }}">Reservierungen</a></p>
-     </td>
-      <td>
-            <p><a href="{{ url_for('delete_shelter', uuid=shelter.uuid) }}">Löschen</a></p>
+            <a href="{{ url_for('show_shelter', uuid=shelter.uuid) }}" class="show" title="Unterkunft anzeigen" data-toggle="tooltip"><i class="material-icons">house</i></a>
+            <a href="{{ url_for('edit_shelter', uuid=shelter.uuid) }}" class="add" title="Unterkunft editieren" data-toggle="tooltip"><i class="material-icons">&#xE254;</i></a>
+            <a href="{{ url_for('delete_shelter', uuid=shelter.uuid) }}" class="delete" title="Unterkunft löschen" data-toggle="tooltip"><i class="material-icons">&#xE872;</i></a>
+            <a href="{{ url_for('show_shelter', uuid=shelter.uuid, _anchor='reservierungen') }}" title="Reservierungen anzeigen" data-toggle="tooltip"><i class="material-icons">nights_stay</i></a>
      </td>
     </tr>
 {% endfor %}
