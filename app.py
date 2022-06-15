@@ -521,7 +521,7 @@ def generate_user_notification_text(user_id):
         start = dates[0]
         end = dates[-1] + delta
         msg += f"Unterkunft für die Zeit von {start.strftime('%d.%m. (%A)')} bis {end.strftime('%d.%m. (%A)')}:\n" + url + "\n"
-    msg += """\nMit dem Link zur Unterkunft kommst du an alle Informationen (z. B. wo sie ist und wer dort noch schläft). Bitte nehme vor deiner Anreise Kontakt mit Menschen auf, die dort bereits wohnen. Bitte sprecht untereinander ab, wie ihr in die Wohnung kommt. So können wir die*den Gastgeber*in entlasten. Wenn vor dir noch keine Person.
+    msg += """\nMit dem Link zur Unterkunft kommst du an alle Informationen (z. B. wo sie ist und wer dort noch schläft). Bitte nehme vor deiner Anreise Kontakt mit Menschen auf, die dort bereits wohnen. Bitte sprecht untereinander ab, wie ihr in die Wohnung kommt. So können wir die*den Gastgeber*in entlasten. Wenn vor dir noch keine Person. TODO: hier muss noch rein, dass den Menschen die ausstehenden Reservierungen noch nicht festestehen, den Menschen aber noch mitgeteilt wrid. TODO2: eine Person soll sich um den Kontakt zum Host kümmern und den anderen Bescheid sagen, bzw sollen die anderen sich bei der Person melden. Dazu gibts ein Feauter "Nachricht an alle senden, die da an dem Tag wohnen
 
 Einen guten Aufenthalt wünscht die 
 
