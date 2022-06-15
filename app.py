@@ -461,10 +461,8 @@ def overview():
     shelters = Shelter.query.order_by(Shelter.beds_total.desc()).all()
     shelters_list = []
     for shelter in shelters:
-        if shelter.date_to_june:
-            shelters_list.append(f"{shelter.name:<55} {shelter.beds_luxury + shelter.beds_basic:>4} Betten   {shelter.date_from_june} -> {shelter.date_to_june}   {(shelter.date_to_june - shelter.date_from_june).days} Tage")
-        else:
-            shelters_list.append(f"{shelter.name:<55} {shelter.beds_luxury + shelter.beds_basic:>4} Betten   {shelter.date_from_june} -> {shelter.date_to_june} - kein End-Datum angegeben")
+        shelters_list.append(f"{shelter.name:<55} {shelter.beds_luxury + shelter.beds_basic:>4} Betten   {shelter.date_from_june.strftime('%a %d.%m.')} -> "
+                             f"{shelter.date_to_june.strftime('%a %d.%m.')}   {(shelter.date_to_june - shelter.date_from_june).days} Tage")
     delta = timedelta(days=1)
 
     start = settings.start_date
