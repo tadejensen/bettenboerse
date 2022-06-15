@@ -28,10 +28,11 @@
       <th scope="col">Bezugsgruppe</th>
       <th scope="col">von</th>
       <th scope="col">bis</th>
-      <th scope="col">späteste Reservierung</th>
       <th scope="col">Nächte/ Reservierungen</th>
+      <th scope="col">späteste Reservierung</th>
+      <th scope="col">letzte nachricht</th>
       <th scope="col">FLINTA-Space</th>
-      <th scope="col">besonere Bedürfnisse</th>
+      <th scope="col">besondere Bedürfnisse</th>
       <th scope="col">Actions</th>
     </tr>
   </thead>
@@ -42,8 +43,9 @@
       <td>{{ mensch.bezugsgruppe }}</td>
       <td>{{ mensch.date_from.strftime("%d.%m.") }}</td>
       <td>{{ mensch.date_to.strftime("%d.%m.") }}</td>
-      <td>{{ mensch.get_last_reservation_date()}}</td>
       <td>{{ mensch.get_reservation_state()}}</td>
+      <td>{{ mensch.get_last_reservation_date()}}</td>
+      <td>{{ mensch.get_last_message_sent()}}</td>
       <td>{{ mensch.flinta }}</td>
       <td>
       {% if mensch.needs %}
