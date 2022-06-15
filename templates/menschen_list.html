@@ -1,8 +1,13 @@
 {% extends 'base.html' %}
 
 {% block header %}
-  <h3>{% block title %}Übersicht Menschen{% endblock %}</h3>
+  <h3>Übersicht Menschen</h3>
 {% endblock %}
+
+{% block title %}
+Menschen
+{% endblock %}
+
 
 {% block more_script %}
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.12.1/css/jquery.dataTables.css">

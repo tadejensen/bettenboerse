@@ -1,9 +1,12 @@
 {% extends 'base.html' %}
 
 {% block header %}
-  <h3>{% block title %}Infos zum Menschen{% endblock %}</h3>
+  <h3>Infos zum Menschen</h3>
 {% endblock %}
 
+{% block title %}
+{{ mensch.name }}
+{% endblock %}
 
 {% block content %}
 

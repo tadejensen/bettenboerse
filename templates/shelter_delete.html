@@ -1,9 +1,12 @@
 {% extends 'base.html' %}
 
 {% block header %}
-<h3>{% block title %}Unterkunft von {{sp.name}} ({{sp.address}}) löschen?{% endblock %}</h3>
+<h3>Unterkunft von {{sp.name}} ({{sp.address}}) löschen?</h3>
 {% endblock %}
 
+{% block title %}
+Löschen {{ sp.name }}
+{% endblock %}
 
 {% block content %}
 

@@ -202,10 +202,12 @@ def edit_reservation_bulk(uuid):
             stay_begin = form.date_from.data
             while stay_begin < form.date_to.data:
                 for id in ids_menschen_submitted:
-                    new_reservation = Reservation(date=stay_begin,
-                                                  shelter=shelter,
-                                                  mensch_id=id)
-                    db.session.add(new_reservation)
+                    res = Reservation.query.filter_by(date=stay_begin).filter_by(mensch_id=id).filter_by(shelter=shelter).first()
+                    if not res:
+                        new_reservation = Reservation(date=stay_begin,
+                                                      shelter=shelter,
+                                                      mensch_id=id)
+                        db.session.add(new_reservation)
                     flash(f"Reservierung für {Mensch.query.get(id).name} in der Unterkunft {shelter.name} am {stay_begin.strftime('%d.%m.')} hinterlegt", "success")
                 stay_begin += delta
             db.session.commit()
@@ -462,7 +464,7 @@ def overview():
     shelters_list = []
     for shelter in shelters:
         shelters_list.append(f"{shelter.name:<55} {shelter.beds_luxury + shelter.beds_basic:>4} Betten   {shelter.date_from_june.strftime('%a %d.%m.')} -> "
-                             f"{shelter.date_to_june.strftime('%a %d.%m.')}   {(shelter.date_to_june - shelter.date_from_june).days} Tage")
+                             f"{shelter.date_to_june.strftime('%a %d.%m.')}   {(shelter.date_to_june - shelter.date_from_june).days} Nächte")
     delta = timedelta(days=1)
 
     start = settings.start_date
