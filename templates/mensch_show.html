@@ -64,28 +64,12 @@
 
 
 <h4>Reservierungen</h4>
+<strong>Hinweis:</strong> hier werden die Übernachtungen angezeigt, nicht der Aufenthalt!</br></br>
 
-<table class="table">
-  <thead>
-    <tr>
-        <th>Datum</th>
-        <th>Unterkunft</th>
-    </tr>
-  </thead>
-  <tbody>
-{% for mensch in menschen %}
-    <tr>
-      <td>{{ mensch.name }}</td>
-    </tr>
-{% endfor %}
-  </tbody>
-</table>
-
-
-<ul>
+<ul class="list-group">
 {% for reservation in reservations %}
 
-<li>
+<li class="list-group-item" >
     {{ reservation.date.strftime("%a %d.%m.") }} <a href="{{ url_for('show_shelter', uuid=reservation.shelter.uuid, _anchor='reservierung-' + reservation.date.strftime("%d%m")) }}">{{ reservation.shelter.name  }}</a>
 </li>
 

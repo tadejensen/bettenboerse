@@ -129,9 +129,9 @@ Interner Kommentar (nur für Menschen, die Unterkünfte koordinieren/organisiere
                   <ul class="list-group">
                 {% for res in reservation.reservations %}
 {% if session['logged_in'] %}
-        <li class="list-group-item"><a href="{{ url_for('show_mensch', id=res.mensch.id) }}">{{ res.mensch.name }}</a> ({{ res.mensch.telephone }}, {{ res.mensch.bezugsgruppe }} )</li>
+        <li class="list-group-item"><a href="{{ url_for('show_mensch', id=res.mensch.id) }}">{{ res.mensch.name }}</a> ({{ res.mensch.telephone }}, {{ res.mensch.bezugsgruppe }})</li>
 {% else %}
-                <li class="list-group-item">{{ res.mensch.name }} ({{ res.mensch.telephone }}, {{ res.mensch.bezugsgruppe }} )</li>
+                <li class="list-group-item">{{ res.mensch.name }} ({{ res.mensch.telephone }}, {{ res.mensch.bezugsgruppe }})</li>
 {% endif %}
                 {% endfor %}
                   </ul>
