@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from datetime import timedelta, date, datetime
 import threading
 from flask import Flask, render_template, redirect, flash, url_for, session, request, Markup
 from flask_httpauth import HTTPBasicAuth
 from flask_migrate import Migrate
 from werkzeug.security import check_password_hash
 from forms import ShelterForm, DeleteShelterForm, MenschForm, DeleteMenschForm, SignalAccountForm, SignalMessageForm, FindShelterForm, ReservationForm
-from datetime import datetime, timedelta
 import uuid
 from flask_qrcode import QRcode
 from collections import OrderedDict
@@ -640,7 +640,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle, Patch
-from datetime import timedelta
+from matplotlib.lines import Line2D                     # neu
 import sqlite3
 import io
 from flask import Response
@@ -651,7 +651,7 @@ from flask import Flask
 def read_sqlite(dbfile):
     with sqlite3.connect(dbfile) as dbcon:
         #tables = list(pd.read_sql_query("SELECT name FROM sqlite_master WHERE type='table';", dbcon)['name'])
-        tables = ["shelter", "reservation"]
+        tables = ["shelter", "reservation", "mensch"]
         out = {tbl: pd.read_sql_query(f"SELECT * from {tbl}", dbcon) for tbl in tables}
         return out
 
@@ -670,6 +670,7 @@ def format_name(name, linelen=20):
 
 
 @app.route("/hist_betten.png")
+@auth.login_required
 def hist_betten(dbfile="unterkünfte.db", start_plot="2022-06-18", end_plot="2022-07-15"):
     a = read_sqlite(dbfile)
     start = pd.to_datetime("2022-06-18")
@@ -737,6 +738,7 @@ def hist_betten(dbfile="unterkünfte.db", start_plot="2022-06-18", end_plot="202
 
 
 @app.route("/plot_calendar.png")
+@auth.login_required
 def plot_calendar(dbfile="unterkünfte.db", start_plot="2022-06-18", end_plot="2022-07-15"):
     """
     dbfile: str zu unterkuefte.db
@@ -837,6 +839,102 @@ def plot_calendar(dbfile="unterkünfte.db", start_plot="2022-06-18", end_plot="2
     output = io.BytesIO()
     FigureCanvas(fig_cal).print_png(output)
     return Response(output.getvalue(), mimetype="image/png")
+
+
+@app.route("/plot_menschen.png")
+@auth.login_required
+def plot_menschen(dbfile="unterkünfte.db", start_plot="2022-06-18", end_plot="2022-07-15", today=None):
+    """
+    dbfile: str zu unterkuefte.db
+    start_date: str im Format 'yyyy-mm-dd'
+        linke Anzeigegrenze des Plots
+    end_date:
+
+    """
+    # TODO: this is super ugly. Somehwere date is overwritten ...
+    from datetime import date
+
+    a = read_sqlite(dbfile)
+    start = pd.to_datetime("2022-06-18")
+    try:
+        end_plot = pd.to_datetime(end_plot)
+    except:
+        print("Als Enddatum fürs Plotten wird längster Aufenthalt genommen")
+    start_plot = pd.to_datetime(start_plot)
+
+    height = 1
+
+    betten = pd.DataFrame(a["shelter"])
+    reservations = pd.DataFrame(a["reservation"])
+    menschen = a["mensch"]
+
+    legend_elements = [Patch(facecolor="gold", edgecolor="none", label="untergebracht"),
+                       Patch(facecolor="skyblue", edgecolor="none", label="in Berlin"),
+                       Line2D([0], [0], ls="dashed", color="red", label="heute")]
+
+    menschen = menschen.sort_values("name", ascending=False)
+
+    fig = plt.figure(tight_layout=True, figsize=(13, 8))
+    ax = plt.subplot(111)
+
+    yticks = []
+    ylabs = []
+    k = 0
+
+    tmax = pd.to_datetime(menschen["date_to"]).max()
+
+    for ind in menschen.index:
+        mensch = menschen.loc[ind]
+        start_mensch = (pd.to_datetime(mensch["date_from"]) - start).days
+        end_mensch = (pd.to_datetime(mensch["date_to"]) - start).days
+        span = end_mensch - start_mensch
+        ylabs.append(mensch["name"])
+        yticks.append(k + height / 2)
+        ax.add_patch(Rectangle((start_mensch + .5, k), span, height, facecolor="skyblue", edgecolor="none", zorder=.5))
+
+        res_mensch = reservations[reservations["mensch_id"] == mensch["id"]]
+        for res_ind in res_mensch.index:
+            res = res_mensch.loc[res_ind]
+            home_id = res["shelter_id"]
+            date_int = (pd.to_datetime(res["date"]) - start).days
+            ax.add_patch(
+                Rectangle((date_int + .5, k + .15 * height), 1, height * .7, edgecolor="none", facecolor="gold"))
+
+        k += 1.1 * height
+
+    fig.set_size_inches(13, k * .15)
+
+    minticks = np.arange(-1, (tmax - start).days + 2, 1)
+    majticks = np.arange(0, (tmax - start).days + 2, 5)
+
+    ax.set_xticks(minticks, minor=True)
+    ax.set_xticks(majticks)
+
+    ax.xaxis.grid(which="major", zorder=2.1)
+    ax.xaxis.grid(which="minor", zorder=2.1, alpha=.25)
+
+    if not today:
+        today = pd.to_datetime(date.today())
+    ax.axvline((today - start).days + .35, color="red", ls="dashed")
+
+    xticklabs = []
+    for tick in ax.get_xticks():
+        date = start + timedelta(days=int(tick))
+        xticklabs.append(date.strftime("%d. (%a)"))
+
+    if end_plot:
+        tmax = end_plot
+    ax.set(xlim=(-.1, (tmax - start).days + 1), ylim=(-.1 * height, k), yticks=yticks, yticklabels=ylabs,
+           xlabel="Datum", xticklabels=xticklabs)
+
+    ax.xaxis.set_tick_params(rotation=45)
+
+    ax.legend(handles=legend_elements)
+    #legend_elementsplt.savefig("menschen.png")
+    output = io.BytesIO()
+    FigureCanvas(fig).print_png(output)
+    return Response(output.getvalue(), mimetype="image/png")
+
 
 
 @app.errorhandler(404)
