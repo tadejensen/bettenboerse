@@ -26,6 +26,7 @@
         <td>{{ mensch.date_from.strftime("%d.%m. (%a)") }}
       bis
         {{ mensch.date_to.strftime("%d.%m. (%a)") }}
+        ({{ (mensch.date_to - mensch.date_from).days }} Nächte)
       </td>
     </tr>
     <tr>
@@ -73,6 +74,7 @@
 
 <li class="list-group-item" >
     {{ reservation.date.strftime("%a %d.%m.") }} <a href="{{ url_for('show_shelter', uuid=reservation.shelter.uuid, _anchor='reservierung-' + reservation.date.strftime("%d%m")) }}">{{ reservation.shelter.name  }}</a>
+    (Unterkunft haben wir von {{ reservation.shelter.date_from_june.strftime("%a %d.%m.") }} bis {{ reservation.shelter.date_to_june.strftime("%a %d.%m.") }})
 </li>
 
 {% endfor %}
