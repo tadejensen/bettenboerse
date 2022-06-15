@@ -739,7 +739,7 @@ def hist_betten(dbfile="unterkünfte.db", start_plot="2022-06-18", end_plot="202
 
 @app.route("/plot_calendar.png")
 @auth.login_required
-def plot_calendar(dbfile="unterkünfte.db", start_plot="2022-06-18", end_plot="2022-07-15"):
+def plot_calendar(dbfile="unterkünfte.db", start_plot="2022-06-17", end_plot="2022-07-15"):
     """
     dbfile: str zu unterkuefte.db
     start_date: str im Format 'yyyy-mm-dd'
@@ -749,7 +749,7 @@ def plot_calendar(dbfile="unterkünfte.db", start_plot="2022-06-18", end_plot="2
     """
 
     a = read_sqlite(dbfile)
-    start = pd.to_datetime("2022-06-18")
+    start = pd.to_datetime("2022-06-17")
     end_plot = pd.to_datetime(end_plot)
     start_plot = pd.to_datetime(start_plot)
 
@@ -767,7 +767,7 @@ def plot_calendar(dbfile="unterkünfte.db", start_plot="2022-06-18", end_plot="2
     ax_cal = plt.subplot()
 
     k = 0
-    t1_max = pd.to_datetime("2022-06-18")
+    t1_max = pd.to_datetime("2022-06-17")
 
     yticks = []
     yticklabs = []
@@ -843,7 +843,7 @@ def plot_calendar(dbfile="unterkünfte.db", start_plot="2022-06-18", end_plot="2
 
 @app.route("/plot_menschen.png")
 @auth.login_required
-def plot_menschen(dbfile="unterkünfte.db", start_plot="2022-06-18", end_plot="2022-07-15", today=None):
+def plot_menschen(dbfile="unterkünfte.db", start_plot="2022-06-17", end_plot="2022-07-15", today=None):
     """
     dbfile: str zu unterkuefte.db
     start_date: str im Format 'yyyy-mm-dd'
@@ -855,7 +855,7 @@ def plot_menschen(dbfile="unterkünfte.db", start_plot="2022-06-18", end_plot="2
     from datetime import date
 
     a = read_sqlite(dbfile)
-    start = pd.to_datetime("2022-06-18")
+    start = pd.to_datetime("2022-06-17")
     try:
         end_plot = pd.to_datetime(end_plot)
     except:
