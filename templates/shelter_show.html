@@ -120,7 +120,7 @@ Interner Kommentar (nur für Menschen, die Unterkünfte koordinieren/organisiere
     </td>
         <td>
           <a class="btn btn-primary" data-toggle="collapse" href="#collapseMenschen-{{ loop.index }}" role="button" aria-expanded="false" aria-controls="collapseExample">Menschen anzeigen</a>
-              <div class="collapse" id="collapseMenschen-{{ loop.index }}">
+              <div class="collapse show" id="collapseMenschen-{{ loop.index }}">
                   <ul class="list-group">
                 {% for res in reservation.reservations %}
 {% if session['logged_in'] %}
