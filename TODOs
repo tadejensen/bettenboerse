@@ -1,26 +1,13 @@
-- Reservierung ändern
-    - zurück Buttons: Unterkunft ändern, anzeigen
-    - bei der GET Request schauen, ob das Datum passt
-        - auch n Test dafür mit rein
-- Platz für X Personen pro Unterkunft
-- Karte
-    - unterteilen nach: alle vs start > today()
-- überall checken: 
-    - was wenn ende leer ist?
-- Unterkunft Details: Karte anzeigen
-- Tests: sind da ungenutzte Reserveations drin?
+TODO
+- Signal Nachricht schicken: via GET Parmater übergeben
+
+LOW PRIO
+- Signal
+	- log ist zu verbose		
+- noch mal ne Liste an Menschen: wer ist aktuell da?
+- Spenden anzeigen in der Detail-Ansicht von den UnterkÃ¼nften
 
 NICE TO HAVE
 - Validation: validate_long_lat dry...
 - Kalendar in deutsch anzeigen
-- schöne buttons für edit und delete (dann auch für die Unterküfnte anzeigen)
-- auf mehrere Files aufteilen (Enum ist nicht so schön gerade)
-- Belegung: wenn heute() in der Tabelle fett machen
-- errors mit ins base template nehmen
-    - und die liste nochmal expanden
 
-KEEP IN MIND
-- vor commit: settings.template anpassen
-
-EVENTUELL
-- Anmerkung von uns pro Unterkunft?

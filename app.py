@@ -9,6 +9,7 @@ from forms import ShelterForm, DeleteShelterForm, MenschForm, DeleteMenschForm, 
 from datetime import datetime, timedelta
 import uuid
 from flask_qrcode import QRcode
+from collections import OrderedDict
 
 import settings
 
@@ -30,6 +31,7 @@ migrate = Migrate(app, db, compare_type=True, render_as_batch=True)
 
 db.init_app(app)
 db.create_all(app=app)
+
 
 
 @app.route('/unterkunft-finden', methods=['GET', 'POST'])
@@ -502,6 +504,30 @@ def send_signal_message(to_mensch_id, to_number, message):
         return (status, error)
 
 
+def generate_user_notification_text(user_id):
+    delta = timedelta(days=1)
+    stays = OrderedDict()
+    mensch = Mensch.query.get(user_id)
+    reservations = Reservation.query.filter_by(mensch=mensch).order_by(Reservation.date.asc())
+    msg = f"Hallo { mensch.name },\nhier ist die Bettenbörse der Letzten Generation. Wenn du Fragen/Probleme zu deiner Unterkunft hast, kannst du dich gerne bei dieser Nummer melden. Folgende Unterkünfte sind aktuell für dich reserviert:\n"
+    for r in reservations:
+        if r.shelter not in stays.keys():
+            stays[r.shelter] = []
+        stays[r.shelter].append(r.date)
+    for shelter, dates in stays.items():
+        url = settings.BASE_URL + url_for('show_shelter', uuid=shelter.uuid)
+        print(shelter.name)
+        start = dates[0]
+        end = dates[-1] + delta
+        msg += f"Unterkunft für die Zeit von {start.strftime('%d.%m. (%A)')} bis {end.strftime('%d.%m. (%A)')}:\n" + url + "\n"
+    msg += """\nMit dem Link zur Unterkunft kommst du an alle Informationen (z. B. wo sie ist und wer dort noch schläft). Bitte nehme vor deiner Anreise Kontakt mit Menschen auf, die dort bereits wohnen. Bitte sprecht untereinander ab, wie ihr in die Wohnung kommt. So können wir die*den Gastgeber*in entlasten. Wenn vor dir noch keine Person.
+
+Einen guten Aufenthalt wünscht die 
+
+Unterkünfte AG der letzten Generation"""
+    return msg
+
+
 @app.route("/signal/send", methods=["GET", "POST"])
 @auth.login_required
 def signal_send_message():
@@ -514,8 +540,25 @@ def signal_send_message():
         flash("Fehler beim Zugreifen auf die Signal-Schnittstelle", "danger")
         flash(str(e), "danger")
         return redirect(url_for('signal_index'))
-    if form.validate_on_submit():
 
+    if request.method == "GET":
+        selected_menschen_ids = request.args.to_dict(flat=False).get('mensch', [])
+        selected_menschen_ids = [int(x) for x in selected_menschen_ids]
+        form = SignalMessageForm(request.args)
+        notify = int(request.args.get("notify", "-1"))
+        # check input
+        if notify != -1:
+            text = generate_user_notification_text(notify)
+            form.message.data = text
+
+        return render_template("signal_send.html",
+                               account=account,
+                               form=form,
+                               menschen=menschen,
+                               selected_menschen_ids=selected_menschen_ids)
+
+
+    if form.validate_on_submit():
         ids_menschen_submitted = request.form.to_dict(flat=False).get('mensch', [])
         ids_menschen_submitted = [int(x) for x in ids_menschen_submitted]
         ids_menschen_all = [mensch.id for mensch in menschen]
@@ -539,8 +582,6 @@ def signal_send_message():
             t.start()
             flash(Markup(f'Nachricht an {mensch.name} wurde verschickt. Bitte im <a href="{ url_for("signal_log") }">Log</a> nachschauen, obs geklappt hat (kann einen Moment brauchen)'), "primary")
 
-        # mit ner GET-Request sollen selected übergeben werden (Nachricht und Mensch(en)
-        # wenn nur an 3 User => schicks direkt, ansonsten in nem neuen Thread und verweis auf das Log
         form.message.data = ""
         form.telephone.data = ""
     return render_template("signal_send.html",

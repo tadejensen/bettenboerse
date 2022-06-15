@@ -10,7 +10,9 @@
 
 {% block content %}
 
-<a href="{{ url_for('edit_mensch', id=mensch.id) }}">Menschen editieren</a> <br/>
+<a href="{{ url_for('edit_mensch', id=mensch.id) }}">Menschen editieren</a> |
+<a href="{{ url_for('signal_send_message', mensch=mensch.id, notify=mensch.id) }}">Menschen informieren</a>
+<br/>
 
 </br>
 <table class="table">
@@ -82,7 +84,7 @@
         <strong>
             Nachricht an {{ log.mensch.name }} ({{ log.telephone }}) ({{ log.created.strftime("%a %d.%m.%Y um %H:%M:%S"  ) }})</br>
         </strong>
-        {{ log.message }}</br>
+        {{ log.message | replace("\n", "</br>") | safe}}</br>
             Status: 
         {% if log.status == 0 %}
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="green" class="bi bi-circle-fill" viewBox="0 0 16 16">
