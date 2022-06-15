@@ -647,6 +647,7 @@ import io
 from flask import Response
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from flask import Flask
+import re
 
 
 def read_sqlite(dbfile):
@@ -672,9 +673,9 @@ def format_name(name, linelen=20):
 
 @app.route("/hist_betten.png")
 @auth.login_required
-def hist_betten(dbfile="unterkünfte.db", start_plot="2022-06-18", end_plot="2022-07-15"):
+def hist_betten(dbfile="unterkünfte.db", start_plot="2022-06-17", end_plot="2022-07-15"):
     a = read_sqlite(dbfile)
-    start = pd.to_datetime("2022-06-18")
+    start = pd.to_datetime("2022-06-17")
     end_plot = pd.to_datetime(end_plot)
     start_plot = pd.to_datetime(start_plot)
 
@@ -852,9 +853,6 @@ def plot_menschen(dbfile="unterkünfte.db", start_plot="2022-06-17", end_plot="2
     end_date:
 
     """
-    # TODO: this is super ugly. Somehwere date is overwritten ...
-    from datetime import date
-
     a = read_sqlite(dbfile)
     start = pd.to_datetime("2022-06-17")
     try:
@@ -873,7 +871,7 @@ def plot_menschen(dbfile="unterkünfte.db", start_plot="2022-06-17", end_plot="2
                        Patch(facecolor="skyblue", edgecolor="none", label="in Berlin"),
                        Line2D([0], [0], ls="dashed", color="red", label="heute")]
 
-    menschen = menschen.sort_values("name", ascending=False)
+    menschen = menschen.sort_values("bezugsgruppe", ascending=False)
 
     fig = plt.figure(tight_layout=True, figsize=(13, 8))
     ax = plt.subplot(111)
@@ -889,7 +887,11 @@ def plot_menschen(dbfile="unterkünfte.db", start_plot="2022-06-17", end_plot="2
         start_mensch = (pd.to_datetime(mensch["date_from"]) - start).days
         end_mensch = (pd.to_datetime(mensch["date_to"]) - start).days
         span = end_mensch - start_mensch
-        ylabs.append(mensch["name"])
+        name = mensch["name"]
+        bg = re.split(r"\W+", mensch["bezugsgruppe"])[0]
+        if bg.capitalize() == "Wilder":
+            bg = "Wilder Rucola"
+        ylabs.append(f'{name} ({bg})')
         yticks.append(k + height / 2)
         ax.add_patch(Rectangle((start_mensch + .5, k), span, height, facecolor="skyblue", edgecolor="none", zorder=.5))
 
@@ -914,6 +916,7 @@ def plot_menschen(dbfile="unterkünfte.db", start_plot="2022-06-17", end_plot="2
     ax.xaxis.grid(which="major", zorder=2.1)
     ax.xaxis.grid(which="minor", zorder=2.1, alpha=.25)
 
+    from datetime import date
     if not today:
         today = pd.to_datetime(date.today())
     ax.axvline((today - start).days + .35, color="red", ls="dashed")
@@ -925,17 +928,17 @@ def plot_menschen(dbfile="unterkünfte.db", start_plot="2022-06-17", end_plot="2
 
     if end_plot:
         tmax = end_plot
-    ax.set(xlim=(-.1, (tmax - start).days + 1), ylim=(-.1 * height, k), yticks=yticks, yticklabels=ylabs,
+    ax.set(xlim=((pd.to_datetime(start_plot)-start).days, (tmax - start).days + 1),
+           ylim=(-.25 * height, k + .25 * height), yticks=yticks, yticklabels=ylabs,
            xlabel="Datum", xticklabels=xticklabs)
 
     ax.xaxis.set_tick_params(rotation=45)
 
     ax.legend(handles=legend_elements)
-    #legend_elementsplt.savefig("menschen.png")
+
     output = io.BytesIO()
     FigureCanvas(fig).print_png(output)
     return Response(output.getvalue(), mimetype="image/png")
-
 
 
 @app.errorhandler(404)
