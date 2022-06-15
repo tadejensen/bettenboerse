@@ -26,12 +26,6 @@ class Shelter(db.Model):
     menschen = relationship("Reservation", back_populates="shelter")
     beds_total = column_property(beds_basic + beds_luxury)
 
-    def date_to_june_safe(self):
-        if self.date_to_june_safe:
-            return self.date_to_june_safe
-        else:
-            settings.end_date
-
     def __repr__(self):
         #return f"{self.name} ({self.date_from_june} {self.date_to_june})"
         return f"{self.name} {self.beds_total}"
@@ -74,6 +68,11 @@ class Mensch(db.Model):
     def get_last_reservation_date(self):
         last_reservation = Reservation.query.filter_by(mensch_id=self.id).order_by(Reservation.date.desc()).first()
         return last_reservation.date.strftime("%d.%m.") if last_reservation else "keine Reservierung"
+
+    def get_reservation_state(self):
+        stay_days = (self.date_to - self.date_from).days
+        reservations = Reservation.query.filter_by(mensch=self).count()
+        return f"{reservations}/{stay_days}"
 
 
 class SignalLog(db.Model):
