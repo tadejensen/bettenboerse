@@ -33,7 +33,6 @@ db.init_app(app)
 db.create_all(app=app)
 
 
-
 @app.route('/unterkunft-finden', methods=['GET', 'POST'])
 @auth.login_required
 def find_shelter():
@@ -41,7 +40,9 @@ def find_shelter():
     form = FindShelterForm()
     if form.validate_on_submit():
         stay_begin = form.date_from.data
-        shelters = Shelter.query.filter(stay_begin >= Shelter.date_from_june).filter(form.date_to.data < Shelter.date_to_june).all()
+        shelters = Shelter.query.filter(stay_begin >= Shelter.date_from_june). \
+                                 filter(form.date_to.data < Shelter.date_to_june). \
+                                 order_by(Shelter.beds_total.desc()).all()
         delta = timedelta(days=1)
         for shelter in shelters:
             stay_begin = form.date_from.data
