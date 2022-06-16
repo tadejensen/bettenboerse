@@ -43,7 +43,7 @@ def find_shelter():
     if form.validate_on_submit():
         stay_begin = form.date_from.data
         shelters = Shelter.query.filter(stay_begin >= Shelter.date_from_june). \
-                                 filter(form.date_to.data < Shelter.date_to_june). \
+                                 filter(form.date_to.data <= Shelter.date_to_june). \
                                  order_by(Shelter.beds_total.desc()).all()
         delta = timedelta(days=1)
         for shelter in shelters:
@@ -140,7 +140,7 @@ def edit_reservation_bulk(uuid):
 
         if "beds_needed" in request.args.keys() and form.validate():
             menschen = Mensch.query.filter(form.date_from.data >= Mensch.date_from). \
-                                    filter(form.date_to.data < Mensch.date_to). \
+                                    filter(form.date_to.data <= Mensch.date_to). \
                                     order_by(Mensch.bezugsgruppe.asc()).all()
         else:
             menschen = Mensch.query.order_by(Mensch.bezugsgruppe.asc()).all()
