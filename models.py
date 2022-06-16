@@ -75,6 +75,7 @@ class Mensch(db.Model):
         return f"{reservations}/{stay_days}"
 
     def get_last_message_sent(self):
+        last_message = SignalLog.query.filter_by(mensch=self).filter_by(error=0).order_by(SignalLog.created.desc()).first()
         last_message = SignalLog.query.filter_by(mensch=self).order_by(SignalLog.created.desc()).first()
         return last_message.created.strftime("%d.%m.") if last_message else "keine Nachricht"
 
