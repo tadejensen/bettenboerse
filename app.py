@@ -512,7 +512,7 @@ def generate_user_notification_text(user_id):
     stays = OrderedDict()
     mensch = Mensch.query.get(user_id)
     reservations = Reservation.query.filter_by(mensch=mensch).order_by(Reservation.date.asc())
-    msg = f"Hallo { mensch.name },\nhier ist die Bettenbörse der Letzten Generation. Wenn du Fragen/Probleme zu deiner Unterkunft hast, kannst du dich gerne bei dieser Nummer melden. Folgende Unterkünfte sind aktuell für dich reserviert:\n"
+    msg = f"+++ WICHTIG: deine Unterkunft in Berlin+++\n\nHallo { mensch.name },\nhier ist die Bettenbörse der Letzten Generation. Folgende Übernachtungen sind aktuell für dich vorgesehen:\n"
     for r in reservations:
         if r.shelter not in stays.keys():
             stays[r.shelter] = []
@@ -523,11 +523,20 @@ def generate_user_notification_text(user_id):
         start = dates[0]
         end = dates[-1] + delta
         msg += f"Unterkunft für die Zeit von {start.strftime('%d.%m. (%A)')} bis {end.strftime('%d.%m. (%A)')}:\n" + url + "\n"
-    msg += """\nMit dem Link zur Unterkunft kommst du an alle Informationen (z. B. wo sie ist und wer dort noch schläft). Bitte nehme vor deiner Anreise Kontakt mit Menschen auf, die dort bereits wohnen. Bitte sprecht untereinander ab, wie ihr in die Wohnung kommt. So können wir die*den Gastgeber*in entlasten. Wenn vor dir noch keine Person. TODO: hier muss noch rein, dass den Menschen die ausstehenden Reservierungen noch nicht festestehen, den Menschen aber noch mitgeteilt wrid. TODO2: eine Person soll sich um den Kontakt zum Host kümmern und den anderen Bescheid sagen, bzw sollen die anderen sich bei der Person melden. Dazu gibts ein Feauter "Nachricht an alle senden, die da an dem Tag wohnen
+    msg += """XXX ENTWEDER
+- WICHTIG: Diese Person bist du. Kannst du dich bitte darum kümmern? Wenn ja, bestätige uns das bitte so schnell wie möglich (diese Nummer anrufen/schreiben - 0151 24757110). Deine Aufgabe ist es, zu organisieren, wie du Zugang zur Wohnung bekommst, indem du den*die Gastgeber*in anrufst. Weitere Menschen, die in der Unterkunft wohnen, würden dich als primäre Ansprechperson kontaktieren, um an die genauen Infos zur Unterkunft zu gelangen.
+XXX ODER
+- Bitte nehme vor deiner Anreise Kontakt mit Menschen der Letzten Generation auf, die dort bereits wohnen. Eine entsprechende Liste an Menschen und deren Telefonnummern findest du in der Bettenbörse (siehe Link oben). Jede Unterkunft hat eine verantwortliche Person, die dir im Zweifelsfall Details zum Zugang geben kann. Für deine Unterkunft ist das XXX (Telefonnummer findest du auch in der Bettenbörse - siehe Link oben).\n
+- Denke an Zelt/Isomatte/Schlafsack. Auch wenn du in einem Bett schläfst, wäre es hilfreich, wenn du dein Camping Equipment verleihen kannst.
+- Erinnere dich an deinen Auszugstermin, wir werden dir KEINE Erinnerung schicken (überlege dir auch, ob du da vielleicht in der GeSa übernachtest - kontaktiere uns).
+- Manche Menschen können nicht über einen längeren Zeitraum auf einer Isomatte schlafen. Nehmt daher bitte gegenseitig Rücksicht aufeinander und sprecht darüber.
+- Falls du mehrere male in Berlin sein wirst: melde dich bitte bei uns, um uns die Daten durchzugeben. Danke :)
 
-Einen guten Aufenthalt wünscht die 
+Zur Erinnerung: die Bettenbörse AG hat wegen der Menge an Unterkünften kein Detailwissen zu allen Wohnungen und wir müssen auf deine Eigenverantwortung als Bewohner*in setzen, um Details (z. B. zum Zutritt) zu regeln.
+Wir helfen dir natürlich trotzdem gerne weiter, wenn es irgendwo hakt. Wenn du Fragen/Probleme bezüglich deiner Unterkunft hast, kannst du dich gerne bei dieser Nummer (0151 24 75 7110) melden.
 
-Unterkünfte AG der letzten Generation"""
+Einen guten Aufenthalt wünscht die
+Unterkünfte AG der letzten Generation 🛌💒🏡⛺️"""
     return msg
 
 
