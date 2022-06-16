@@ -2,12 +2,14 @@
 # -*- coding: utf-8 -*-
 from datetime import timedelta, date, datetime
 import threading
-from flask import Flask, render_template, redirect, flash, url_for, session, request, Markup
+from flask import Flask, render_template, redirect, flash, url_for, session, request, Markup, make_response
 from flask_httpauth import HTTPBasicAuth
 from flask_migrate import Migrate
 from werkzeug.security import check_password_hash
 from forms import ShelterForm, DeleteShelterForm, MenschForm, DeleteMenschForm, SignalAccountForm, SignalMessageForm, FindShelterForm, ReservationForm
 import uuid
+from io import StringIO
+import csv
 from flask_qrcode import QRcode
 from collections import OrderedDict
 
@@ -939,6 +941,25 @@ def plot_menschen(dbfile="unterkünfte.db", start_plot="2022-06-17", end_plot="2
     output = io.BytesIO()
     FigureCanvas(fig).print_png(output)
     return Response(output.getvalue(), mimetype="image/png")
+
+
+@app.route('/menschen/export/csv')
+@auth.login_required
+def export_menschen_csv():
+    buffer = StringIO()
+    writer = csv.writer(buffer, delimiter='|')
+    header = ("Name", "Bezugsgruppe", "von", "bis", "Telefon", "Geburtstag", "Angehörige", "Bin da mit", "brauche FLINTA Space", "Lebensmittelunverträglichkeiten", "besondere Bedürfnisse")
+    writer.writerow(header)
+    menschen = Mensch.query.all()
+    for m in menschen:
+        row = (m.name, m.bezugsgruppe, m.date_from, m.date_to, m.telephone,
+               m.birthday, m.relative, m.fellows, m.flinta, m.non_food, m.needs)
+        writer.writerow(row)
+    filename = f"bettenbörse_menschen_{datetime.now().strftime('%Y%m%d-%H%M')}.csv"
+    resp = make_response(buffer.getvalue())
+    resp.headers["Content-Disposition"] = f"attachment; filename={filename}"
+    resp.headers["Content-type"] = "text/csv"
+    return resp
 
 
 @app.errorhandler(404)
