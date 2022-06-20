@@ -28,7 +28,8 @@ def test_auth(client):
                  "/unterkunft/123/edit",
                  "/unterkunft/123/delete",
                  "/unterkunft/123/reservation/20.20/edit",
-                 "reservierungen"]:
+                 "reservierungen",
+                 "hinweise"]:
         resp = client.get(path)
         assert resp.status_code == 401, path
 
@@ -40,6 +41,11 @@ def test_map(client):
 
 def test_reservations(client):
     resp = client.get('/reservierungen', auth=(USER, USER))
+    assert resp.status_code == 200
+
+
+def test_show_warnings(client):
+    resp = client.get('/hinweise', auth=(USER, USER))
     assert resp.status_code == 200
 
 

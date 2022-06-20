@@ -992,6 +992,51 @@ def show_reservations():
     return render_template("reservations_list.html", reservations=reservations, day=day)
 
 
+def get_menschen_without_shelter_for_day(day):
+    on_site_menschen = Mensch.query.filter(day >= Mensch.date_from). \
+                                    filter(day <= Mensch.date_to).all()
+    for mensch in on_site_menschen:
+        if not Reservation.query.filter_by(mensch=mensch).filter_by(date=day).first():
+            yield mensch
+
+
+def get_new_shelters_for_day(day):
+    shelters = Shelter.query.filter_by(date_from_june=day).all()
+    return shelters
+
+
+def get_done_shelters_for_day(day):
+    shelters = Shelter.query.filter_by(date_to_june=day).all()
+    return shelters
+
+
+@app.route('/hinweise')
+@auth.login_required
+def show_warnings():
+    today = date.today()
+    day_delta = timedelta(days=1)
+    menschen_without_shelter_for_today = get_menschen_without_shelter_for_day(today)
+    menschen_without_shelter_for_tomorrow = get_menschen_without_shelter_for_day(today + day_delta)
+
+    shelters_new_yesterday = get_new_shelters_for_day(today - day_delta)
+    shelters_new_today = get_new_shelters_for_day(today)
+    shelters_new_tomorrow = get_new_shelters_for_day(today + day_delta)
+
+    shelters_done_yesterday = get_done_shelters_for_day(today - day_delta)
+    shelters_done_today = get_done_shelters_for_day(today)
+    shelters_done_tomorrow = get_done_shelters_for_day(today + day_delta)
+    return render_template("warnings.html",
+                            menschen_without_shelter_for_today=menschen_without_shelter_for_today,
+                            menschen_without_shelter_for_tomorrow=menschen_without_shelter_for_tomorrow,
+                            shelters_new_yesterday=shelters_new_yesterday,
+                            shelters_new_today=shelters_new_today,
+                            shelters_new_tomorrow=shelters_new_tomorrow,
+                            shelters_done_yesterday=shelters_done_yesterday,
+                            shelters_done_today=shelters_done_today,
+                            shelters_done_tomorrow=shelters_done_tomorrow
+                            )
+
+
 if __name__ == '__main__':
     app.run(debug=True)
     #app.run(host="0.0.0.0", port=22000, debug=True)

@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+
+{% block header %}
+    <h3>
+        {% block title %}
+                Hinweise
+        {% endblock %}
+    </h3>
+{% endblock %}
+
+
+{% block content %}
+
+
+<p>
+  <a class="btn btn-primary" data-toggle="collapse" href="#multiCollapseExample1" role="button" aria-expanded="false" aria-controls="multiCollapseExample1">Menschen ohne Unterkünfte</a>
+  <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#multiCollapseExample2" aria-expanded="false" aria-controls="multiCollapseExample2">neue Unterkünfte</button>
+  <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#multiCollapseExample3" aria-expanded="false" aria-controls="multiCollapseExample3">endende Unterkünfte</button>
+</p>
+
+<div class="row">
+    <div class="col">
+    <div class="collapse multi-collapse show" id="multiCollapseExample1">
+      <div class="card card-body">
+      
+
+
+</br><p>Menschen ohne Unterkunft für heute Nacht</p>
+<ul class="list-group">
+    {% for mensch in menschen_without_shelter_for_today %}
+    <li class="list-group-item"><a href="{{ url_for('show_mensch', id=mensch.id) }}">{{ mensch.name }}</a></li>
+    {% endfor %}
+</ul>
+
+</br><p>Menschen ohne Unterkunft für morgen Nacht</p>
+<ul class="list-group">
+    {% for mensch in menschen_without_shelter_for_tomorrow %}
+    <li class="list-group-item"><a href="{{ url_for('show_mensch', id=mensch.id) }}">{{ mensch.name }}</a></li>
+    {% endfor %}
+</ul>
+      
+
+      </div>
+    </div>
+  </div>
+  <div class="col">
+    <div class="collapse multi-collapse show" id="multiCollapseExample2">
+      <div class="card card-body">
+      
+      
+</br><p>Unterkünfte, die wir gestern zum ersten mal nutzen konnten</p>
+<ul class="list-group">
+    {% for shelter in shelters_new_yesterday %}
+        <li class="list-group-item">
+            <a href="{{ url_for('show_shelter', uuid=shelter.uuid, _anchor='reservierungen')}}">{{ shelter.name }}</a>
+        </li>
+    {% endfor %}
+</ul>
+
+</br><p>Unterkünfte, die wir heute zum ersten mal nutzen können</p>
+<ul class="list-group">
+    {% for shelter in shelters_new_today %}
+        <li class="list-group-item">
+            <a href="{{ url_for('show_shelter', uuid=shelter.uuid, _anchor='reservierungen')}}">{{ shelter.name }}</a>
+        </li>
+    {% endfor %}
+</ul>
+
+</br><p>Unterkünfte, die wir morgen zum ersten mal nutzen können</p>
+<ul class="list-group">
+    {% for shelter in shelters_new_tomorrow %}
+        <li class="list-group-item">
+            <a href="{{ url_for('show_shelter', uuid=shelter.uuid, _anchor='reservierungen')}}">{{ shelter.name }}</a>
+        </li>
+    {% endfor %}
+</ul>
+      
+      
+
+      </div>
+    </div>
+  </div>
+
+<div class="col">
+    <div class="collapse multi-collapse show" id="multiCollapseExample3">
+      <div class="card card-body">
+      
+      
+</br><p>Unterkünfte, die wir gestern zum letzten mal hatten</p>
+<ul class="list-group">
+    {% for shelter in shelters_done_yesterday %}
+        <li class="list-group-item">
+            <a href="{{ url_for('show_shelter', uuid=shelter.uuid, _anchor='reservierungen')}}">{{ shelter.name }}</a>
+        </li>
+    {% endfor %}
+</ul>
+
+</br><p>Unterkünfte, die wir heute zum letzten mal haben</p>
+<ul class="list-group">
+    {% for shelter in shelters_done_today %}
+        <li class="list-group-item">
+            <a href="{{ url_for('show_shelter', uuid=shelter.uuid, _anchor='reservierungen')}}">{{ shelter.name }}</a>
+        </li>
+    {% endfor %}
+</ul>
+
+</br><p>Unterkünfte, die wir morgen zum letzten mal haben</p>
+<ul class="list-group">
+    {% for shelter in shelters_done_tomorrow %}
+        <li class="list-group-item">
+            <a href="{{ url_for('show_shelter', uuid=shelter.uuid, _anchor='reservierungen')}}">{{ shelter.name }}</a>
+        </li>
+    {% endfor %}
+</ul>
+      
+      </div>
+    </div>
+  </div>
+</div>
+
+
+{% endblock %}
