@@ -29,17 +29,23 @@
 </br><p>Menschen ohne Unterkunft für heute Nacht</p>
 <ul class="list-group">
     {% for mensch in menschen_without_shelter_for_today %}
-    <li class="list-group-item"><a href="{{ url_for('show_mensch', id=mensch.id) }}">{{ mensch.name }}</a></li>
+    <li class="list-group-item"><a href="{{ url_for('show_mensch', id=mensch.id) }}">{{ mensch.name }} ({{ mensch.bezugsgruppe }})</a></li>
     {% endfor %}
 </ul>
 
 </br><p>Menschen ohne Unterkunft für morgen Nacht</p>
 <ul class="list-group">
     {% for mensch in menschen_without_shelter_for_tomorrow %}
-    <li class="list-group-item"><a href="{{ url_for('show_mensch', id=mensch.id) }}">{{ mensch.name }}</a></li>
+    <li class="list-group-item"><a href="{{ url_for('show_mensch', id=mensch.id) }}">{{ mensch.name }} ({{ mensch.bezugsgruppe }})</a></li>
     {% endfor %}
 </ul>
       
+</br><p>Menschen ohne Unterkunft für übermorgen Nacht</p>
+<ul class="list-group">
+    {% for mensch in menschen_without_shelter_for_tomorrow_tomorrow %}
+    <li class="list-group-item"><a href="{{ url_for('show_mensch', id=mensch.id) }}">{{ mensch.name }} ({{ mensch.bezugsgruppe }})</a></li>
+    {% endfor %}
+</ul>
 
       </div>
     </div>

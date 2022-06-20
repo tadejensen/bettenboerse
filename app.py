@@ -987,14 +987,14 @@ def show_reservations():
         except ValueError:
             flash("Das Datum wurde im falschen Format angegeben.", "danger")
             day = date.today()
-    #reservations = Reservation.query.filter_by(date=day).order_by(Reservation.shelter.name).all()
     reservations = Reservation.query.filter_by(date=day).all()
     return render_template("reservations_list.html", reservations=reservations, day=day)
 
 
 def get_menschen_without_shelter_for_day(day):
     on_site_menschen = Mensch.query.filter(day >= Mensch.date_from). \
-                                    filter(day <= Mensch.date_to).all()
+                                    filter(day <= Mensch.date_to). \
+                                    order_by(Mensch.bezugsgruppe.asc()).all()
     for mensch in on_site_menschen:
         if not Reservation.query.filter_by(mensch=mensch).filter_by(date=day).first():
             yield mensch
@@ -1017,6 +1017,7 @@ def show_warnings():
     day_delta = timedelta(days=1)
     menschen_without_shelter_for_today = get_menschen_without_shelter_for_day(today)
     menschen_without_shelter_for_tomorrow = get_menschen_without_shelter_for_day(today + day_delta)
+    menschen_without_shelter_for_tomorrow_tomorrow = get_menschen_without_shelter_for_day(today + day_delta + day_delta)
 
     shelters_new_yesterday = get_new_shelters_for_day(today - day_delta)
     shelters_new_today = get_new_shelters_for_day(today)
@@ -1028,6 +1029,7 @@ def show_warnings():
     return render_template("warnings.html",
                             menschen_without_shelter_for_today=menschen_without_shelter_for_today,
                             menschen_without_shelter_for_tomorrow=menschen_without_shelter_for_tomorrow,
+                            menschen_without_shelter_for_tomorrow_tomorrow=menschen_without_shelter_for_tomorrow_tomorrow,
                             shelters_new_yesterday=shelters_new_yesterday,
                             shelters_new_today=shelters_new_today,
                             shelters_new_tomorrow=shelters_new_tomorrow,
