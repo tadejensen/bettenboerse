@@ -47,7 +47,7 @@
     {% endfor %}
 </ul>
 
-</br><p>Menschen, die heute ausziehen</p>
+</br><p>Menschen, die heute ausziehen (gehen oder umziehen)</p>
 <ul class="list-group">
     {% for mensch in menschen_moving_out_today %}
     <li class="list-group-item"><a href="{{ url_for('show_mensch', id=mensch.id) }}">{{ mensch.name }} ({{ mensch.bezugsgruppe }})</a></li>
