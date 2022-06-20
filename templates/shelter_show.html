@@ -120,7 +120,7 @@ Interner Kommentar (nur für Menschen, die Unterkünfte koordinieren/organisiere
     {% endif %}
 {% if session['logged_in'] %}
     <td>
-        <a href="{{ url_for('edit_reservation', uuid=shelter.uuid, date=date.strftime("%d.%m.%Y")) }}" title="Reservierung ändern" data-toggle="tooltip"><i class="material-icons">&#xE254;</i></a>
+        <a href="{{ url_for('edit_reservation', uuid=shelter.uuid, day=date.strftime("%d.%m.%Y")) }}" title="Reservierung ändern" data-toggle="tooltip"><i class="material-icons">&#xE254;</i></a>
 
         {% set menschen_ids = [] %}
         {% for reservation in reservation.reservations %}

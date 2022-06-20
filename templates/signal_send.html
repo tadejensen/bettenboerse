@@ -48,9 +48,29 @@
         <div class="form-group">
             {{ form.submit(class_="form-control btn btn-primary") }}
         </div>
-        
 
     </form>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+
+<div id="qrcode"></div>
+
+<script type="text/javascript">
+    //var data = "sms:" + $("#message").val();
+    var data = $("#message").val();
+    console.log(data);
+    new QRCode(document.getElementById("qrcode"), data);
+
+    $( document ).ready(function() {
+        $("#message").on('change keyup paste', function() {
+            //var data = "sms:" + $("#message").val();
+            //console.log(data);
+            //new QRCode(document.getElementById("qrcode"), data);
+        });
+    });
+
+</script>
 
 {% endblock %}
 

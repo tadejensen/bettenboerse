@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+
+{% block header %}
+    <h3>
+Reservierungen vom {{ day.strftime("%d.%m. (%a)") }}
+    </h3>
+{% endblock %}
+    
+{% block title %}
+Reservierungen vom {{ day.strftime("%d.%m. (%a)") }}
+{% endblock %}
+
+
+{% block more_script %}
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.12.1/css/jquery.dataTables.css">
+    <script type="text/javascript" charset="utf8" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#table_reservations').DataTable({
+                        paging: false,
+                    });
+        });
+    </script>
+{% endblock %}
+
+{% block content %}
+      
+    <div class="row">
+
+          <div class="col-sm">
+              <form method="GET">
+                <input value="{{ day }}" class="form-control" name="date" required type="date">
+                 <button class="btn btn-primary" type="submit">Reservierungen filtern</button>
+              </form>
+          </div>
+          <div class="col-sm">          </div>
+          <div class="col-sm">          </div>
+
+      </div>
+      </br>
+      
+
+<table id="table_reservations" class="table">
+  <thead>
+    <tr>
+      <th>Unterkunft</th>
+      <th>Auslastung</th>
+      <th>Mensch</th>
+      <th>Bezugsgruppe</th>
+    </tr>
+  </thead>
+  <tbody>
+{% for reservation in reservations %}
+    <tr>
+        <td><a href="{{ url_for('show_shelter', uuid=reservation.shelter.uuid, _anchor='reservierung-' + reservation.date.strftime("%d%m")) }}">{{ reservation.shelter.name }}</a></td>
+      {% set capacity = reservation.shelter.get_capacity_by_date(day) %}
+      <td>{{ capacity['beds_used'] }}/{{ capacity['beds_total']}}</td>
+      <td><a href="{{ url_for('show_mensch', id=reservation.mensch.id) }}">{{ reservation.mensch.name }}</a></td>
+      <td>{{ reservation.mensch.bezugsgruppe }}</td>
+{% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}

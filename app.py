@@ -227,25 +227,25 @@ def edit_reservation_bulk(uuid):
                                    menschen=menschen)
 
 
-@app.route('/unterkunft/<uuid>/reservation/<date>/edit', methods=['GET', 'POST'])
+@app.route('/unterkunft/<uuid>/reservation/<day>/edit', methods=['GET', 'POST'])
 @auth.login_required
-def edit_reservation(uuid, date):
+def edit_reservation(uuid, day):
     shelter = Shelter.query.get_or_404(uuid, description=f"Unterkunft mit der id {uuid} wurde nicht gefunden")
     # TODO: check if for start und end (between from and to)
     try:
-        date = datetime.strptime(date, "%d.%m.%Y").date()
+        day = datetime.strptime(day, "%d.%m.%Y").date()
     except ValueError:
         return render_template("error.html", description="Datum im falschen Format angegeben. TT.MM.YYYY"), 400
 
-    menschen = Mensch.query.filter(date >= Mensch.date_from).filter(date < Mensch.date_to).order_by(Mensch.bezugsgruppe.asc()).all()
+    menschen = Mensch.query.filter(day >= Mensch.date_from).filter(day < Mensch.date_to).order_by(Mensch.bezugsgruppe.asc()).all()
 
-    reservations_per_day = Reservation.query.filter_by(shelter=shelter).filter_by(date=date).all()
+    reservations_per_day = Reservation.query.filter_by(shelter=shelter).filter_by(date=day).all()
     reservations_menschen_ids = [reservation.mensch.id for reservation in reservations_per_day]
     if request.method == "GET":
         return render_template(
             'reservation_edit.html',
             uuid=uuid,
-            date=date,
+            date=day,
             menschen=menschen,
             shelter=shelter,
             reservations_menschen_ids=reservations_menschen_ids,
@@ -262,7 +262,7 @@ def edit_reservation(uuid, date):
             return render_template(
                 'reservation_edit.html',
                 uuid=uuid,
-                date=date,
+                date=day,
                 menschen=menschen,
                 shelter=shelter,
                 reservations_menschen_ids=reservations_menschen_ids,
@@ -275,7 +275,7 @@ def edit_reservation(uuid, date):
         return render_template(
             'reservation_edit.html',
             uuid=uuid,
-            date=date,
+            date=day,
             menschen=menschen,
             shelter=shelter,
             reservations_menschen_ids=ids_menschen_submitted,
@@ -283,31 +283,31 @@ def edit_reservation(uuid, date):
 
     # check: is there already a reservation for a Mensch for that day?
     for id in ids_menschen_submitted:
-        reservation = Reservation.query.filter_by(date=date).filter_by(mensch_id=id).filter(Reservation.shelter != shelter).first()
+        reservation = Reservation.query.filter_by(date=day).filter_by(mensch_id=id).filter(Reservation.shelter != shelter).first()
         if reservation:
             mensch = Mensch.query.get(id)
             flash(f"{mensch.name} hat bereits eine Übernachtung für diesen Tag bei {reservation.shelter.name}", "danger")
             return render_template(
                 'reservation_edit.html',
                 uuid=uuid,
-                date=date,
+                date=day,
                 menschen=menschen,
                 shelter=shelter,
                 reservations_menschen_ids=ids_menschen_submitted,
             )
     # TODO: is the user on site for that day?
 
-    Reservation.query.filter_by(shelter=shelter).filter_by(date=date).delete()
+    Reservation.query.filter_by(shelter=shelter).filter_by(date=day).delete()
     for mensch_id in ids_menschen_submitted:
         mensch = Mensch.query.get(int(mensch_id))
-        reservation = Reservation.query.filter_by(shelter=shelter).filter_by(date=date).filter_by(mensch=mensch).first()
+        reservation = Reservation.query.filter_by(shelter=shelter).filter_by(date=day).filter_by(mensch=mensch).first()
         if not reservation:
-            reservation = Reservation(shelter=shelter, date=date, mensch=mensch)
+            reservation = Reservation(shelter=shelter, date=day, mensch=mensch)
     db.session.commit()
 
     return redirect(url_for('show_shelter',
                             uuid=uuid,
-                            _anchor=f"reservierung-{date.strftime('%d%m')}"))
+                            _anchor=f"reservierung-{day.strftime('%d%m')}"))
 
 
 @app.route('/unterkunft/<uuid>/delete', methods=['GET', 'POST'])
@@ -440,13 +440,13 @@ def show_mensch(id):
 @app.route('/karte')
 @auth.login_required
 def show_map():
-    date = request.args.get("date")
-    if date:
+    day = request.args.get("date")
+    if day:
         try:
-            date = datetime.strptime(date, "%Y-%m-%d").date()
+            day = datetime.strptime(day, "%Y-%m-%d").date()
         except ValueError:
             return render_template("error.html", description="Datum im falschen Format angegeben. TT.MM.YYYY")
-        shelters = Shelter.query.filter(Shelter.date_from_june <= date).filter(Shelter.date_to_june > date).all()
+        shelters = Shelter.query.filter(Shelter.date_from_june <= day).filter(Shelter.date_to_june > day).all()
     else:
         shelters = Shelter.query.all()
     empty_shelters = []
@@ -459,7 +459,7 @@ def show_map():
     return render_template('map.html',
                            empty_shelters=empty_shelters,
                            complete_shelters=complete_shelters,
-                           date=date)
+                           date=day)
 
 
 @app.route('/übersicht')
@@ -712,9 +712,9 @@ def hist_betten(dbfile="unterkünfte.db", start_plot="2022-06-17", end_plot="202
     resdates_ind = []
     resplaces = []
 
-    for date in resdates:
-        resdates_ind.append((date - start).days)
-        reses = reservations[reservations["date"] == date]
+    for ddate in resdates:
+        resdates_ind.append((ddate - start).days)
+        reses = reservations[reservations["date"] == ddate]
         date_ind = (date-start).days
         for ind in reses.index:
             res = reses.loc[ind]
@@ -732,9 +732,9 @@ def hist_betten(dbfile="unterkünfte.db", start_plot="2022-06-17", end_plot="202
 
     xticklabs = []
     for tick in ax_hist.get_xticks():
-        date = start + timedelta(days=int(tick))
+        ddate = start + timedelta(days=int(tick))
 
-        xticklabs.append(date.strftime("%d. %B"))
+        xticklabs.append(ddate.strftime("%d. %B"))
     ax_hist.set_yticks(np.arange(0, np.max(ax_hist.get_yticks()), 5), minor=True)
     ax_hist.yaxis.grid()
     ax_hist.yaxis.grid(which="minor", alpha=.25)
@@ -935,8 +935,8 @@ def plot_menschen(dbfile="unterkünfte.db", start_plot="2022-06-17", end_plot="2
 
     xticklabs = []
     for tick in ax.get_xticks():
-        date = start + timedelta(days=int(tick))
-        xticklabs.append(date.strftime("%d. (%a)"))
+        ddate = start + timedelta(days=int(tick))
+        xticklabs.append(ddate.strftime("%d. (%a)"))
 
     if end_plot:
         tmax = end_plot
@@ -975,6 +975,21 @@ def export_menschen_csv():
 @app.errorhandler(404)
 def page_not_found(description):
     return render_template("error.html", description=description), 404
+
+
+@app.route('/reservierungen')
+@auth.login_required
+def show_reservations():
+    day = request.args.get("date", date.today())
+    if type(day) == str:
+        try:
+            day = datetime.strptime(day, "%Y-%m-%d").date()
+        except ValueError:
+            flash("Das Datum wurde im falschen Format angegeben.", "danger")
+            day = date.today()
+    #reservations = Reservation.query.filter_by(date=day).order_by(Reservation.shelter.name).all()
+    reservations = Reservation.query.filter_by(date=day).all()
+    return render_template("reservations_list.html", reservations=reservations, day=day)
 
 
 if __name__ == '__main__':
