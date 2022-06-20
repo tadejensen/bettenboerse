@@ -1000,6 +1000,19 @@ def get_menschen_without_shelter_for_day(day):
             yield mensch
 
 
+def get_moving_out_menschen():
+    today = date.today()
+    tomorrow = today + timedelta(days=1)
+    menschen = Mensch.query.all()
+    for mensch in menschen:
+        reservation_today = Reservation.query.filter_by(mensch=mensch).filter_by(date=today).first()
+        reservation_tomorrow = Reservation.query.filter_by(mensch=mensch).filter_by(date=tomorrow).first()
+        if reservation_today and not reservation_tomorrow:
+            yield mensch
+        if reservation_today and reservation_tomorrow and reservation_today.shelter != reservation_tomorrow.shelter:
+            yield mensch
+
+
 def get_new_shelters_for_day(day):
     shelters = Shelter.query.filter_by(date_from_june=day).all()
     return shelters
@@ -1018,6 +1031,7 @@ def show_warnings():
     menschen_without_shelter_for_today = get_menschen_without_shelter_for_day(today)
     menschen_without_shelter_for_tomorrow = get_menschen_without_shelter_for_day(today + day_delta)
     menschen_without_shelter_for_tomorrow_tomorrow = get_menschen_without_shelter_for_day(today + day_delta + day_delta)
+    menschen_moving_out_today = get_moving_out_menschen()
 
     shelters_new_yesterday = get_new_shelters_for_day(today - day_delta)
     shelters_new_today = get_new_shelters_for_day(today)
@@ -1035,7 +1049,8 @@ def show_warnings():
                             shelters_new_tomorrow=shelters_new_tomorrow,
                             shelters_done_yesterday=shelters_done_yesterday,
                             shelters_done_today=shelters_done_today,
-                            shelters_done_tomorrow=shelters_done_tomorrow
+                            shelters_done_tomorrow=shelters_done_tomorrow,
+                            menschen_moving_out_today=menschen_moving_out_today,
                             )
 
 
