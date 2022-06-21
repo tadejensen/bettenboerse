@@ -49,6 +49,12 @@
     <strong>Hinweis: </strong>pro Unterkunft müssen wir einmalig Längen- und Breitengrad hinterlegen. Dann wird die Wohnung in der Karte angezeigt.</br></br>
     
     <div class="form-group">
+        {{ form.area.label }}
+        {{ form.area(class_="form-control") }}
+    </div>
+    
+    
+    <div class="form-group">
         {{ form.keys.label }}
         {{ form.keys(class_="form-control", rows=3) }}
     </div>

@@ -49,6 +49,7 @@ Reservierungen vom {{ day.strftime("%d.%m. (%a)") }}
       <th>Auslastung</th>
       <th>Mensch</th>
       <th>Bezugsgruppe</th>
+      <th>Himmelsrichtung</th>
     </tr>
   </thead>
   <tbody>
@@ -59,6 +60,7 @@ Reservierungen vom {{ day.strftime("%d.%m. (%a)") }}
       <td>{{ capacity['beds_used'] }}/{{ capacity['beds_total']}}</td>
       <td><a href="{{ url_for('show_mensch', id=reservation.mensch.id) }}">{{ reservation.mensch.name }}</a></td>
       <td>{{ reservation.mensch.bezugsgruppe }}</td>
+      <td>{{ reservation.shelter.area }}</td>
 {% endfor %}
   </tbody>
 </table>

@@ -23,6 +23,7 @@ class Shelter(db.Model):
     latitude = db.Column(db.String())
     longitude = db.Column(db.String())
     internal_comment = db.Column(db.String())
+    area = db.Column(db.String())
     menschen = relationship("Reservation", back_populates="shelter")
     beds_total = column_property(beds_basic + beds_luxury)
 
@@ -75,9 +76,9 @@ class Mensch(db.Model):
         return f"{reservations}/{stay_days}"
 
     def get_last_message_sent(self):
-        last_message = SignalLog.query.filter_by(mensch=self).filter_by(error=0).order_by(SignalLog.created.desc()).first()
+        #last_message = SignalLog.query.filter_by(mensch=self).filter_by(error=0).order_by(SignalLog.created.desc()).first()
         last_message = SignalLog.query.filter_by(mensch=self).order_by(SignalLog.created.desc()).first()
-        return last_message.created.strftime("%d.%m.") if last_message else "keine Nachricht"
+        return last_message.created.strftime("%d.%m. (%a)") if last_message else "keine Nachricht"
 
 
 class SignalLog(db.Model):

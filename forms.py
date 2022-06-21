@@ -99,7 +99,7 @@ class ShelterForm(FlaskForm):
         validators=[validators.InputRequired(), validators.NumberRange(min=0)]
     )
     beds_luxury = IntegerField(
-        'Wie viele Schlafplätze kannst du anbieten, wenn Menschen keine Isomatte/Schlafsack mitbringen',
+        'Wie viele Schlafplätze kannst du anbieten, wenn Menschen keine Isomatte/Schlafsack mitbringen (Bett, Sofa, Matratze)',
         validators=[validators.InputRequired(), validators.NumberRange(min=0)]
     )
     date_from_june = DateField(
@@ -120,6 +120,10 @@ class ShelterForm(FlaskForm):
     )
     internal_comment = TextAreaField(
         'Interner Kommentar (nur für Menschen, die Unterkünfte koordinieren/organisieren)',
+        validators=[validators.Optional()]
+    )
+    area = StringField(
+        'Himmelsrichtung',
         validators=[validators.Optional()]
     )
 
