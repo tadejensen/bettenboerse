@@ -115,6 +115,11 @@
       {% for shelter in empty_shelters %}
         Hinweis: Unterkunft <a href="{{ url_for('show_shelter', uuid=shelter.uuid) }}">{{ shelter.uuid }} ({{ shelter.name }})</a> hat noch keine Längen/Breiten-Grade eingetragen.</br>
       {% endfor %}
+       
+      </br>
+      {% for shelter in shelters_without_area %}
+        Hinweis: Unterkunft <a href="{{ url_for('show_shelter', uuid=shelter.uuid) }}">{{ shelter.uuid }} ({{ shelter.name }})</a> hat noch keine Himmelsrichtung eingetragen.</br>
+      {% endfor %}
       </br></br>
 
 

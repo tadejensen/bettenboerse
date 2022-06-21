@@ -456,9 +456,11 @@ def show_map():
             complete_shelters.append(shelter)
         else:
             empty_shelters.append(shelter)
+    shelters_without_area = Shelter.query.filter_by(area="").all()
     return render_template('map.html',
                            empty_shelters=empty_shelters,
                            complete_shelters=complete_shelters,
+                           shelters_without_area=shelters_without_area,
                            date=day)
 
 
