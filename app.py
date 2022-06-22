@@ -1017,7 +1017,7 @@ def show_reservations():
 
 def get_menschen_without_shelter_for_day(day):
     on_site_menschen = Mensch.query.filter(day >= Mensch.date_from). \
-                                    filter(day <= Mensch.date_to). \
+                                    filter(day < Mensch.date_to). \
                                     order_by(Mensch.bezugsgruppe.asc()).all()
     for mensch in on_site_menschen:
         if not Reservation.query.filter_by(mensch=mensch).filter_by(date=day).first():
