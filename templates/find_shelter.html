@@ -39,7 +39,7 @@ Unterkunft finden
     <ul class="list-group">
     {% for shelter in shelters %}
         <li class="list-group-item">
-            {{ shelter.name }} ({{ shelter.beds_total }} Betten,
+            {{ shelter.name }} ({{ shelter.area }}, {{ shelter.beds_total }} Betten,
             von {{ shelter.date_from_june.strftime("%a %d.%m.") }} bis {{ shelter.date_to_june.strftime("%a %d.%m.") }}):
             <a href="{{ url_for('show_shelter', uuid=shelter.uuid, _anchor='reservierungen')}}">Reservierungen anzeigen</a> | 
                                 <a href="{{ url_for('edit_reservation_bulk', uuid=shelter.uuid, date_from=form.date_from.data,
