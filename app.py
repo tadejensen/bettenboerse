@@ -657,6 +657,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle, Patch
 from matplotlib.lines import Line2D                     # neu
+from matplotlib.ticker import FuncFormatter
 import sqlite3
 import io
 from flask import Response
@@ -688,27 +689,34 @@ def format_name(name, linelen=20):
 
 @app.route("/hist_betten.png")
 @auth.login_required
-def hist_betten(dbfile="unterkünfte.db", start_plot="2022-06-17", end_plot="2022-07-15"):
+def hist_betten(dbfile="unterkünfte.db", start_plot="2022-06-18", end_plot="2022-07-15"):
     a = read_sqlite(dbfile)
-    start = pd.to_datetime("2022-06-17")
+    start = pd.to_datetime("2022-06-18")
     end_plot = pd.to_datetime(end_plot)
     start_plot = pd.to_datetime(start_plot)
 
     betten = pd.DataFrame(a["shelter"])
+    menschen = a["mensch"]
     reservations = pd.DataFrame(a["reservation"])
 
     fig_hist = plt.figure(tight_layout=True, figsize=(13, 7))
     ax_hist = plt.subplot(111)
 
     bedcounts = []
+    menschcounts = []
 
     t1_max = max(pd.to_datetime(betten["date_to_june"]))
 
     for i in range((t1_max - start).days):
         day = start + timedelta(days=i)
-        valbeds = betten[(pd.to_datetime(betten["date_from_june"]) <= day) & (pd.to_datetime(betten["date_to_june"]) > day)]
+        valbeds = betten[
+            (pd.to_datetime(betten["date_from_june"]) <= day) & (pd.to_datetime(betten["date_to_june"]) > day)]
         valbedcount = np.sum([valbeds["beds_basic"], valbeds["beds_luxury"]])
+
+        valpeople = np.sum((pd.to_datetime(menschen["date_from"]) <= day) & (pd.to_datetime(menschen["date_to"]) > day))
+
         bedcounts.append((i, valbedcount))
+        menschcounts.append((i - .15, valpeople))
 
     reservations["date"] = pd.to_datetime(reservations["date"])
     resdates = set(reservations["date"])
@@ -718,41 +726,54 @@ def hist_betten(dbfile="unterkünfte.db", start_plot="2022-06-17", end_plot="202
     for ddate in resdates:
         resdates_ind.append((ddate - start).days)
         reses = reservations[reservations["date"] == ddate]
-        date_ind = (date-start).days
+        date_ind = (ddate - start).days
         for ind in reses.index:
             res = reses.loc[ind]
             rescount = len(reses)
-        resplaces.append((date_ind, rescount))
+        resplaces.append((date_ind + .15, rescount))
 
     bedcounts = np.array(bedcounts)
     resplaces = np.array(resplaces)
+    menschcounts = np.array(menschcounts)
 
-    ax_hist.bar(bedcounts[:, 0], bedcounts[:, 1], color="lightgreen", zorder=2.11, label="gesamt")
-    ax_hist.bar(resplaces[:, 0], resplaces[:, 1], zorder=2.12, color="lightcoral", label="belegt")
+    ax_hist.bar(bedcounts[:, 0], bedcounts[:, 1], color="lightgreen", zorder=2.11, label="vorhandene Betten", width=.8)
+    ax_hist.bar(resplaces[:, 0], resplaces[:, 1], zorder=2.12, color="gold", label="belegte Betten", width=.3)
+    ax_hist.bar(menschcounts[:, 0], menschcounts[:, 1], zorder=2.12, color="skyblue", label="Gesuche", width=.3)
 
     OG_xlim = ax_hist.get_xlim()
     ax_hist.set_xticks(np.arange(0, (t1_max - start).days, 5))
+    ax_hist.set_xticks(np.arange(0, (t1_max - start).days, 1), minor=True)
 
     xticklabs = []
     for tick in ax_hist.get_xticks():
-        ddate = start + timedelta(days=int(tick))
+        datei = start + timedelta(days=int(tick))
+        xticklabs.append(datei.strftime("%d. (%a)"))
 
-        xticklabs.append(ddate.strftime("%d. %B"))
     ax_hist.set_yticks(np.arange(0, np.max(ax_hist.get_yticks()), 5), minor=True)
     ax_hist.yaxis.grid()
     ax_hist.yaxis.grid(which="minor", alpha=.25)
 
-    xlim = ((start_plot-start).days-.5, (end_plot-start).days+.5)
+    xlim = ((start_plot - start).days - .5, (end_plot - start).days + .5)
 
     ax_hist.set(xticklabels=xticklabs, xlim=xlim,
                 xlabel="Datum", ylabel="Schlafplätze")
     ax_hist.legend()
     ax_hist.xaxis.set_tick_params(rotation=45)
 
+    ax_hist.xaxis.set_minor_formatter(FuncFormatter(int_to_date))
+
+    today = pd.to_datetime(date.today())
+    ax_hist.axvline((today - start).days - .2, zorder=3, ls="--", color="red")
+
     output = io.BytesIO()
     FigureCanvas(fig_hist).print_png(output)
     return Response(output.getvalue(), mimetype="image/png")
 
+
+def int_to_date(value, pos):
+    start = pd.to_datetime("2022-06-18")
+    ddate = start + timedelta(days=int(value))
+    return ddate.strftime("%a")
 
 @app.route("/plot_calendar.png")
 @auth.login_required
