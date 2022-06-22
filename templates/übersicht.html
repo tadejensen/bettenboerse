@@ -26,9 +26,9 @@ Wann sind wie viele Betten belegt?
 <pre>
 {%- for day,data in beds.items() %}
     {%- if day == today -%}
-<strong>{{ day.strftime("%a %d.%m.") }}  {{ data['used_beds'] }}/{{ data['beds_total'] }} Betten belegt, {{ data['menschen_on_site'] }} Menschen sind vor Ort</strong>
+<strong>{{ day.strftime("%a %d.%m.") }}  {{ data['used_beds'] }}/{{ data['beds_total'] }} Betten belegt, {{ data['menschen_on_site'] }} Menschen brauchen einen Schlafplatz</strong>
     {%- else -%}
-{{ day.strftime("%a %d.%m.") }}  {{ data['used_beds'] }}/{{ data['beds_total'] }} Betten belegt, {{ data['menschen_on_site'] }} Menschen sind vor Ort
+{{ day.strftime("%a %d.%m.") }}  {{ data['used_beds'] }}/{{ data['beds_total'] }} Betten belegt, {{ data['menschen_on_site'] }} Menschen benötigen einen Schlafplatz
     {%- endif %}
 {% endfor %}
 </pre>

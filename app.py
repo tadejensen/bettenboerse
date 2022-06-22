@@ -482,7 +482,7 @@ def overview():
     while start < end:
         used_beds = Reservation.query.filter_by(date=start).count()
         shelters = Shelter.query.filter(start >= Shelter.date_from_june).filter(start < Shelter.date_to_june).all()
-        menschen = Mensch.query.filter(start >= Mensch.date_from).filter(start <= Mensch.date_to).count()
+        menschen = Mensch.query.filter(start >= Mensch.date_from).filter(start < Mensch.date_to).count()
         beds_total = sum([s.beds_total for s in shelters])
         beds[start] = {'beds_total': beds_total, 'used_beds': used_beds, 'shelters': shelters, 'menschen_on_site': menschen}
         start += delta
