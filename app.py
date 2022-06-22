@@ -775,9 +775,10 @@ def int_to_date(value, pos):
     ddate = start + timedelta(days=int(value))
     return ddate.strftime("%a")
 
+
 @app.route("/plot_calendar.png")
 @auth.login_required
-def plot_calendar(dbfile="unterkünfte.db", start_plot="2022-06-17", end_plot="2022-07-15"):
+def plot_calendar(dbfile="unterkünfte.db", start_plot="2022-06-18", end_plot="2022-07-31"):
     """
     dbfile: str zu unterkuefte.db
     start_date: str im Format 'yyyy-mm-dd'
@@ -787,7 +788,7 @@ def plot_calendar(dbfile="unterkünfte.db", start_plot="2022-06-17", end_plot="2
     """
 
     a = read_sqlite(dbfile)
-    start = pd.to_datetime("2022-06-17")
+    start = pd.to_datetime("2022-06-18")
     end_plot = pd.to_datetime(end_plot)
     start_plot = pd.to_datetime(start_plot)
 
@@ -798,14 +799,15 @@ def plot_calendar(dbfile="unterkünfte.db", start_plot="2022-06-17", end_plot="2
 
     height = 1
     legend_elements = [Patch(facecolor="lightgreen", edgecolor="none", label="frei Isomatte"),
-                       Patch(facecolor="tab:green", edgecolor="none", label="frei Isomatte"),
-                       Patch(facecolor="lightcoral", edgecolor="none", label="belegt")]
+                       Patch(facecolor="tab:green", edgecolor="none", label="frei Bett"),
+                       Patch(facecolor="lightcoral", edgecolor="none", label="belegt"),
+                       Line2D([0], [0], ls="dashed", color="red", label="heute")]
 
     fig_cal = plt.figure(tight_layout=True, figsize=(13, 8))
     ax_cal = plt.subplot()
 
     k = 0
-    t1_max = pd.to_datetime("2022-06-17")
+    t1_max = pd.to_datetime("2022-06-18")
 
     yticks = []
     yticklabs = []
@@ -835,10 +837,10 @@ def plot_calendar(dbfile="unterkünfte.db", start_plot="2022-06-17", end_plot="2
             for resdate in datecounts.index:
                 datecount = datecounts.loc[resdate]
                 resdate = pd.to_datetime(resdate)
-                resdate_ind = (resdate-start).days
+                resdate_ind = (resdate - start).days
 
                 ax_cal.add_patch(Rectangle((resdate_ind + .5, k), 1, datecount * height,
-                                 facecolor="lightcoral", edgecolor="none", zorder=3))
+                                           facecolor="lightcoral", edgecolor="none", zorder=3))
 
         for bedi in range(bed):
             ax_cal.add_patch(Rectangle(((t0 - start).days + .5, k), (t1 - t0).days, height, facecolor="tab:green",
@@ -859,24 +861,32 @@ def plot_calendar(dbfile="unterkünfte.db", start_plot="2022-06-17", end_plot="2
 
     ax_cal.legend(handles=legend_elements)
     ax_cal.xaxis.grid(zorder=1)
-    ax_cal.set(xlim=((start_plot-start).days - 1, (end_plot - start).days + 1), ylim=(0, k + .5),
+    ax_cal.set(xlim=((start_plot - start).days - 1, (end_plot - start).days + 1), ylim=(0, k + .5),
                xlabel="Datum",
                yticks=yticks, yticklabels=yticklabs)
 
     ax_cal.set_xticks(np.arange(0, (t1_max - start).days, 5))
     ax_cal.set_xticks(np.arange((t1_max - start).days), minor=True)
     ax_cal.xaxis.grid(which="minor", zorder=1, alpha=.25)
-    dates = []
-    for d in ax_cal.get_xticks():
-        day = start + timedelta(days=int(d))
 
-        dates.append(day.strftime("%d. %B"))
+    ax_cal.xaxis.set_major_formatter(FuncFormatter(int_to_date_maj))
+    ax_cal.xaxis.set_minor_formatter(FuncFormatter(int_to_date))
 
-    ax_cal.xaxis.set_tick_params(rotation=45)
-    ax_cal.set(xticklabels=dates, xlim=((start_plot-start).days - 1, (end_plot - start).days + 1), ylim=(.001, k + .5))
+    ax_cal.xaxis.set_tick_params(rotation=90, which="both")
+    ax_cal.set(xlim=((start_plot - start).days - 1, (end_plot - start).days + 1),
+               ylim=(.001, k + .5))
+
+    today = pd.to_datetime(date.today())
+    ax_cal.axvline((today - start).days + .35, color="red", ls="--", zorder=4)
     output = io.BytesIO()
     FigureCanvas(fig_cal).print_png(output)
     return Response(output.getvalue(), mimetype="image/png")
+
+
+def int_to_date_maj(value, pos):
+    start = pd.to_datetime("2022-06-18")
+    ddate = start + timedelta(days=int(value))
+    return ddate.strftime("%d. (%a)")
 
 
 @app.route("/plot_menschen.png")
@@ -890,7 +900,7 @@ def plot_menschen(dbfile="unterkünfte.db", start_plot="2022-06-17", end_plot="2
 
     """
     a = read_sqlite(dbfile)
-    start = pd.to_datetime("2022-06-17")
+    start = pd.to_datetime("2022-06-18")
     try:
         end_plot = pd.to_datetime(end_plot)
     except:
@@ -905,7 +915,8 @@ def plot_menschen(dbfile="unterkünfte.db", start_plot="2022-06-17", end_plot="2
 
     legend_elements = [Patch(facecolor="gold", edgecolor="none", label="untergebracht"),
                        Patch(facecolor="skyblue", edgecolor="none", label="in Berlin"),
-                       Line2D([0], [0], ls="dashed", color="red", label="heute")]
+                       Line2D([0], [0], ls="dashed", color="red", label="heute"),
+                       Line2D([0], [0], color="gray", label="Umzug")]
 
     menschen = menschen.sort_values("bezugsgruppe", ascending=False)
 
@@ -934,8 +945,16 @@ def plot_menschen(dbfile="unterkünfte.db", start_plot="2022-06-17", end_plot="2
         res_mensch = reservations[reservations["mensch_id"] == mensch["id"]]
         for res_ind in res_mensch.index:
             res = res_mensch.loc[res_ind]
-            home_id = res["shelter_id"]
-            date_int = (pd.to_datetime(res["date"]) - start).days
+            resdate = pd.to_datetime(res["date"])
+            resdate_next = str(resdate + timedelta(days=1))[:10]
+            date_int = (resdate - start).days
+
+            there_tomorrow = res_mensch["date"].str.contains(resdate_next).any()
+            same_shelter_tomorrow = (res_mensch[res_mensch["date"] == resdate_next]["shelter_id"] == res[
+                "shelter_id"]).sum()
+            if (not same_shelter_tomorrow) & there_tomorrow:
+                ax.vlines(date_int + 1.65, ymin=k, ymax=k + height, color="grey")
+
             ax.add_patch(
                 Rectangle((date_int + .5, k + .15 * height), 1, height * .7, edgecolor="none", facecolor="gold"))
 
@@ -949,28 +968,27 @@ def plot_menschen(dbfile="unterkünfte.db", start_plot="2022-06-17", end_plot="2
     ax.set_xticks(minticks, minor=True)
     ax.set_xticks(majticks)
 
+    ax.xaxis.set_minor_formatter(FuncFormatter(int_to_date))
+    ax.xaxis.set_major_formatter(FuncFormatter(int_to_date_maj))
+
     ax.xaxis.grid(which="major", zorder=2.1)
     ax.xaxis.grid(which="minor", zorder=2.1, alpha=.25)
 
-    from datetime import date
     if not today:
         today = pd.to_datetime(date.today())
     ax.axvline((today - start).days + .35, color="red", ls="dashed")
 
-    xticklabs = []
-    for tick in ax.get_xticks():
-        ddate = start + timedelta(days=int(tick))
-        xticklabs.append(ddate.strftime("%d. (%a)"))
-
     if end_plot:
         tmax = end_plot
-    ax.set(xlim=((pd.to_datetime(start_plot)-start).days, (tmax - start).days + 1),
+    ax.set(xlim=((pd.to_datetime(start_plot) - start).days, (tmax - start).days + 1),
            ylim=(-.25 * height, k + .25 * height), yticks=yticks, yticklabels=ylabs,
-           xlabel="Datum", xticklabels=xticklabs)
+           xlabel="Datum")
 
-    ax.xaxis.set_tick_params(rotation=45)
+    ax.xaxis.set_tick_params(rotation=90)
 
     ax.legend(handles=legend_elements)
+
+    # plt.savefig("menschen.png")
 
     output = io.BytesIO()
     FigureCanvas(fig).print_png(output)
