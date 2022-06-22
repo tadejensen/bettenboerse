@@ -778,7 +778,7 @@ def int_to_date(value, pos):
 
 @app.route("/plot_calendar.png")
 @auth.login_required
-def plot_calendar(dbfile="unterkünfte.db", start_plot="2022-06-18", end_plot="2022-07-31"):
+def plot_calendar(dbfile="unterkünfte.db", start_plot="2022-06-18", end_plot="2022-07-15"):
     """
     dbfile: str zu unterkuefte.db
     start_date: str im Format 'yyyy-mm-dd'
