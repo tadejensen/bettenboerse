@@ -487,7 +487,7 @@ def overview():
         beds[start] = {'beds_total': beds_total, 'used_beds': used_beds, 'shelters': shelters, 'menschen_on_site': menschen}
         start += delta
 
-    return render_template("übersicht.html", beds=beds, shelters=shelters_list)
+    return render_template("übersicht.html", beds=beds, shelters=shelters_list, today=date.today())
 
 
 def send_signal_message(to_mensch_id, to_number, message):
