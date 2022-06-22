@@ -14,12 +14,13 @@
   <a href="{{ url_for('edit_shelter', uuid=shelter.uuid) }}">Unterkunft editieren</a> |
   <a href="{{ url_for('edit_reservation_bulk', uuid=shelter.uuid) }}">Schlafplätze reservieren</a> |
 {% endif %}
-  <a href="#reservierungen">Reservierungen anzeigen</a> |
+  <a href="#reservierung-{{ today.strftime('%d%m') }}">Reservierungen anzeigen</a> |
   <a href="#important_numbers">wichtige Telefonnummern</a> |
   <a href="#share">Unterkunft teilen</a>
 </br>
 </br>
 
+{{ today  }}
 <table class="table">
   <tbody>
     <tr>
@@ -97,6 +98,7 @@ Interner Kommentar (nur für Menschen, die Unterkünfte koordinieren/organisiere
 
 <hr>
 <div id="reservierungen"> <h4>Reservierungen - Wer schläft hier?</h4> </div>
+<a href="#reservierung-{{ today.strftime('%d%m') }}">heutige Reservierungen anzeigen</a> |
 <a href="{{ url_for('edit_reservation_bulk', uuid=shelter.uuid) }}">Schlafplätze reservieren (mehrere Tage/mehrere Menschen)</a></br</br>
 <table class="table">
   <thead>

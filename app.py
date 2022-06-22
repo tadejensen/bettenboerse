@@ -127,6 +127,7 @@ def show_shelter(uuid):
         base_url=settings.BASE_URL,
         reservations=reservations,
         settings=settings,
+        today=date.today()
     )
 
 

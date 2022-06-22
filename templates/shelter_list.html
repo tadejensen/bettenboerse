@@ -43,8 +43,8 @@ Unterkünfte
       <td>{{ shelter.address }}</td>
       <td>{{ shelter.beds_luxury }}</td>
       <td>{{ shelter.beds_basic }}</td>
-      <td>{{ shelter.date_from_june.strftime("%d.%m.") }}</td>
-      <td>{{ shelter.date_to_june.strftime("%d.%m.") }}</td>
+      <td>{{ shelter.date_from_june.strftime("%d.%m. (%a)") }}</td>
+      <td>{{ shelter.date_to_june.strftime("%d.%m. (%a)") }}</td>
       <td>
             <a href="{{ url_for('show_shelter', uuid=shelter.uuid) }}" class="show" title="Unterkunft anzeigen" data-toggle="tooltip"><i class="material-icons">house</i></a>
             <a href="{{ url_for('edit_shelter', uuid=shelter.uuid) }}" class="add" title="Unterkunft editieren" data-toggle="tooltip"><i class="material-icons">&#xE254;</i></a>
