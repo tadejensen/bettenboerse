@@ -46,8 +46,8 @@ Menschen
     <tr>
       <td>{{ mensch.name }}</td>
       <td>{{ mensch.bezugsgruppe }}</td>
-      <td>{{ mensch.date_from.strftime("%d.%m.") }}</td>
-      <td>{{ mensch.date_to.strftime("%d.%m.") }}</td>
+      <td>{{ mensch.date_from.strftime("%d.%m. (%a)") }}</td>
+      <td>{{ mensch.date_to.strftime("%d.%m. (%a)") }}</td>
       <td>{{ mensch.get_reservation_state()}}</td>
       <td>{{ mensch.get_last_reservation_date()}}</td>
       <td>{{ mensch.get_last_message_sent()}}</td>

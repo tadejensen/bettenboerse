@@ -522,7 +522,6 @@ def generate_user_notification_text(user_id):
         stays[r.shelter].append(r.date)
     for shelter, dates in stays.items():
         url = settings.BASE_URL + url_for('show_shelter', uuid=shelter.uuid)
-        print(shelter.name)
         start = dates[0]
         end = dates[-1] + delta
         msg += f"Unterkunft für die Zeit von {start.strftime('%d.%m. (%A)')} bis {end.strftime('%d.%m. (%A)')}:\n" + url + "\n"
@@ -1082,6 +1081,7 @@ def show_warnings():
     shelters_done_yesterday = get_done_shelters_for_day(today - day_delta)
     shelters_done_today = get_done_shelters_for_day(today)
     shelters_done_tomorrow = get_done_shelters_for_day(today + day_delta)
+    shelters_done_tomorrow_tomorrow = get_done_shelters_for_day(today + day_delta + day_delta)
     return render_template("warnings.html",
                             menschen_without_shelter_for_today=menschen_without_shelter_for_today,
                             menschen_without_shelter_for_tomorrow=menschen_without_shelter_for_tomorrow,
@@ -1093,6 +1093,7 @@ def show_warnings():
                             shelters_done_today=shelters_done_today,
                             shelters_done_tomorrow=shelters_done_tomorrow,
                             menschen_moving_out_today=menschen_moving_out_today,
+                            shelters_done_tomorrow_tomorrow=shelters_done_tomorrow_tomorrow,
                             )
 
 

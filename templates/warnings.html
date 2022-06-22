@@ -127,6 +127,15 @@
     {% endfor %}
 </ul>
       
+</br><p>Unterkünfte, die wir übermorgen zum letzten mal haben</p>
+<ul class="list-group">
+    {% for shelter in shelters_done_tomorrow_tomorrow %}
+        <li class="list-group-item">
+            <a href="{{ url_for('show_shelter', uuid=shelter.uuid, _anchor='reservierungen')}}">{{ shelter.name }}</a>
+        </li>
+    {% endfor %}
+</ul>
+      
       </div>
     </div>
   </div>
