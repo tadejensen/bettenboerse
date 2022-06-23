@@ -11,13 +11,33 @@
 
 
 {% block content %}
+<a href="{{ url_for('signal_send_message') }}">Nachricht verschicken</a>
+</br>
+
+<form method=GET" action="">
+      <div class="form-group">
+        <label for="tag">nach Tag filtern</label>
+        <input class="form-control" id="tag" name="tag" type="text" value="">
+    </div>
+        <button class="btn btn-primary" type="submit">filtern</button>
+</form>
+</br>
+</br>
+
+{% if tag %}
+Für den Tag '{{ tag }}' wurden {{ logs|length }} Nachrichten verschickt ({{ messages_ok }} erfolgreich, {{ messages_failed }} fehlgeschlagen).
+</br>
+</br>
+{% endif %}
+
+
 
     {% for log in logs %}
         <strong>
             {% if log.mensch_id == -1 %}
-                Nachricht an {{ log.telephone }} ({{ log.created.strftime("%a %d.%m.%Y um %H:%M:%S"  ) }})</br>
+            Nachricht an {{ log.telephone }} ({{ log.created.strftime("%a %d.%m.%Y um %H:%M:%S") }}, tag={{ log.tag }})</br>
             {% else %}
-                Nachricht an {{ log.mensch.name }} ({{ log.telephone }}) ({{ log.created.strftime("%a %d.%m.%Y um %H:%M:%S"  ) }})</br>
+            Nachricht an {{ log.mensch.name }} ({{ log.telephone }}) ({{ log.created.strftime("%a %d.%m.%Y um %H:%M:%S")}} tag={{ log.tag }})</br>
             {% endif %}
         </strong>
             {{ log.message | replace("\n", "</br>") | safe}}</br>

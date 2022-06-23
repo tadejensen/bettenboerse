@@ -89,6 +89,7 @@ class SignalLog(db.Model):
     # status (0: no error, 1 error)
     status = db.Column(db.Integer)
     error = db.Column(db.String())
+    tag = db.Column(db.String())
     mensch_id = db.Column(db.ForeignKey("mensch.id"))
     mensch = relationship("Mensch")
 

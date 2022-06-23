@@ -12,6 +12,8 @@ from io import StringIO
 import csv
 from flask_qrcode import QRcode
 from collections import OrderedDict
+import string
+import random
 
 import settings
 
@@ -490,7 +492,7 @@ def overview():
     return render_template("übersicht.html", beds=beds, shelters=shelters_list, today=date.today())
 
 
-def send_signal_message(to_mensch_id, to_number, message):
+def send_signal_message(to_mensch_id, to_number, message, tag):
     status = 0
     error = ""
     with app.app_context():
@@ -504,7 +506,8 @@ def send_signal_message(to_mensch_id, to_number, message):
                         message=message,
                         status=status,
                         error=error,
-                        mensch_id=to_mensch_id)
+                        mensch_id=to_mensch_id,
+                        tag=tag)
         db.session.add(log)
         db.session.commit()
         return (status, error)
@@ -543,6 +546,13 @@ Unterkünfte AG der Letzten Generation 🛌💒🏡⛺️"""
     return msg
 
 
+def generate_tag():
+    tag = ""
+    for i in range(5):
+        tag += random.choice(string.ascii_letters)
+    return tag
+
+
 @app.route("/signal/send", methods=["GET", "POST"])
 @auth.login_required
 def signal_send_message():
@@ -572,11 +582,11 @@ def signal_send_message():
                                menschen=menschen,
                                selected_menschen_ids=selected_menschen_ids)
 
-
     if form.validate_on_submit():
         ids_menschen_submitted = request.form.to_dict(flat=False).get('mensch', [])
         ids_menschen_submitted = [int(x) for x in ids_menschen_submitted]
         ids_menschen_all = [mensch.id for mensch in menschen]
+        tag = generate_tag()
         for id in ids_menschen_submitted:
             # user input: does the user exist
             if id not in ids_menschen_all:
@@ -588,11 +598,12 @@ def signal_send_message():
         if len(form.telephone.data) > 0:
             send_signal_message(-1,
                                 form.telephone.data,
-                                form.message.data)
-            flash(Markup(f'Nachricht an {form.telephone.data} wurde verschickt. Bitte im <a href="{ url_for("signal_log") }">Log</a> nachschauen, obs geklappt hat (kann einen Moment brauchen)'), "primary")
+                                form.message.data,
+                                tag)
+            flash(Markup(f'Nachricht an {form.telephone.data} wurde verschickt. Bitte im <a href="{ url_for("signal_log", tag=tag) }">Log</a> nachschauen, obs geklappt hat (kann einen Moment brauchen)'), "primary")
         for id in ids_menschen_submitted:
             mensch = Mensch.query.get(id)
-            args = (mensch.id, mensch.telephone, form.message.data)
+            args = (mensch.id, mensch.telephone, form.message.data, tag)
             t = threading.Thread(target=send_signal_message, args=args)
             t.start()
             flash(Markup(f'Nachricht an {mensch.name} wurde verschickt. Bitte im <a href="{ url_for("signal_log") }">Log</a> nachschauen, obs geklappt hat (kann einen Moment brauchen)'), "primary")
@@ -633,8 +644,21 @@ def signal_index():
 @app.route("/signal/log")
 @auth.login_required
 def signal_log():
-    logs = SignalLog.query.order_by(SignalLog.created.desc()).all()
-    return render_template("signal_logs.html", logs=logs)
+    tag = request.args.get('tag', None)
+    messages_ok = 0
+    messages_failed = 0
+    if tag:
+        logs = SignalLog.query.filter_by(tag=tag).order_by(SignalLog.created.desc()).all()
+        messages_ok = SignalLog.query.filter(SignalLog.tag.like(tag)). \
+                                      filter_by(status=0). \
+                                      order_by(SignalLog.created.desc()).count()
+        messages_failed = SignalLog.query.filter(SignalLog.tag.like(tag)). \
+                                                 filter_by(status=1). \
+                                                 order_by(SignalLog.created.desc()).count()
+    else:
+        logs = SignalLog.query.order_by(SignalLog.created.desc()).all()
+    return render_template("signal_logs.html", logs=logs, tag=tag,
+            messages_ok=messages_ok, messages_failed=messages_failed)
 
 
 @auth.verify_password
