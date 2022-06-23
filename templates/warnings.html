@@ -54,6 +54,13 @@
     {% endfor %}
 </ul>
 
+</br><p>Menschen, die eine Reservierung haben, aber noch keine Benachrichtigung bekommen haben</p>
+<ul class="list-group">
+    {% for mensch in menschen_with_reservation_without_notification %}
+    <li class="list-group-item"><a href="{{ url_for('show_mensch', id=mensch.id, _anchor='reservierungen') }}">{{ mensch.name }} ({{ mensch.bezugsgruppe }})</a></li>
+    {% endfor %}
+</ul>
+
       </div>
     </div>
   </div>

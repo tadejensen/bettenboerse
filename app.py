@@ -1088,6 +1088,14 @@ def get_done_shelters_for_day(day):
     return shelters
 
 
+def get_menschen_with_reservation_without_notification():
+    for mensch in Mensch.query.all():
+        reservation = Reservation.query.filter_by(mensch=mensch).count()
+        notification = SignalLog.query.filter_by(mensch=mensch).first()
+        if reservation and not notification:
+            yield mensch
+
+
 @app.route('/hinweise')
 @auth.login_required
 def show_warnings():
@@ -1106,6 +1114,9 @@ def show_warnings():
     shelters_done_today = get_done_shelters_for_day(today)
     shelters_done_tomorrow = get_done_shelters_for_day(today + day_delta)
     shelters_done_tomorrow_tomorrow = get_done_shelters_for_day(today + day_delta + day_delta)
+    menschen_with_reservation_without_notification = get_menschen_with_reservation_without_notification()
+
+
     return render_template("warnings.html",
                             menschen_without_shelter_for_today=menschen_without_shelter_for_today,
                             menschen_without_shelter_for_tomorrow=menschen_without_shelter_for_tomorrow,
@@ -1118,6 +1129,7 @@ def show_warnings():
                             shelters_done_tomorrow=shelters_done_tomorrow,
                             menschen_moving_out_today=menschen_moving_out_today,
                             shelters_done_tomorrow_tomorrow=shelters_done_tomorrow_tomorrow,
+                            menschen_with_reservation_without_notification=menschen_with_reservation_without_notification,
                             )
 
 
