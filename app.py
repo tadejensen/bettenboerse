@@ -606,7 +606,7 @@ def signal_send_message():
             args = (mensch.id, mensch.telephone, form.message.data, tag)
             t = threading.Thread(target=send_signal_message, args=args)
             t.start()
-            flash(Markup(f'Nachricht an {mensch.name} wurde verschickt. Bitte im <a href="{ url_for("signal_log") }">Log</a> nachschauen, obs geklappt hat (kann einen Moment brauchen)'), "primary")
+            flash(Markup(f'Nachricht an {mensch.name} wurde verschickt. Bitte im <a href="{ url_for("signal_log", tag=tag) }">Log</a> nachschauen, obs geklappt hat (kann einen Moment brauchen)'), "primary")
 
         form.message.data = ""
         form.telephone.data = ""
