@@ -3,3 +3,5 @@ venv
 settings.py
 *.db
 *.bak
+scripts
+migrations
