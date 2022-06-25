@@ -142,9 +142,12 @@ Interner Kommentar (nur für Menschen, die Unterkünfte koordinieren/organisiere
                   <ul class="list-group">
                 {% for res in reservation.reservations %}
 {% if session['logged_in'] %}
-        <li class="list-group-item"><a href="{{ url_for('show_mensch', id=res.mensch.id) }}">{{ res.mensch.name }}</a> ({{ res.mensch.telephone }}, {{ res.mensch.bezugsgruppe }})</li>
+        <li class="list-group-item"><a href="{{ url_for('show_mensch', id=res.mensch.id) }}">{{ res.mensch.name }}</a> ({{ res.mensch.telephone }}, {{ res.mensch.bezugsgruppe }})
+            <a href="{{ url_for('delete_reservation', uuid=res.shelter.uuid, mensch_id=res.mensch.id, day=date) }}" class="delete" title="Reservierung löschen" data-toggle="tooltip"><i class="material-icons">&#xE872;</i></a>
+            </li>
 {% else %}
                 <li class="list-group-item">{{ res.mensch.name }} ({{ res.mensch.telephone }}, {{ res.mensch.bezugsgruppe }})</li>
+
 {% endif %}
                 {% endfor %}
                   </ul>

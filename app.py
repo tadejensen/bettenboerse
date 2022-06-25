@@ -6,7 +6,7 @@ from flask import Flask, render_template, redirect, flash, url_for, session, req
 from flask_httpauth import HTTPBasicAuth
 from flask_migrate import Migrate
 from werkzeug.security import check_password_hash
-from forms import ShelterForm, DeleteShelterForm, MenschForm, DeleteMenschForm, SignalAccountForm, SignalMessageForm, FindShelterForm, ReservationForm
+from forms import ShelterForm, DeleteShelterForm, MenschForm, DeleteMenschForm, SignalAccountForm, SignalMessageForm, FindShelterForm, ReservationForm, DeleteReservation
 import uuid
 from io import StringIO
 import csv
@@ -311,6 +311,45 @@ def edit_reservation(uuid, day):
     return redirect(url_for('show_shelter',
                             uuid=uuid,
                             _anchor=f"reservierung-{day.strftime('%d%m')}"))
+
+
+@app.route('/unterkunft/<uuid>/reservation/<mensch_id>/<day>/delete', methods=['GET', 'POST'])
+@auth.login_required
+def delete_reservation(uuid, mensch_id, day):
+    shelter = Shelter.query.get_or_404(uuid, description=f"Unterkunft mit der id {uuid} wurde nicht gefunden")
+    mensch = Mensch.query.get_or_404(mensch_id, description=f"Mensch mit der id {uuid} wurde nicht gefunden")
+    try:
+        day = datetime.strptime(day, "%Y-%m-%d").date()
+    except ValueError:
+        return render_template("error.html", description="Datum im falschen Format angegeben. TT.MM.YYYY")
+
+    form = DeleteReservation()
+    if form.validate_on_submit():
+        reservation = Reservation.query.filter_by(date=day). \
+                                        filter_by(mensch=mensch). \
+                                        filter_by(shelter=shelter).first()
+        if not reservation:
+            flash("Keine Reservierung gefunden", "danger")
+            return render_template(
+                'reservation_delete.html',
+                shelter=shelter,
+                mensch=mensch,
+                form=form,
+                day=day)
+        db.session.delete(reservation)
+        db.session.commit()
+        flash(f"Die Reservierung für {mensch.name} wurde entfernt", "success")
+        return redirect(url_for('show_shelter',
+                                uuid=uuid,
+                                _anchor=f"reservierung-{day.strftime('%d%m')}"))
+    return render_template(
+        'reservation_delete.html',
+        shelter=shelter,
+        mensch=mensch,
+        form=form,
+        day=day,
+    )
+
 
 
 @app.route('/unterkunft/<uuid>/delete', methods=['GET', 'POST'])
