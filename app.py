@@ -1106,14 +1106,14 @@ def get_menschen_without_shelter_for_day(day):
 
 def get_moving_out_menschen():
     today = date.today()
-    tomorrow = today + timedelta(days=1)
+    yesterday = today - timedelta(days=1)
     menschen = Mensch.query.all()
     for mensch in menschen:
+        reservation_yesterday = Reservation.query.filter_by(mensch=mensch).filter_by(date=yesterday).first()
         reservation_today = Reservation.query.filter_by(mensch=mensch).filter_by(date=today).first()
-        reservation_tomorrow = Reservation.query.filter_by(mensch=mensch).filter_by(date=tomorrow).first()
-        if reservation_today and not reservation_tomorrow:
+        if reservation_yesterday and not reservation_today:
             yield mensch
-        if reservation_today and reservation_tomorrow and reservation_today.shelter != reservation_tomorrow.shelter:
+        if reservation_yesterday and reservation_today and reservation_today.shelter != reservation_yesterday.shelter:
             yield mensch
 
 
