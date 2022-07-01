@@ -569,7 +569,7 @@ def generate_user_notification_text(user_id):
         msg += f"Unterkunft für die Zeit von {start.strftime('%d.%m. (%A)')} bis {end.strftime('%d.%m. (%A)')}:\n" + url + "\n"
     msg += """Für jede Unterkunft soll es eine Person geben, die den Kontakt zur Gastgeber*in aufnehmen soll, um den Zugang zur Wohnung zu klären. So entlasten wir den*die Gastgeber*innen..
 XXX ENTWEDER
-- WICHTIG: Diese Person bist du. Kannst du dich bitte darum kümmern? Wenn ja, bestätige uns das bitte so schnell wie möglich (0151 24 75 7110 anrufen/schreiben). Deine Aufgabe ist es, zu organisieren, wie du Zugang zur Wohnung bekommst, indem du den*die Gastgeber*in anrufst. Weitere Menschen, die in der Unterkunft wohnen, würden dich als primäre Ansprechperson kontaktieren, um den Zugang zur Wohhung zu klären.
+- WICHTIG: Diese Person bist du. Kannst du dich bitte darum kümmern? Wenn ja, bestätige uns das bitte so schnell wie möglich (01521 04 00 488 anrufen/schreiben). Deine Aufgabe ist es, zu organisieren, wie du Zugang zur Wohnung bekommst, indem du den*die Gastgeber*in anrufst. Weitere Menschen, die in der Unterkunft wohnen, würden dich als primäre Ansprechperson kontaktieren, um den Zugang zur Wohhung zu klären.
 XXX ODER
 - Bitte nehme vor deiner Anreise Kontakt mit Menschen der Letzten Generation auf, die dort bereits wohnen. Eine entsprechende Liste an Menschen und deren Telefonnummern findest du in der Bettenbörse (siehe Link oben). Jede Unterkunft hat eine verantwortliche Person, die dir im Zweifelsfall Details zum Zugang geben kann. Für deine Unterkunft ist das XXX (Telefonnummer findest du auch in der Bettenbörse - siehe Link oben).\n
 - Denke an Zelt/Isomatte/Schlafsack. Auch wenn du in einem Bett schläfst, wäre es hilfreich, wenn du dein Camping Equipment verleihen kannst.
@@ -578,7 +578,7 @@ XXX ODER
 - Falls du mehrere male in Berlin sein wirst: melde dich bitte bei uns, um uns die Daten durchzugeben. Danke :)
 
 Zur Erinnerung: die Unterkünfte AG hat wegen der Menge an Unterkünften kein Detailwissen zu allen Wohnungen und wir müssen auf deine Eigenverantwortung als Bewohner*in setzen, um Details (z. B. zum Zutritt) zu regeln.
-Wir helfen dir natürlich trotzdem gerne weiter, wenn es irgendwo hakt. Wenn du Fragen/Probleme bezüglich deiner Unterkunft hast, kannst du dich gerne bei der Nummer 0151 24 75 7110 melden.
+Wir helfen dir natürlich trotzdem gerne weiter, wenn es irgendwo hakt. Wenn du Fragen/Probleme bezüglich deiner Unterkunft hast, kannst du dich gerne bei der Nummer 01521 04 00 488 melden.
 
 Einen guten Aufenthalt wünscht die
 Unterkünfte AG der Letzten Generation 🛌💒🏡⛺️"""
