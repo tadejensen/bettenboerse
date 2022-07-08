@@ -751,7 +751,7 @@ def format_name(name, linelen=20):
 
 @app.route("/hist_betten.png")
 @auth.login_required
-def hist_betten(dbfile="unterkünfte.db", start_plot="2022-06-18", end_plot="2022-07-15"):
+def hist_betten(dbfile="unterkünfte.db", start_plot="2022-06-18", end_plot="2022-07-20"):
     a = read_sqlite(dbfile)
     start = pd.to_datetime("2022-06-18")
     end_plot = pd.to_datetime(end_plot)
@@ -840,7 +840,7 @@ def int_to_date(value, pos):
 
 @app.route("/plot_calendar.png")
 @auth.login_required
-def plot_calendar(dbfile="unterkünfte.db", start_plot="2022-06-18", end_plot="2022-07-15"):
+def plot_calendar(dbfile="unterkünfte.db", start_plot="2022-06-18", end_plot="2022-07-20"):
     """
     dbfile: str zu unterkuefte.db
     start_date: str im Format 'yyyy-mm-dd'
@@ -953,7 +953,7 @@ def int_to_date_maj(value, pos):
 
 @app.route("/plot_menschen.png")
 @auth.login_required
-def plot_menschen(dbfile="unterkünfte.db", start_plot="2022-06-17", end_plot="2022-07-15", today=None):
+def plot_menschen(dbfile="unterkünfte.db", start_plot="2022-06-17", end_plot="2022-07-20", today=None):
     """
     dbfile: str zu unterkuefte.db
     start_date: str im Format 'yyyy-mm-dd'
@@ -1170,6 +1170,19 @@ def show_warnings():
                             shelters_done_tomorrow_tomorrow=shelters_done_tomorrow_tomorrow,
                             menschen_with_reservation_without_notification=menschen_with_reservation_without_notification,
                             )
+
+
+
+@app.route("/test")
+def test():
+    today = date.today()
+    menschen = Mensch.query.filter(today >= Mensch.date_from).filter(today <= Mensch.date_to).all()
+    print(menschen)
+    print(len(menschen))
+    from flask import jsonify
+    #numbers = [m.telephone for m in menschen]
+    numbers = [m.name for m in menschen]
+    return jsonify(numbers)
 
 
 if __name__ == '__main__':
