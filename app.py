@@ -34,7 +34,8 @@ from models import db
 migrate = Migrate(app, db, compare_type=True, render_as_batch=True)
 
 db.init_app(app)
-db.create_all(app=app)
+with app.app_context():
+    db.create_all()
 
 
 @app.route('/unterkunft-finden', methods=['GET', 'POST'])
