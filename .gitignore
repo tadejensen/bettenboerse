@@ -6,3 +6,4 @@ settings.py
 scripts/*.py
 scripts/*.sh
 migrations
+data/

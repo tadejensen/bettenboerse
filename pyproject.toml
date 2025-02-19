@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "bettenboerse"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.13"
+flask = "^3.1.0"
+flask-httpauth = "^4.8.0"
+flask-migrate = "^4.1.0"
+wtforms = "^3.2.1"
+flask-wtf = "^1.2.2"
+flask-qrcode = "^3.2.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

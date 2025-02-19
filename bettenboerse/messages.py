@@ -1,5 +1,5 @@
-from pydbus import SystemBus
-bus = SystemBus()
+#from pydbus import SystemBus
+#bus = SystemBus()
 
 dbus_endpoint = "org.asamk.Signal"
 

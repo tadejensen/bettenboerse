@@ -170,13 +170,13 @@ Interner Kommentar (nur für Menschen, die Unterkünfte koordinieren/organisiere
 </ul>
 
 <hr>
-<h4 id="share" >Wohnung teilen</h4>
-Link zur Wohnung:
+<h4 id="share" >Unterkunft teilen</h4>
+Link zur Unterkunft:
 <div class="alert alert-primary">
 {{ base_url + url_for('show_shelter', uuid=shelter.uuid) }}
 </div>
 
-Link zur Wohnung (QR-Code):
+Link zur Unterkunft (QR-Code):
 <br>
 <img src="{{ qrcode(base_url + url_for('show_shelter', uuid=shelter.uuid), box_size=5 ) }}">
 <br>
