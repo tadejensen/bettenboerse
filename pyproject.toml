@@ -17,6 +17,7 @@ pysignalclirestapi = "^0.3.24"
 numpy = "^2.2.3"
 pandas = "^2.2.3"
 matplotlib = "^3.10.0"
+waitress = "^3.0.2"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -25,3 +26,6 @@ pdbpp = "^0.10.3"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+bettenboerse = "bettenboerse.app:main"

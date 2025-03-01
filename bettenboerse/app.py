@@ -15,6 +15,7 @@ from flask_qrcode import QRcode
 from collections import OrderedDict
 import string
 import random
+import waitress
 
 import settings
 
@@ -865,6 +866,17 @@ def show_warnings():
 #    return jsonify(numbers)
 
 
+def main():
+    host = "0.0.0.0"
+    port = 5000
+    if __name__ == '__main__':
+        app.run(debug=True,
+                host=host,
+                port=port)
+    else:
+        print(f"Running backend on {host}:{port}")
+        waitress.serve(app, listen=f"{host}:{port}")
+
+
 if __name__ == '__main__':
-    app.run(debug=True)
-    #app.run(host="0.0.0.0", port=22000, debug=True)
+    main()
