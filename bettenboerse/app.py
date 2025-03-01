@@ -2,27 +2,26 @@
 # -*- coding: utf-8 -*-
 from datetime import timedelta, date, datetime
 import threading
-from flask import Flask, render_template, redirect, flash, url_for, session, request, make_response
+from flask import Flask, render_template, redirect, flash, url_for, session, request
 from markupsafe import Markup
 from flask_httpauth import HTTPBasicAuth
 from flask_migrate import Migrate
 from werkzeug.security import check_password_hash
-from forms import ShelterForm, DeleteShelterForm, MenschForm, DeleteMenschForm, SignalAccountForm, SignalMessageForm, FindShelterForm, ReservationForm, DeleteReservation
+from bettenboerse.forms import ShelterForm, DeleteShelterForm, MenschForm, DeleteMenschForm, SignalAccountForm, SignalMessageForm, FindShelterForm, ReservationForm, DeleteReservation
 import uuid
-from io import StringIO
-import csv
 from flask_qrcode import QRcode
 from collections import OrderedDict
 import string
 import random
 import waitress
 
-import settings
+import bettenboerse.settings as settings
 
-from models import Shelter, Reservation, Mensch, SignalLog
+from bettenboerse.models import Shelter, Reservation, Mensch, SignalLog
 
-import messages
+import bettenboerse.messages as messages
 
+print(f"Database location: {settings.DB_LOCATION}")
 app = Flask(__name__)
 app.config['SECRET_KEY'] = settings.FLASK_SECRET_KEY
 app.config['SQLALCHEMY_DATABASE_URI'] = settings.DB_LOCATION
@@ -31,7 +30,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 QRcode(app)
 auth = HTTPBasicAuth()
 
-from models import db
+from bettenboerse.models import db
 
 migrate = Migrate(app, db, compare_type=True, render_as_batch=True)
 
@@ -717,7 +716,7 @@ def login():
     return redirect(url_for('list_shelters'))
 
 
-from letade import hist_betten, plot_menschen, plot_calendar
+from bettenboerse.letade import hist_betten, plot_menschen, plot_calendar
 
 
 @app.route("/hist_betten.png")

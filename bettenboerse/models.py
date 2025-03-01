@@ -1,7 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import relationship, column_property
 import datetime
-import settings
+import bettenboerse.settings as settings
 
 db = SQLAlchemy()
 

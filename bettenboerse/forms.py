@@ -2,7 +2,7 @@ from wtforms import IntegerField, StringField, TextAreaField, DateField, SelectF
 from wtforms import validators, ValidationError
 from flask_wtf import FlaskForm
 
-import settings
+import bettenboerse.settings as settings
 
 
 def shelter_validate_date(form, field):
