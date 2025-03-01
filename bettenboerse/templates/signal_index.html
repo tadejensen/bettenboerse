@@ -26,18 +26,16 @@ hinterlegter Signal Account: {{ account['number'] }} ({{ account['name'] }})</br
 
 {% else %}
     
-    {% if device_uri %}
+    {% if qrcode_png_base64 %}
 
-        Bitte den folgenden QR Code in der Signal App scannen (Einstellungen, verlinkte Geräte)</br></br>.
-        <img src="{{ qrcode(device_uri, box_size=5) }}">
-        </br></br>
+        Bitte den folgenden QR Code in der Signal App scannen (Einstellungen, verlinkte Geräte):</br>
+        <img src="data:image/png;base64,{{ qrcode_png_base64 }}" />
+        </br>
         Wenn das Gerät in der Signal-App hinzugefügt wurde, bitte diese Seite <a href="javascript:window.location.href=window.location.href">neu laden</a>.</br></br>
     
     {% else %}
-
         
          Aktuell ist kein Signal Account hinterlegt. Neuen Signal Account hinterlegen</br></br>
-
 
         <form action="" method="POST">
             {{ form.hidden_tag() }}

@@ -19,7 +19,7 @@ import bettenboerse.settings as settings
 
 from bettenboerse.models import Shelter, Reservation, Mensch, SignalLog
 
-import bettenboerse.messages as messages
+import bettenboerse.signal_messenger as messages
 
 print(f"Database location: {settings.DB_LOCATION}")
 app = Flask(__name__)
@@ -539,7 +539,7 @@ def send_signal_message(to_mensch_id, to_number, message, tag):
     error = ""
     with app.app_context():
         try:
-            messages.sendDirectMessage(to_number, message)
+            messages.send_signal_message(to_number, message)
             pass
         except Exception as e:
             status = 1
@@ -570,18 +570,7 @@ def generate_user_notification_text(user_id):
         start = dates[0]
         end = dates[-1] + delta
         msg += f"Unterkunft für die Zeit von {start.strftime('%d.%m. (%A)')} bis {end.strftime('%d.%m. (%A)')}:\n" + url + "\n"
-    msg += """Für jede Unterkunft soll es eine Person geben, die den Kontakt zur Gastgeber*in aufnehmen soll, um den Zugang zur Wohnung zu klären. So entlasten wir den*die Gastgeber*innen..
-XXX ENTWEDER
-- WICHTIG: Diese Person bist du. Kannst du dich bitte darum kümmern? Wenn ja, bestätige uns das bitte so schnell wie möglich (01521 04 00 488 anrufen/schreiben). Deine Aufgabe ist es, zu organisieren, wie du Zugang zur Wohnung bekommst, indem du den*die Gastgeber*in anrufst. Weitere Menschen, die in der Unterkunft wohnen, würden dich als primäre Ansprechperson kontaktieren, um den Zugang zur Wohhung zu klären.
-XXX ODER
-- Bitte nehme vor deiner Anreise Kontakt mit Menschen der Letzten Generation auf, die dort bereits wohnen. Eine entsprechende Liste an Menschen und deren Telefonnummern findest du in der Bettenbörse (siehe Link oben). Jede Unterkunft hat eine verantwortliche Person, die dir im Zweifelsfall Details zum Zugang geben kann. Für deine Unterkunft ist das XXX (Telefonnummer findest du auch in der Bettenbörse - siehe Link oben).\n
-- Denke an Zelt/Isomatte/Schlafsack. Auch wenn du in einem Bett schläfst, wäre es hilfreich, wenn du dein Camping Equipment verleihen kannst.
-- Erinnere dich an deinen Auszugstermin, wir werden dir KEINE Erinnerung schicken (überlege dir auch, ob du da vielleicht in der GeSa übernachtest - kontaktiere uns).
-- Manche Menschen können nicht über einen längeren Zeitraum auf einer Isomatte schlafen. Nehmt daher bitte gegenseitig Rücksicht aufeinander und sprecht darüber.
-- Falls du mehrere male in Berlin sein wirst: melde dich bitte bei uns, um uns die Daten durchzugeben. Danke :)
-
-Zur Erinnerung: die Unterkünfte AG hat wegen der Menge an Unterkünften kein Detailwissen zu allen Wohnungen und wir müssen auf deine Eigenverantwortung als Bewohner*in setzen, um Details (z. B. zum Zutritt) zu regeln.
-Wir helfen dir natürlich trotzdem gerne weiter, wenn es irgendwo hakt. Wenn du Fragen/Probleme bezüglich deiner Unterkunft hast, kannst du dich gerne bei der Nummer 01521 04 00 488 melden.
+    msg += """Für jede Unterkunft soll es eine Person geben, die den Kontakt zur Gastgeber*in aufnehmen soll, um den Zugang zur Wohnung zu klären. So entlasten wir den*die Gastgeber*innen....
 
 Einen guten Aufenthalt wünscht die
 Unterkünfte AG der Letzten Generation 🛌💒🏡⛺️"""
@@ -602,7 +591,7 @@ def signal_send_message():
     menschen = Mensch.query.order_by(Mensch.bezugsgruppe.asc())
 
     try:
-        account = messages.get_account()
+        account = messages.get_signal_account()
     except Exception as e:
         flash("Fehler beim Zugreifen auf die Signal-Schnittstelle", "danger")
         flash(str(e), "danger")
@@ -662,25 +651,30 @@ def signal_send_message():
 @auth.login_required
 def signal_index():
     form = SignalAccountForm()
-    device_uri = None
+    qrcode_png_base64 = None
 
     try:
-        account = messages.get_account()
+        account = messages.get_signal_account()
     except Exception as e:
         flash("Fehler beim Zugreifen auf die Signal-Schnittstelle", "danger")
         flash(str(e), "danger")
         return render_template("signal_index.html",
                                account=None,
                                form=form,
-                               device_uri=device_uri)
+                               qrcode_png_base64=qrcode_png_base64)
 
     if form.validate_on_submit():
-        device_uri = messages.link_account(form.device_name.data)
+        try:
+            qrcode_png_base64 = messages.link_signal_account(form.device_name.data)
+        except Exception as e:
+            flash("Fehler beim Zugreifen auf die Signal-Schnittstelle", "danger")
+            flash(str(e), "danger")
+            qrcode_png_base64 = "error"
 
     return render_template("signal_index.html",
                            account=account,
                            form=form,
-                           device_uri=device_uri)
+                           qrcode_png_base64=qrcode_png_base64)
 
 
 @app.route("/signal/log")

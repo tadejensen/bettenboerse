@@ -2,13 +2,20 @@ from datetime import date
 BASE_URL = "https://bettenboerse.letztegeneration.de"
 FLASK_SECRET_KEY = os.urandom(64)
 DB_LOCATION = "sqlite:///unterkünfte.db"
+
 USER = "lg"
 # from werkzeug.security import generate_password_hash
 # generate_password_hash("pass")
 PASSWORD_HASH = 'pbkdf2:sha256:260000$sg3EYr3BgaNmiLNk$ed0195889b815194d1a144eea367ae4e049b96e6c3c112e8aa8b691a0548c37a'
+
 start_date = date(year=2022, month=6, day=17)
 end_date = date(year=2022, month=9, day=18)
+
 phone_shelter_support = ""
 phone_vor_ort_support = ""
 phone_ea = ""
 phone_logistics = ""
+
+# backend software: https://github.com/bbernhard/signal-cli-rest-api
+SIGNAL_CLI_API_URL = "http://localhost:8080"
+SIGNAL_CLI_PHONE_NUMBER = "+49123456"
