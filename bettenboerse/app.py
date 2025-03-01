@@ -308,6 +308,7 @@ def edit_reservation(uuid, day):
         reservation = Reservation.query.filter_by(shelter=shelter).filter_by(date=day).filter_by(mensch=mensch).first()
         if not reservation:
             reservation = Reservation(shelter=shelter, date=day, mensch=mensch)
+            db.session.add(reservation)
     db.session.commit()
 
     return redirect(url_for('show_shelter',
