@@ -13,11 +13,11 @@ flask-migrate = "^4.1.0"
 wtforms = "^3.2.1"
 flask-wtf = "^1.2.2"
 flask-qrcode = "^3.2.0"
-pysignalclirestapi = "^0.3.24"
 numpy = "^2.2.3"
 pandas = "^2.2.3"
 matplotlib = "^3.10.0"
 waitress = "^3.0.2"
+pysignalclirestapi = {git = "https://github.com/kmille/pysignalclirestapi.git"}
 
 
 [tool.poetry.group.dev.dependencies]

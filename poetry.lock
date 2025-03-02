@@ -1188,13 +1188,18 @@ description = "Small python library for the Signal Cli REST API"
 optional = false
 python-versions = ">=2.7"
 groups = ["main"]
-files = [
-    {file = "pysignalclirestapi-0.3.24-py3-none-any.whl", hash = "sha256:82d016fcbcd895906c66cafa63d3e8f0501ccb721c916b83d9a0ac2eba6c0ad7"},
-]
+files = []
+develop = false
 
 [package.dependencies]
 requests = "*"
 six = "*"
+
+[package.source]
+type = "git"
+url = "https://github.com/kmille/pysignalclirestapi.git"
+reference = "HEAD"
+resolved_reference = "8fe54cc538920962c79ce9844e3f7e2312e6eb2c"
 
 [[package]]
 name = "python-dateutil"
@@ -1488,4 +1493,4 @@ email = ["email-validator"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "49fad8e8edcd19128bfd1769af93ffb9f897f2554b204a8e12055b5098d40f71"
+content-hash = "a445f289aac7eedd9898ca08c325ecc1e3464d2e0a17af917b0ff7dc50c5bf5b"
