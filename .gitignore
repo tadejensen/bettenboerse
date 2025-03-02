@@ -7,3 +7,4 @@ scripts/*.py
 scripts/*.sh
 migrations
 data/
+TODOs
