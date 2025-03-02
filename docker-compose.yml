@@ -1,0 +1,23 @@
+services:
+  bettenboerse-app:
+    build: .
+    ports:
+      - "127.0.0.1:5000:5000"
+    volumes:
+      - "./data/bettenboerse/db:/opt/bettenboerse"
+      - "./data/bettenboerse/settings.py:/usr/local/lib/python3.12/site-packages/bettenboerse/settings.py"
+    depends_on:
+      - bettenboerse-signal
+    environment:
+      DB_LOCATION: sqlite:////opt/bettenboerse/unterkünfte.db
+
+  bettenboerse-signal:
+    image: bbernhard/signal-cli-rest-api:0.91
+    environment:
+      - MODE=json-rpc
+      #- MODE=native
+      #- AUTO_RECEIVE_SCHEDULE=0 22 * * * #enable this parameter on demand (see description below)
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - "./data/signal-cli:/home/.local/share/signal-cli"
