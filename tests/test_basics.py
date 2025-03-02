@@ -1,4 +1,4 @@
-from base import client, USER, db
+from .base import client, USER, db
 
 
 def test_login(client):
