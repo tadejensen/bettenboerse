@@ -13,7 +13,7 @@ USER = "lg"
 # poetry run python
 # from werkzeug.security import generate_password_hash
 # generate_password_hash("lg")
-PASSWORD_HASH = 'pbkdf2:sha256:260000$sg3EYr3BgaNmiLNk$ed0195889b815194d1a144eea367ae4e049b96e6c3c112e8aa8b691a0548c37a'
+PASSWORD_HASH = 'scrypt:32768:8:1$rIbiu43ISe1vZiZ6$c57cde3a346056ff1949b35aa348fa886ae0fb7e34d3624bf5f2367cf9b7d1c9feaeed0291faf4250c19e1c88b283ebcf6e652a40abe4886abe08852d6a754a6'
 
 start_date = date(year=2022, month=6, day=17)
 end_date = date(year=2022, month=9, day=18)
