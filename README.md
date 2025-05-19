@@ -9,9 +9,17 @@ Die Bettenbörse ist ein webbasiertes Tool um Schlafplätze zu organisieren. Die
 - die Bettenbörse kann Signal-Nachrichten verschicken (als gelinktes Gerät wie am Laptop)
 
 ## Demo/Einführung
-Ich habe ein kurzes Video gedreht, um die Funktionen zu zeigen. Zum Download: [Demo](/docs/demo.mp4) (die Datei ist leider zu groß, damit sie Github im Browser anzeigt). Ich habe das Video auch auf  Youtube gepackt:
+Ich habe ein kurzes Video gedreht, um die Funktionen zu zeigen. Zum Download: [Demo](/docs/demo.mp4) (die Datei ist leider zu groß, damit sie Github im Browser anzeigt). Ich habe das Video auch auf Youtube gepackt:
 
 [![Demo Bettenbörse](https://img.youtube.com/vi/P-D404GcqIw/0.jpg)](https://www.youtube.com/watch?v=P-D404GcqIw)
+
+Als visuelle Hilfe bei der Zuteilung von Schlafplätzen gibt es Zeistrahl-artige Darstellungen der verfügbaren Unterkünte, der Menschen mit Gesuchen und der Auslastung vs. unterzubringende Menschen.
+
+<img src='./docs/plot_calendar.png' alt='Unterkünfte' width='500'/>
+
+<img src='./docs/plot_menschen.png' alt='Menschen' width='500'/>
+
+<img src='./docs/hist_betten.png' alt='Auslastung' width='500'/>
 
 ## Getting Started
 

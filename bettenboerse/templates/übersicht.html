@@ -12,6 +12,10 @@ Betten-Übersicht
 
 </br>
 
+<a href="{{ url_for('api_plot_calendar') }}">Kalendar Plot</a></br>
+<a href="{{ url_for('api_hist_betten') }}">Auslastung Betten</a></br>
+<a href="{{ url_for('api_plot_menschen') }}">Auslastung Menschen</a></br></br>
+
 Wann stehen welche Betten zur Verfügung?
 <pre>
 {% for shelter in shelters %}

@@ -1,26 +1,23 @@
 import numpy as np
-import pandas as pd
 from datetime import timedelta, date
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle, Patch
-from matplotlib.lines import Line2D                     # neu
-from matplotlib.ticker import FuncFormatter
-import sqlite3
+from matplotlib.lines import Line2D
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+import matplotlib.dates as mdates
+from sqlalchemy.sql import func
+from sqlalchemy import desc
 import io
 from flask import Response
-from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
-import re
 
+from datetime import date
 
-def read_sqlite(dbfile):
-    with sqlite3.connect(dbfile) as dbcon:
-        #tables = list(pd.read_sql_query("SELECT name FROM sqlite_master WHERE type='table';", dbcon)['name'])
-        tables = ["shelter", "reservation", "mensch"]
-        out = {tbl: pd.read_sql_query(f"SELECT * from {tbl}", dbcon) for tbl in tables}
-        return out
+import settings
+from bettenboerse.models import Shelter, Reservation, Mensch
 
-
-def format_name(name, linelen=20):
+def format_name(name: str, linelen: int=20) -> str:
+    '''inserts linebreaks into names that are longer than a given number of
+    characters'''
     lines = int(np.ceil(len(name) / linelen))
     charperline = int(len(name) / lines)
     ukname = ""
@@ -32,304 +29,285 @@ def format_name(name, linelen=20):
 
     return ukname
 
+def add_today_vline(ax):
+    '''adds a vertical red dashed line into ax, at today's date.'''
+    if (today:= date.today()) > settings.start_date-timedelta(days=7)\
+            and today < settings.end_date+timedelta(days=7):
+        ax.axvline(today, zorder=3, ls="--", color="red", label='Heute')
 
-def hist_betten(dbfile="unterkünfte.db", start_plot="2022-06-18", end_plot="2022-07-20"):
-    a = read_sqlite(dbfile)
-    start = pd.to_datetime("2022-06-18")
-    end_plot = pd.to_datetime(end_plot)
-    start_plot = pd.to_datetime(start_plot)
+def plot_date_rectangle(ax, start_date: date, end_date: date,
+                        height: float, start_y: float, hour_offset: int=12,
+                        **kwargs):
+    '''
+    Plot a rectanlge ranging over a span of dates.
+    start/end date: representing x-span of rectangle
+    height: height of rectangle
+    start_y: lower boundry of rectangle
+    offset_hours: int/float, default 12. x axis offset in hours (positive -> 
+        move to the right)
+    kwargs are passed to ax.add_patch
+    '''
+    rectangle_xy = (mdates.date2num(start_date + timedelta(hours=hour_offset)),
+                    start_y)
+    rectangle_width = (end_date - start_date).days
+    ax.add_patch(Rectangle(rectangle_xy, rectangle_width, height, **kwargs))
 
-    betten = pd.DataFrame(a["shelter"])
-    menschen = a["mensch"]
-    reservations = pd.DataFrame(a["reservation"])
 
-    fig_hist = plt.figure(tight_layout=True, figsize=(13, 7))
-    ax_hist = plt.subplot(111)
+def barplot_beds(app):
+    '''
+    create a barplot showing available beds, people in need and reservations
+    by day.
+    '''
+    start = settings.start_date
+    end = settings.end_date
 
-    bedcounts = []
-    menschcounts = []
+    with app.app_context():
+        shelters = (Shelter.query
+                .filter(Shelter.date_to_june >= settings.start_date,
+                        Shelter.date_from_june < settings.end_date))
+        menschen = (Mensch.query
+                    .filter(Mensch.date_to >= settings.start_date,
+                            Mensch.date_from < settings.end_date))
+        reservations = (Reservation.query
+                        .filter(Reservation.date >= settings.start_date,
+                                Reservation.date < settings.end_date))
+        
+        bedcounts = {} # {day_from_start: available_beds_counter, ...}
+        menschcounts = {} # {day_from_start: peole_in_need_counter, ...}
+        reservationcounts = {}
 
-    t1_max = max(pd.to_datetime(betten["date_to_june"]))
 
-    for i in range((t1_max - start).days):
-        day = start + timedelta(days=i)
-        valbeds = betten[
-            (pd.to_datetime(betten["date_from_june"]) <= day) & (pd.to_datetime(betten["date_to_june"]) > day)]
-        valbedcount = np.sum([valbeds["beds_basic"], valbeds["beds_luxury"]])
+        for i in range((end - start).days):
+            day = start + timedelta(days=i)
 
-        valpeople = np.sum((pd.to_datetime(menschen["date_from"]) <= day) & (pd.to_datetime(menschen["date_to"]) > day))
+            available_beds = shelters.filter(Shelter.date_from_june <= day,
+                                        Shelter.date_to_june > day)
+            needy_people = menschen.filter(Mensch.date_from <= day,
+                                        Mensch.date_to > day)
+            _reservations = reservations.filter(Reservation.date == day)
 
-        bedcounts.append((i, valbedcount))
-        menschcounts.append((i - .15, valpeople))
+            bedcounts[day] = sum([s.beds_total for s in available_beds.all()])
+            menschcounts[day-timedelta(hours=5)] = len(needy_people.all())        # small offset for visualization
+            reservationcounts[day+timedelta(hours=5)] = len(_reservations.all())
 
-    reservations["date"] = pd.to_datetime(reservations["date"])
-    resdates = set(reservations["date"])
-    resdates_ind = []
-    resplaces = []
+    fig, ax = plt.subplots(figsize=(13, 7), layout='constrained')
 
-    for ddate in resdates:
-        resdates_ind.append((ddate - start).days)
-        reses = reservations[reservations["date"] == ddate]
-        date_ind = (ddate - start).days
-        for ind in reses.index:
-            res = reses.loc[ind]
-            rescount = len(reses)
-        resplaces.append((date_ind + .15, rescount))
+    ax.bar(bedcounts.keys(), bedcounts.values(), 
+           color="lightgreen", zorder=2.11, label="Verfügbare Betten", width=.8)
+    ax.bar(reservationcounts.keys(), reservationcounts.values(),
+           zorder=2.12, color="gold", label="Verteilte Menschen", width=.3,
+           align='edge')
+    ax.bar(menschcounts.keys(), menschcounts.values(),
+           zorder=2.12, color="skyblue", label="Gesuche", width=-.3, align='edge')
 
-    bedcounts = np.array(bedcounts)
-    resplaces = np.array(resplaces)
-    menschcounts = np.array(menschcounts)
+    ax.set(xlabel="Datum", ylabel="Schlafplätze")
+    ax.legend()
+    ax.xaxis.set_tick_params(rotation=45)
 
-    ax_hist.bar(bedcounts[:, 0], bedcounts[:, 1], color="lightgreen", zorder=2.11, label="vorhandene Betten", width=.8)
-    ax_hist.bar(resplaces[:, 0], resplaces[:, 1], zorder=2.12, color="gold", label="belegte Betten", width=.3)
-    ax_hist.bar(menschcounts[:, 0], menschcounts[:, 1], zorder=2.12, color="skyblue", label="Gesuche", width=.3)
-
-    OG_xlim = ax_hist.get_xlim()
-    ax_hist.set_xticks(np.arange(0, (t1_max - start).days, 5))
-    ax_hist.set_xticks(np.arange(0, (t1_max - start).days, 1), minor=True)
-
-    xticklabs = []
-    for tick in ax_hist.get_xticks():
-        datei = start + timedelta(days=int(tick))
-        xticklabs.append(datei.strftime("%d. (%a)"))
-
-    ax_hist.set_yticks(np.arange(0, np.max(ax_hist.get_yticks()), 5), minor=True)
-    ax_hist.yaxis.grid()
-    ax_hist.yaxis.grid(which="minor", alpha=.25)
-
-    xlim = ((start_plot - start).days - .5, (end_plot - start).days + .5)
-
-    ax_hist.set(xticklabels=xticklabs, xlim=xlim,
-                xlabel="Datum", ylabel="Schlafplätze")
-    ax_hist.legend()
-    ax_hist.xaxis.set_tick_params(rotation=45)
-
-    ax_hist.xaxis.set_minor_formatter(FuncFormatter(int_to_date))
-
-    today = pd.to_datetime(date.today())
-    ax_hist.axvline((today - start).days - .2, zorder=3, ls="--", color="red")
+    add_today_vline(ax)
+    ax.grid(visible=True, axis='y', zorder=1)
 
     output = io.BytesIO()
-    FigureCanvas(fig_hist).print_png(output)
+    FigureCanvas(fig).print_png(output)
     return Response(output.getvalue(), mimetype="image/png")
 
 
-def int_to_date(value, pos):
-    start = pd.to_datetime("2022-06-18")
-    ddate = start + timedelta(days=int(value))
-    return ddate.strftime("%a")
-
-
-def plot_calendar(dbfile="unterkünfte.db", start_plot="2022-06-18", end_plot="2022-07-20"):
+def plot_calendar(app):
     """
-    dbfile: str zu unterkuefte.db
-    start_date: str im Format 'yyyy-mm-dd'
-        linke Anzeigegrenze des Plots
-    end_date:
-
+    Create a timeline of avalable shelters.
+    Green blocks represent the shelters, red blocks represent the reservations 
+    made to the shelter.
     """
+    rowheight = 1
+    start = settings.start_date
+    end = settings.end_date
 
-    a = read_sqlite(dbfile)
-    start = pd.to_datetime("2022-06-18")
-    end_plot = pd.to_datetime(end_plot)
-    start_plot = pd.to_datetime(start_plot)
+    def plot_shelterblock(ax, start_date, end_date, spot_counter, start_y, color):
+        # plot background block for beds, without framing
+        plot_date_rectangle(ax, start_date, end_date, rowheight*spot_counter,
+                            start_y, facecolor=color, edgecolor='none', zorder=2)
+        for spot in range(spot_counter):
+            # frame that sits on top of the red reservation marker
+            plot_date_rectangle(ax, start_date, end_date, rowheight,
+                                start_y+spot * rowheight,
+                                facecolor='none', edgecolor='grey',
+                                lw=0.5, zorder=3.5)
 
-    betten = pd.DataFrame(a["shelter"])
-    reservations = pd.DataFrame(a["reservation"])
-    # reshuman = pd.DataFrame(a["reservations_mensch"])
-    # humans = pd.DataFrame(a["menschen"])
-
-    height = 1
     legend_elements = [Patch(facecolor="lightgreen", edgecolor="none", label="frei Isomatte"),
                        Patch(facecolor="tab:green", edgecolor="none", label="frei Bett"),
                        Patch(facecolor="lightcoral", edgecolor="none", label="belegt"),
                        Line2D([0], [0], ls="dashed", color="red", label="heute")]
 
-    fig_cal = plt.figure(tight_layout=True, figsize=(13, 8))
+    fig_cal = plt.figure(figsize=(13, 8), layout='constrained')
     ax_cal = plt.subplot()
 
-    k = 0
-    t1_max = pd.to_datetime("2022-06-18")
+    height_current_stack = 0
 
     yticks = []
     yticklabs = []
 
-    for ind in betten.index:
-        unterkunft = betten.loc[ind]
-        ax_cal.axhline(k, ls="dashed", color="grey", lw=.75)
-        k += .4 * height
-        bed = unterkunft["beds_luxury"]
-        iso = unterkunft["beds_basic"]
-        ukname = format_name(unterkunft["name"])
-        yticklabs.append(f'{ukname} ({bed + iso})')
-        yticks.append(k + (bed + iso) / 2)
 
-        t0 = pd.to_datetime(unterkunft["date_from_june"])
-        t1 = pd.to_datetime(unterkunft["date_to_june"])
+    with app.app_context():
+        shelters = (Shelter.query
+                .filter(Shelter.date_to_june >= settings.start_date,
+                        Shelter.date_from_june < settings.end_date)
+                .order_by(desc(Shelter.date_from_june),
+                          desc(func.julianday(Shelter.date_to_june) \
+                                    - func.julianday(Shelter.date_from_june))))
 
-        if t1 is None:
-            print(f"Unterkunft von {unterkunft['name']} hat kein Enddatum angegeben. 2. Juli angenommen.")
-            t1 = pd.to_datetime("2022-07-02")
+        reservations = (Reservation.query
+                        .filter(Reservation.date >= settings.start_date,
+                                Reservation.date < settings.end_date))
+        for shelter in shelters.all():
+            # gather data for green block (represents the shelter)
+            ax_cal.axhline(height_current_stack, ls="dashed", color="grey", lw=.75)
+            height_current_stack += .4 * rowheight
 
-        t1_max = max(t1, t1_max)
+            n_beds = shelter.beds_luxury
+            n_basic = shelter.beds_basic
+            
+            sheltername = format_name(shelter.name)
 
-        if unterkunft["uuid"] in list(reservations["shelter_id"]):
-            reses = reservations[reservations["shelter_id"] == unterkunft["uuid"]]
-            datecounts = reses.date.value_counts()
-            for resdate in datecounts.index:
-                datecount = datecounts.loc[resdate]
-                resdate = pd.to_datetime(resdate)
-                resdate_ind = (resdate - start).days
+            yticklabs.append(f'{sheltername} ({n_beds + n_basic})')
+            yticks.append(height_current_stack + (n_beds + n_basic) / 2)
 
-                ax_cal.add_patch(Rectangle((resdate_ind + .5, k), 1, datecount * height,
-                                           facecolor="lightcoral", edgecolor="none", zorder=3))
+            t0 = shelter.date_from_june
 
-        for bedi in range(bed):
-            ax_cal.add_patch(Rectangle(((t0 - start).days + .5, k), (t1 - t0).days, height, facecolor="tab:green",
-                                       edgecolor="none", zorder=2))
-            ax_cal.add_patch(Rectangle(((t0 - start).days + .5, k), (t1 - t0).days, height, facecolor="none",
-                                       edgecolor="grey", lw=.5, zorder=3.5))
-            k += height
-        for isoi in range(iso):
-            ax_cal.add_patch(Rectangle(((t0 - start).days + .5, k), (t1 - t0).days, height, facecolor="lightgreen",
-                                       edgecolor="none", zorder=2))
-            ax_cal.add_patch(Rectangle(((t0 - start).days + .5, k), (t1 - t0).days, height, facecolor="none",
-                                       edgecolor="grey", lw=.5, zorder=3.5))
-            k += height
+            if (t1 := shelter.date_to_june) is None:
+                t1 = end
+                print(f"Unterkunft {sheltername} hat kein Enddatum angegeben. {t1} angenommen.")
 
-        k += .4 * height
+            # fill reservations (red) into green block
+            res_this_shelter = reservations.filter(Reservation.shelter_id == shelter.uuid)
+            date_counter = (res_this_shelter.order_by(Reservation.date)
+                            .with_entities(Reservation.date, 
+                                           func.count(Reservation.date))
+                            .group_by(Reservation.date).all())
+            for date, counter in date_counter:
+                plot_date_rectangle(ax_cal, date, date+timedelta(days=1),
+                                    counter*rowheight, height_current_stack, 
+                                    facecolor="lightcoral", edgecolor="none",
+                                    zorder=3)
 
-    fig_cal.set_size_inches(13, k * .075)
+            # plot green block for beds aand basic sleeping spots
+            for spot_counter, color in [(n_beds, 'tab:green'),
+                                        (n_basic, 'lightgreen')]:
+                plot_shelterblock(ax_cal, t0, t1, spot_counter, height_current_stack, color)
+                height_current_stack += rowheight * spot_counter
+
+            height_current_stack += .4 * rowheight
+
+    fig_cal.set_size_inches(13, 1 + height_current_stack * .075)
 
     ax_cal.legend(handles=legend_elements)
     ax_cal.xaxis.grid(zorder=1)
-    ax_cal.set(xlim=((start_plot - start).days - 1, (end_plot - start).days + 1), ylim=(0, k + .5),
+    ax_cal.set(xlim=(start - timedelta(days=2), end + timedelta(days=1)),
+               ylim=(.001, height_current_stack + .5),
                xlabel="Datum",
                yticks=yticks, yticklabels=yticklabs)
 
-    ax_cal.set_xticks(np.arange(0, (t1_max - start).days, 5))
-    ax_cal.set_xticks(np.arange((t1_max - start).days), minor=True)
     ax_cal.xaxis.grid(which="minor", zorder=1, alpha=.25)
-
-    ax_cal.xaxis.set_major_formatter(FuncFormatter(int_to_date_maj))
-    ax_cal.xaxis.set_minor_formatter(FuncFormatter(int_to_date))
-
     ax_cal.xaxis.set_tick_params(rotation=90, which="both")
-    ax_cal.set(xlim=((start_plot - start).days - 1, (end_plot - start).days + 1),
-               ylim=(.001, k + .5))
 
-    today = pd.to_datetime(date.today())
-    ax_cal.axvline((today - start).days + .35, color="red", ls="--", zorder=4)
+    add_today_vline(ax_cal)
+
+    # fig_cal.savefig(r'C:\Users\tadej\Documents\Programmierkrams\Bettenboerse\calendar.png')
+
     output = io.BytesIO()
     FigureCanvas(fig_cal).print_png(output)
     return Response(output.getvalue(), mimetype="image/png")
 
 
-def int_to_date_maj(value, pos):
-    start = pd.to_datetime("2022-06-18")
-    ddate = start + timedelta(days=int(value))
-    return ddate.strftime("%d. (%a)")
-
-
-def plot_menschen(dbfile="unterkünfte.db", start_plot="2022-06-17", end_plot="2022-07-20", today=None):
+def plot_menschen(app):
     """
-    dbfile: str zu unterkuefte.db
-    start_date: str im Format 'yyyy-mm-dd'
-        linke Anzeigegrenze des Plots
-    end_date:
-
+    Create a timeline-like graph of Menschen in database, showing
+        1. when they are there
+        2. if/when they have a reservation
+        3. if/when they move
     """
-    a = read_sqlite(dbfile)
-    start = pd.to_datetime("2022-06-18")
-    try:
-        end_plot = pd.to_datetime(end_plot)
-    except:
-        print("Als Enddatum fürs Plotten wird längster Aufenthalt genommen")
-    start_plot = pd.to_datetime(start_plot)
+    start = settings.start_date
+    end = settings.end_date
 
-    height = 1
+    with app.app_context():
+        menschen = (Mensch.query
+                    .filter(Mensch.date_to >= settings.start_date,
+                            Mensch.date_from < settings.end_date)
+                    .order_by(Mensch.bezugsgruppe, Mensch.date_from))
+        reservations = (Reservation.query
+                        .filter(Reservation.date >= settings.start_date,
+                                Reservation.date < settings.end_date))
 
-    betten = pd.DataFrame(a["shelter"])
-    reservations = pd.DataFrame(a["reservation"])
-    menschen = a["mensch"]
+        height = 1
 
-    legend_elements = [Patch(facecolor="gold", edgecolor="none", label="untergebracht"),
-                       Patch(facecolor="skyblue", edgecolor="none", label="in Berlin"),
-                       Line2D([0], [0], ls="dashed", color="red", label="heute"),
-                       Line2D([0], [0], color="gray", label="Umzug")]
+        legend_elements = [Patch(facecolor="gold", edgecolor="none", label="untergebracht"),
+                        Patch(facecolor="skyblue", edgecolor="none", label="vor Ort"),
+                        Line2D([0], [0], ls="dashed", color="red", label="heute"),
+                        Line2D([0], [0], color="gray", label="Umzug")]
 
-    menschen = menschen.sort_values("bezugsgruppe", ascending=False)
+        fig = plt.figure(figsize=(13, 8), layout='constrained')
+        ax = plt.subplot(111)
 
-    fig = plt.figure(tight_layout=True, figsize=(13, 8))
-    ax = plt.subplot(111)
+        yticks = []
+        ylabs = []
+        height_current_stack = 0.6
 
-    yticks = []
-    ylabs = []
-    k = 0
+        for mensch in menschen.all():
+            mensch_start = mensch.date_from
+            mensch_end = mensch.date_to
+            name = mensch.name            
+            bezugi = mensch.bezugsgruppe
 
-    tmax = pd.to_datetime(menschen["date_to"]).max()
+            ylabs.append(f'{name} ({bezugi})')
+            yticks.append(height_current_stack + height / 2)
 
-    for ind in menschen.index:
-        mensch = menschen.loc[ind]
-        start_mensch = (pd.to_datetime(mensch["date_from"]) - start).days
-        end_mensch = (pd.to_datetime(mensch["date_to"]) - start).days
-        span = end_mensch - start_mensch
-        name = mensch["name"]
-        bg = re.split(r"\W+", mensch["bezugsgruppe"])[0]
-        if bg.capitalize() == "Wilder":
-            bg = "Wilder Rucola"
-        ylabs.append(f'{name} ({bg})')
-        yticks.append(k + height / 2)
-        ax.add_patch(Rectangle((start_mensch + .5, k), span, height, facecolor="skyblue", edgecolor="none", zorder=.5))
+            # plot blue rectangle representing the person's entire stay
+            plot_date_rectangle(ax, mensch_start, mensch_end, height,
+                                height_current_stack, facecolor="skyblue",
+                                edgecolor="none", zorder=2)
+            
+            
+            res_mensch = reservations.filter(Reservation.mensch_id == mensch.id)
 
-        res_mensch = reservations[reservations["mensch_id"] == mensch["id"]]
-        for res_ind in res_mensch.index:
-            res = res_mensch.loc[res_ind]
-            resdate = pd.to_datetime(res["date"])
-            resdate_next = str(resdate + timedelta(days=1))[:10]
-            date_int = (resdate - start).days
+            # add reservations to the plot, mark moves as grey vline
+            old_shelter_id = None
+            for single_res in res_mensch.order_by(Reservation.date).all():
+                resdate = single_res.date
+                date_tomorrow = resdate + timedelta(days=1)
+                shelter_id = single_res.shelter_id
 
-            there_tomorrow = res_mensch["date"].str.contains(resdate_next).any()
-            same_shelter_tomorrow = (res_mensch[res_mensch["date"] == resdate_next]["shelter_id"] == res[
-                "shelter_id"]).sum()
-            if (not same_shelter_tomorrow) & there_tomorrow:
-                ax.vlines(date_int + 1.65, ymin=k, ymax=k + height, color="grey")
+                # gold rectangle for bed managing done
+                plot_date_rectangle(ax, resdate, date_tomorrow, height * .7,
+                                    height_current_stack + .15 * height,
+                                    edgecolor="none", facecolor="gold",
+                                    zorder=2.5)
+                
+                # grey line for move
+                if (old_shelter_id is not None) and (shelter_id != old_shelter_id):
+                    ax.vlines(resdate - timedelta(hours=12),
+                              ymin=height_current_stack, ymax=height_current_stack + height,
+                              color="grey", zorder=3)
+                    
+                old_shelter_id = shelter_id
 
-            ax.add_patch(
-                Rectangle((date_int + .5, k + .15 * height), 1, height * .7, edgecolor="none", facecolor="gold"))
+            height_current_stack += 1.1 * height
 
-        k += 1.1 * height
+    fig.set_size_inches(13, 1 + height_current_stack * .15)
 
-    fig.set_size_inches(13, k * .15)
+    ax.set(xlim=(start - timedelta(days=2), end + timedelta(days=1)),
+           ylim=(0.001, height_current_stack + .25 * height),
+           yticks=yticks,
+           yticklabels=ylabs,
+           xlabel='Datum')
+    ax.grid(visible=True, which="major", axis='x', zorder=1)
+    ax.grid(visible=True, which="minor",axis='x', zorder=1, alpha=.25)
 
-    minticks = np.arange(-1, (tmax - start).days + 2, 1)
-    majticks = np.arange(0, (tmax - start).days + 2, 5)
-
-    ax.set_xticks(minticks, minor=True)
-    ax.set_xticks(majticks)
-
-    ax.xaxis.set_minor_formatter(FuncFormatter(int_to_date))
-    ax.xaxis.set_major_formatter(FuncFormatter(int_to_date_maj))
-
-    ax.xaxis.grid(which="major", zorder=2.1)
-    ax.xaxis.grid(which="minor", zorder=2.1, alpha=.25)
-
-    if not today:
-        today = pd.to_datetime(date.today())
-    ax.axvline((today - start).days + .35, color="red", ls="dashed")
-
-    if end_plot:
-        tmax = end_plot
-    ax.set(xlim=((pd.to_datetime(start_plot) - start).days, (tmax - start).days + 1),
-           ylim=(-.25 * height, k + .25 * height), yticks=yticks, yticklabels=ylabs,
-           xlabel="Datum")
+    add_today_vline(ax)
 
     ax.xaxis.set_tick_params(rotation=90)
-
     ax.legend(handles=legend_elements)
-
-    # plt.savefig("menschen.png")
 
     output = io.BytesIO()
     FigureCanvas(fig).print_png(output)
     return Response(output.getvalue(), mimetype="image/png")
+
+

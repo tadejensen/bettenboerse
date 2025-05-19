@@ -711,30 +711,30 @@ def login():
     return redirect(url_for('list_shelters'))
 
 
-#from bettenboerse.letade import hist_betten, plot_menschen, plot_calendar
-#
-#
-#@app.route("/hist_betten.png")
-#@auth.login_required
-#def api_hist_betten():
-#    return hist_betten(dbfile="instance/unterkünfte.db", start_plot="2022-06-18", end_plot="2022-07-20")
-#
-#
-#@app.route("/plot_menschen.png")
-#@auth.login_required
-#def api_plot_menschen():
-#    return plot_menschen(dbfile="instance/unterkünfte.db", start_plot="2022-06-17", end_plot="2022-07-20", today=None)
-#
-#
-#@app.route("/plot_calendar.png")
-#@auth.login_required
-#def api_plot_calendar():
-#    return plot_calendar(dbfile="instance/unterkünfte.db", start_plot="2022-06-18", end_plot="2022-07-20")
+from bettenboerse.letade import plot_menschen, plot_calendar, barplot_beds
 
 
-#@app.route('/menschen/export/csv')
-#@auth.login_required
-#def export_menschen_csv():
+@app.route("/hist_betten.png")
+@auth.login_required
+def api_hist_betten():
+   return barplot_beds(app)
+
+
+@app.route("/plot_menschen.png")
+@auth.login_required
+def api_plot_menschen():
+   return plot_menschen(app)
+
+
+@app.route("/plot_calendar.png")
+@auth.login_required
+def api_plot_calendar():
+   return plot_calendar(app)
+
+
+# @app.route('/menschen/export/csv')
+# @auth.login_required
+# def export_menschen_csv():
 #    buffer = StringIO()
 #    writer = csv.writer(buffer, delimiter='|')
 #    header = ("Name", "Bezugsgruppe", "von", "bis", "Telefon", "Geburtstag", "Angehörige", "Bin da mit", "brauche FLINTA Space", "Lebensmittelunverträglichkeiten", "besondere Bedürfnisse")
