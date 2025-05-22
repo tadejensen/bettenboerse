@@ -3,8 +3,9 @@ import uuid
 from numpy.random import randint, choice
 from ipydex import IPS
 
+# imports work when running python -m tests.generate_test_data from parent directory
 from bettenboerse.models import Shelter, Reservation, Mensch, db
-import settings
+from bettenboerse import settings
 
 from flask import Flask
 import contextlib
@@ -245,7 +246,6 @@ def clear_database():
         conn.execute(table.delete())
     trans.commit()
     conn.close()
-
 
 with app.app_context():
     if 'unterkünfte_test' in settings.DB_LOCATION:
