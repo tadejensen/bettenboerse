@@ -13,7 +13,7 @@ Ich habe ein kurzes Video gedreht, um die Funktionen zu zeigen. Zum Download: [D
 
 [![Demo Bettenbörse](https://img.youtube.com/vi/P-D404GcqIw/0.jpg)](https://www.youtube.com/watch?v=P-D404GcqIw)
 
-Als visuelle Hilfe bei der Zuteilung von Schlafplätzen gibt es Zeistrahl-artige Darstellungen der verfügbaren Unterkünte, der Menschen mit Gesuchen und der Auslastung vs. unterzubringende Menschen.
+Als visuelle Hilfe bei der Zuteilung von Schlafplätzen gibt es Zeitstrahl-artige Darstellungen der verfügbaren Unterkünte, der Menschen mit Gesuchen und der Auslastung vs. unterzubringende Menschen.
 
 <img src='./docs/plot_calendar.png' alt='Unterkünfte' width='500'/>
 
